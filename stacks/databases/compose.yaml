@@ -37,6 +37,9 @@ services:
       start_period: 30s
     labels:
       - com.centurylinklabs.watchtower.enable=true
+    networks:
+      - db-net
+      - ce-internal
   postgres:
     container_name: PostgreSQL
     image: postgres:16-alpine
@@ -75,6 +78,9 @@ services:
       start_period: 20s
     labels:
       - com.centurylinklabs.watchtower.enable=true
+    networks:
+      - db-net
+      - ce-internal
   adminer:
     container_name: Adminer
     image: adminer:5.4.2-standalone
@@ -114,6 +120,8 @@ services:
       start_period: 20s
     labels:
       - com.centurylinklabs.watchtower.enable=true
+    networks:
+      - db-net
 secrets:
   mariadb_root_pw:
     file: ${STACK_ROOT}/databases/secrets/mariadb_root_pw.txt
@@ -121,4 +129,18 @@ secrets:
     file: ${STACK_ROOT}/databases/secrets/mariadb_app_pw.txt
   postgres_pw:
     file: ${STACK_ROOT}/databases/secrets/postgres_pw.txt
-networks: {}
+networks:
+  db-net:
+    # Private network: mariadb, postgres, adminer communicate here.
+    # Adminer reaches the DBs by service name; not exposed on ce-internal.
+    name: db-net
+    driver: bridge
+    ipam:
+      config:
+        # Subnet registry: 172.28.0.0/24 allocated to db-net
+        - subnet: 172.28.0.0/24
+          gateway: 172.28.0.1
+  ce-internal:
+    # Cross-stack backbone: mariadb and postgres join so other stacks can
+    # connect by DNS name (e.g. jdbc:mysql://mariadb:3306/appdb).
+    external: true

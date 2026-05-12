@@ -49,6 +49,7 @@ services:
     networks:
       - grafana-net
       - prometheus-net
+      - ce-internal
     mem_limit: 1g
     cpu_shares: 768
     security_opt:
@@ -224,6 +225,7 @@ networks:
         # 172.20.0.0/24 = github-desktop
         # 172.22.0.0/24 = grafana-net (this stack)
         # 172.22.1.0/24 = prometheus-net (this stack)
+        # 172.26.0.0/24 = ce-internal (cross-stack backbone, external)
         - subnet: 172.22.0.0/24
           gateway: 172.22.0.1
   prometheus-net:
@@ -233,3 +235,5 @@ networks:
       config:
         - subnet: 172.22.1.0/24
           gateway: 172.22.1.1
+  ce-internal:
+    external: true

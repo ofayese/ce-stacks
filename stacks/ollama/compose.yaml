@@ -50,6 +50,7 @@ services:
       - otsorundscore.olutechsys.com:10.0.1.15
     networks:
       - ollama-net
+      - ce-internal
   ollama-model-init:
     # One-shot service: pulls all required models after Ollama comes online.
     # Uses same image as otsai-server — no additional pull needed.
@@ -174,7 +175,8 @@ services:
     environment:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
-      - OLLAMA_BASE_URL=http://10.0.1.15:11434
+      # Use Docker DNS (same ollama-net) — avoids host round-trip
+      - OLLAMA_BASE_URL=http://ollama:11434
       - WEBUI_AUTH=1
       - WEBUI_NAME=olutechsys AI
       - WEBUI_URL=${WEBUI_URL:-https://ai.otsorundscore.olutechsys.com}
@@ -210,3 +212,7 @@ networks:
         # See docs/hive/NAS_DEPLOYMENT.md for full subnet registry.
         - subnet: 172.27.0.0/24
           gateway: 172.27.0.1
+  ce-internal:
+    # Cross-stack backbone: ollama joins so other stacks (RAG, agents)
+    # can call the LLM API by DNS name (http://ollama:11434).
+    external: true

@@ -235,11 +235,32 @@ else
 	echo "WARN: not root; run: sudo bash ${SCRIPT_DIR}/fix-permissions.sh ${STACK_ROOT}" >&2
 fi
 
+# ── 5. Create shared Docker networks ──────────────────────────────────
+# ce-internal: cross-stack backbone used by grafana-prom, databases,
+#              ollama, and synology-api-bridge. Idempotent.
+echo ""
+echo "Creating shared Docker networks ..."
+if command -v docker &>/dev/null; then
+	if docker network inspect ce-internal &>/dev/null; then
+		echo "  ✓ ce-internal already exists — skipping"
+	else
+		docker network create \
+			--driver bridge \
+			--subnet 172.26.0.0/24 \
+			--gateway 172.26.0.1 \
+			ce-internal
+		echo "  ✓ created: ce-internal (172.26.0.0/24)"
+	fi
+else
+	echo "  WARN: docker not in PATH — create manually after Docker starts:"
+	echo "    docker network create --driver bridge --subnet 172.26.0.0/24 --gateway 172.26.0.1 ce-internal"
+fi
+
 echo ""
 echo "────────────────────────────────────────"
 echo "Init complete."
 echo "STACK_ROOT = ${STACK_ROOT}"
-echo "Now open Dockge and deploy your stacks."
+echo "Now open Portainer and deploy your stacks."
 echo "────────────────────────────────────────"
 
 # ── Write hash after successful full init (--if-changed runs only) ───

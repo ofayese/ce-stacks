@@ -23,3 +23,11 @@ services:
       timeout: 10s
       retries: 3
       start_period: 20s
+    networks:
+      - ce-internal
+
+networks:
+  ce-internal:
+    # Cross-stack backbone: other containers call this bridge at
+    # http://SynologyApiBridge:8000 without going through the host.
+    external: true
