@@ -5,29 +5,38 @@
 # Drop this file at /usr/local/etc/rc.d/portainer.sh on the NAS and chmod +x it.
 # Source of truth: scripts/portainer-start.sh in the ce-stacks repo.
 #
-# Container Management UI for Docker. Portainer CE enables:
-#   1. Container & image management (status, logs, exec, restart, remove)
-#   2. Dashboard with resource usage (CPU, memory, network)
-#   3. Stack / Compose v2 file viewer (supports compose.yaml natively)
-#   4. Registry integration
-#   5. REST API for automated stack provisioning (see scripts/portainer-provision.sh)
+# Starts two containers:
+#   1. portainer       - CE server (WebUI + API + stack management)
+#   2. portainer_agent - Agent (host management, volume browsing, non-admin volumes)
+#
+# The Agent is required for:
+#   - Host management features (browse host filesystem)
+#   - Volume management for non-administrators
+#   - /host bind-mount exposes the NAS root filesystem read/write inside agent
+#
+# After both containers are running, register the Agent environment once in
+# the Portainer UI:
+#   Environments → Add environment → Portainer Agent
+#   Name: NAS Local   Agent URL: 10.0.1.15:9001
+#   → Save → switch to the new environment
+#
+# TLS: disabled on the agent (LAN-only deployment, bound to 10.0.1.15).
+# If TLS is required later, set PORTAINER_AGENT_TLS=1 and place cert.pem /
+# key.pem under PORTAINER_CERT_ROOT before starting.
 #
 # Configuration:
-#   - Image: portainer/portainer-ce:2.41.0-alpine (Compose v2, compose.yaml support)
-#   - Port: host 9000 → container 9000 (HTTP WebUI + API, LAN-only binding)
-#   - Port: host 9443 → container 9443 (HTTPS WebUI, LAN-only binding)
-#   - Data: /volume2/docker/portainer (persistent state - outside STACK_ROOT)
-#   - Socket: /var/run/docker.sock (rw - CE needs full API access for stack management)
-#   - TZ: America/New_York (match NAS timezone)
-#   - PUID/PGID: root (0:0) for socket access
-#   - Restart: unless-stopped (keep UI running across system reboots)
-#   - Watchtower label: com.centurylinklabs.watchtower.enable=true
-#   - Healthcheck: HTTP query to /api/system/status on localhost:9000
+#   CE image:    portainer/portainer-ce:2.41.0-alpine
+#   Agent image: portainer/agent:2.41.0
+#   CE ports:    10.0.1.15:9000 (HTTP API), 10.0.1.15:9443 (HTTPS WebUI)
+#   Agent port:  10.0.1.15:9001
+#   Data:        /volume2/docker/portainer (outside STACK_ROOT)
+#   Socket:      /var/run/docker.sock rw (CE + Agent both need full API access)
+#   Agent mounts: /volume2/@docker/volumes → /var/lib/docker/volumes
+#                 / → /host  (host rootfs, required for host management)
 #
-# Note: Portainer state is stored outside STACK_ROOT to persist across
-# repo resets. /volume2/docker/portainer is a separate, independent path.
-# Portainer CE cannot manage its own container - this RC script owns its
-# lifecycle exclusively. The stacks/portainer/ compose is archived for reference.
+# Note: Portainer state lives outside STACK_ROOT so it persists across repo
+# resets. Portainer CE cannot manage its own container; this RC script owns
+# the lifecycle exclusively.
 #
 # After first boot, run: sudo bash /volume2/docker/ce-stacks/scripts/portainer-provision.sh
 # to register all ce-stacks stacks into Portainer automatically.
@@ -45,6 +54,10 @@ AGENT_IMAGE="portainer/agent:2.41.0"
 PUID="${PUID:-0}"
 PGID="${PGID:-0}"
 PORTAINER_DATA="${PORTAINER_DATA:-/volume2/docker/portainer}"
+# TLS is disabled by default (LAN-only, bound to 10.0.1.15).
+# Set PORTAINER_AGENT_TLS=1 and place cert.pem/key.pem under
+# PORTAINER_CERT_ROOT to enable TLS on the agent endpoint.
+PORTAINER_AGENT_TLS="${PORTAINER_AGENT_TLS:-0}"
 PORTAINER_CERT_ROOT="${PORTAINER_CERT_ROOT:-/volume2/docker/portainer/certs}"
 
 sleep 20
@@ -83,8 +96,6 @@ agent_data_mount_ok() {
     echo "$mounts" | grep -Fq '/var/run/docker.sock' || return 1
     echo "$mounts" | grep -Fq '"/var/lib/docker/volumes"' || return 1
     echo "$mounts" | grep -Fq '"/host"' || return 1
-    echo "$mounts" | grep -Fq "${PORTAINER_CERT_ROOT}" || return 1
-    echo "$mounts" | grep -Fq '"/certs"' || return 1
     return 0
 }
 
@@ -125,7 +136,8 @@ create_container() {
 }
 
 create_agent_container() {
-    $DOCKER run -d \
+    # Build the docker run command; conditionally add TLS mounts/env.
+    set -- \
         --name="$AGENT_NAME" \
         -p 10.0.1.15:9001:9001 \
         --restart=unless-stopped \
@@ -141,14 +153,22 @@ create_agent_container() {
         -v /var/run/docker.sock:/var/run/docker.sock \
         -v /volume2/@docker/volumes:/var/lib/docker/volumes \
         -v /:/host \
-        -v "${PORTAINER_CERT_ROOT}:/certs:ro" \
         -e PUID="$PUID" \
         -e PGID="$PGID" \
         -e AGENT_CLUSTER_ADDR=0.0.0.0 \
-        -e AGENT_TLS_CERT=/certs/cert.pem \
-        -e AGENT_TLS_KEY=/certs/key.pem \
-        -e TZ=America/New_York \
-        "$AGENT_IMAGE"
+        -e TZ=America/New_York
+
+    if [ "${PORTAINER_AGENT_TLS:-0}" = "1" ]; then
+        set -- "$@" \
+            -v "${PORTAINER_CERT_ROOT}:/certs:ro" \
+            -e AGENT_TLS_CERT=/certs/cert.pem \
+            -e AGENT_TLS_KEY=/certs/key.pem
+        echo "portainer-start: agent TLS enabled (certs from ${PORTAINER_CERT_ROOT})"
+    else
+        echo "portainer-start: agent TLS disabled (LAN-only; set PORTAINER_AGENT_TLS=1 to enable)"
+    fi
+
+    $DOCKER run -d "$@" "$AGENT_IMAGE"
 }
 
 $DOCKER pull "$IMAGE" || {
