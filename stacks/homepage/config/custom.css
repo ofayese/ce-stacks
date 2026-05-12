@@ -1,0 +1,7 @@
+/* Tighten up service tile spacing on the DS723+ dashboard */
+#information-widgets {
+  padding-bottom: 1rem;
+}
+.services-group .group-name {
+  letter-spacing: 0.04em;
+}

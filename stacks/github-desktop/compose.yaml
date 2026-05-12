@@ -1,0 +1,67 @@
+services:
+  github-desktop:
+    image: ghcr.io/linuxserver/github-desktop@sha256:f2a11524cde94a66f374f346d06ec2f41e506a5b950e4e0781e73eb4ec631928
+    container_name: github-desktop
+    hostname: github-desktop
+    shm_size: 1g
+    mem_limit: 2g
+    cpu_shares: 512
+    # security_opt and cap_add are required for GitHub Desktop (Electron)
+    # to render inside a KasmVNC container. Standard for LinuxServer.io
+    # GUI images. Security Advisor will flag these - intentional.
+    # See docs/hive/NAS_DEPLOYMENT.md for acknowledgement.
+    # Omit no-new-privileges:true: Electron's setuid chrome-sandbox cannot
+    # gain privileges under PR_NO_NEW_PRIVS; on DSM (often no unprivileged
+    # user namespaces) that breaks the renderer. Do not add --no-sandbox here.
+    security_opt:
+      - seccomp:unconfined
+    cap_add:
+      - IPC_LOCK
+    # Healthcheck type: B - TCP probe on KasmVNC internal port 3000.
+    # start_period is long - Electron initialisation takes 60-90s.
+    healthcheck:
+      test:
+        - CMD
+        - nc
+        - -z
+        - 127.0.0.1
+        - "3000"
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+    ports:
+      - ${GITHUB_DESKTOP_PORT:-3405}:3001
+    volumes:
+      - ${STACK_ROOT}/github-desktop/config:/config:rw
+    environment:
+      - TZ=${TZ:-America/New_York}
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - PIXELFLUX_WAYLAND=0
+      - CUSTOM_USER=${GITHUB_DESKTOP_USER:?set GITHUB_DESKTOP_USER in .env}
+      - PASSWORD=${GITHUB_DESKTOP_PASSWORD:?set GITHUB_DESKTOP_PASSWORD in .env}
+      - TITLE=GitHub Desktop
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    labels:
+      - com.centurylinklabs.watchtower.enable=true
+    networks:
+      - github-desktop-net
+networks:
+  github-desktop-net:
+    # name: override prevents Docker from prepending the project name,
+    # which would create "github-desktop_github-desktop-net" (double-name).
+    # With name: set, the Docker network is always "github-desktop-net".
+    name: github-desktop-net
+    driver: bridge
+    ipam:
+      config:
+        # Subnet registry: 172.20.0.0/24 allocated to github-desktop-net
+        # See docs/hive/NAS_DEPLOYMENT.md for full subnet registry.
+        - subnet: 172.20.0.0/24
+          gateway: 172.20.0.1

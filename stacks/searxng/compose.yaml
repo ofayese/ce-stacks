@@ -1,0 +1,75 @@
+services:
+  redis:
+    container_name: SearXNG-Redis
+    image: valkey/valkey:8.0.2-alpine
+    mem_limit: 256m
+    cpu_shares: 512
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    command: valkey-server --save "" --appendonly no
+    # NOTE: vm.overcommit_memory and net.core.somaxconn cannot be set via
+    # compose sysctls on Synology DSM - the kernel does not namespace these.
+    # Set them at the host level via DSM Task Scheduler (run as root at boot):
+    #   sysctl vm.overcommit_memory=1
+    #   sysctl net.core.somaxconn=512
+    # See stacks/searxng/README.md for Task Scheduler setup instructions.
+    # The warnings are cosmetic - Valkey starts successfully without these.
+    environment:
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - TZ=America/New_York
+    healthcheck:
+      test:
+        - CMD
+        - valkey-cli
+        - ping
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    labels:
+      - com.centurylinklabs.watchtower.enable=false
+  searxng:
+    container_name: SearXNG
+    image: searxng/searxng:2026.4.29-cba0cffa8
+    # NAS baseline: run as root so first-boot can create /etc/searxng/settings.yaml
+    # on the bind-mounted config directory.
+    user: 0:0
+    mem_limit: 512m
+    cpu_shares: 768
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    ports:
+      - 10.0.1.15:8888:8080
+    volumes:
+      - ${STACK_ROOT}/searxng/config:/etc/searxng:rw
+    environment:
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - SEARXNG_BASE_URL=https://search.otsorundscore.olutechsys.com/
+      - SEARXNG_REDIS_URL=redis://redis:6379/0
+      - UWSGI_WORKERS=4
+      - UWSGI_THREADS=4
+      - TZ=America/New_York
+    depends_on:
+      redis:
+        condition: service_healthy
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    labels:
+      - com.centurylinklabs.watchtower.enable=true

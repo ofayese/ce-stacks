@@ -1,0 +1,10 @@
+Claude Desktop (Anthropic GUI app) vs Docker Model Runner
+
+Docker documents Claude Code (terminal) with ANTHROPIC_BASE_URL=http://localhost:12434.
+
+The standard Claude Desktop chat app does not ship a documented, supported way to point all traffic at a local Docker Model Runner proxy the way Cursor + OpenAI override or Claude Code + ANTHROPIC_BASE_URL do.
+
+Practical options:
+- Use Claude Code with ANTHROPIC_BASE_URL (see ~/.zshrc in this setup).
+- Use Cursor with the OpenAI-compatible override (see CURSOR_SETUP.txt).
+- Check current Anthropic release notes / support for any "custom API endpoint" in the desktop app; treat it as unsupported unless documented.

@@ -1,0 +1,100 @@
+# Copy .env.example to .env and set WARP_API_KEY (Settings → Platform in Warp; keys start with wk-).
+# https://docs.warp.dev/reference/cli/api-keys
+
+services:
+  # Note: warpdotdev/warp is the Docker Desktop *extension* image (not a Warp app server).
+  # If you need a real server on :9090, replace this image with the one from Warp’s Docker agent docs.
+  warp:
+    image: warpdotdev/warp:0.0.32
+    container_name: warp-main
+    ports:
+      - "10.0.1.15:9090:9090"
+    environment:
+      - WARP_HOST=0.0.0.0
+      - WARP_PORT=9090
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - TZ=America/New_York
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - warp-network
+    restart: unless-stopped
+    # Healthcheck type: A — HTTP probe (wget — verified 2026-05-07)
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:9090/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  warp-agent:
+    image: warpdotdev/warp-agent@sha256:c43ffad621d5a399c65bbd770131b06b1742571e96f17854b5e1b2fbe1ca2419
+    container_name: warp-agent-service
+    user: "${PUID:-0}:${PGID:-0}"
+    depends_on:
+      warp:
+        condition: service_healthy
+    environment:
+      - WARP_API_KEY=${WARP_API_KEY:?Set WARP_API_KEY in a .env file or the environment}
+      - WARP_APP_HOST=warp
+      - WARP_APP_PORT=9090
+      - CLAUDE_HOST=host.docker.internal
+      - CLAUDE_PORT=3000
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - TZ=America/New_York
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - warp-network
+    restart: unless-stopped
+    # Healthcheck type: B — HTTP probe (curl; image has curl — verified 2026-05-07)
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://127.0.0.1:8080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  warp-claude-cli-sidecar:
+    image: warpdotdev/warp-claude-cli-sidecar@sha256:6974d8dc6224bbf1aa1ab984dbd15d1553adfb15ae385a16449071aa39b7e4a1
+    container_name: warp-claude-sidecar
+    depends_on:
+      warp-agent:
+        condition: service_healthy
+    environment:
+      - WARP_AGENT_HOST=warp-agent
+      - WARP_AGENT_PORT=8080
+      - CLAUDE_API_HOST=host.docker.internal
+      - CLAUDE_API_PORT=3000
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - TZ=America/New_York
+    ports:
+      - "10.0.1.15:8080:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - warp-network
+    restart: unless-stopped
+    # Healthcheck type: D — HTTP probe (node http; image has node, no wget/curl — verified 2026-05-07)
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "require('http').get('http://127.0.0.1:8080/',(r)=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+networks:
+  warp-network:
+    name: warp-network
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.23.0.0/24
+          gateway: 172.23.0.1

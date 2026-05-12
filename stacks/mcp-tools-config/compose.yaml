@@ -1,0 +1,22 @@
+# Dockge + CI: minimal valid Compose so `scripts/compose-validate.sh` includes this folder.
+# The Docker Desktop MCP catalog remains in `docker-mcp.yaml` (not a Compose file).
+services:
+  # No healthcheck: one-shot service (restart: "no" # intentional).
+  # A healthcheck is not applicable to a non-persistent service.
+  mcp_catalog_placeholder:
+    image: busybox:1.36
+    container_name: mcp-tools-compose-placeholder
+    mem_limit: 16m
+    cpu_shares: 64
+    security_opt:
+      - no-new-privileges:true
+    command: ["true"]
+    environment:
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+    restart: "no" # intentional: one-shot placeholder service
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+        max-file: "1"

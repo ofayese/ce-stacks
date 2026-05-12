@@ -1,0 +1,187 @@
+auths:
+  public_v3:
+    version: 3
+    user_engine_id: 800007E5f95e4f4f5f95e4f4f5f95e4f4f
+    username: demoadmin
+    security_level: authPriv
+    auth_protocol: SHA
+    auth_password: foobardemo123
+    priv_protocol: AES
+    priv_password: foobardemo123
+    engine_boots: 0
+    engine_time: 0
+    max_repetitions: 25
+
+modules:
+  synology:
+    walk:
+      - interfaces
+      - ifXTable
+      - sysUpTime
+      - sysDescr
+      - sysName
+      - sysObjectID
+      - laIndex
+      - laNames
+      - laLoad
+      - laPerfLoad
+      - laPerfCPU
+      - laPerfIO
+      - memTotalSwap
+      - memAvailSwap
+      - memTotalReal
+      - memAvailReal
+      - memTotalFree
+      - memMinimumSwap
+      - memShared
+      - memBuffer
+      - memCached
+      - diskIndex
+      - diskPath
+      - diskDevice
+      - diskMinimum
+      - diskMinPercent
+      - diskTotal
+      - diskAvail
+      - diskUsed
+      - diskPercent
+      - diskPercentNode
+      - diskErrorFlag
+      - diskErrorMsg
+      - filesize
+      - processes
+      - processorFrw
+      - driveID
+      - diskType
+      - driveModel
+      - driveStatus
+      - diskSMARTStatus
+      - diskTemperature
+    get:
+      - sysName
+      - sysDescr
+    metrics:
+      - name: sysUpTime
+        help: The time (in hundredths of a second)
+      - name: sysDescr
+        help: A textual description of the entity
+      - name: sysName
+        help: An administratively assigned name
+      - name: sysObjectID
+        help: The vendor's authoritative identification
+      - name: interfaces
+        help: The number of network interfaces
+      - name: ifIndex
+        help: A unique value for each interface
+      - name: ifDescr
+        help: A textual string containing information
+      - name: ifType
+        help: The type of interface
+      - name: ifMtu
+        help: The size of the largest datagram
+      - name: ifSpeed
+        help: An estimate of the interface's current bandwidth
+      - name: ifPhysAddress
+        help: The interface's address at its protocol sublayer
+      - name: ifAdminStatus
+        help: The desired state of the interface
+      - name: ifOperStatus
+        help: The current operational state of the interface
+      - name: ifLastChange
+        help: The value of sysUpTime at the time the interface
+      - name: ifInOctets
+        help: The total number of octets received on the interface
+      - name: ifInUcastPkts
+        help: The number of packets delivered
+      - name: ifInNUcastPkts
+        help: The number of non-unicast packets delivered
+      - name: ifInDiscards
+        help: The number of inbound packets discarded
+      - name: ifInErrors
+        help: For packet-oriented interfaces
+      - name: ifInUnknownProtos
+        help: The number of packets received via the interface
+      - name: ifOutOctets
+        help: The total number of octets transmitted out of the interface
+      - name: ifOutUcastPkts
+        help: The total number of unicast packets that higher-level
+      - name: ifOutNUcastPkts
+        help: The total number of non-unicast packets that higher-level
+      - name: ifOutDiscards
+        help: The number of outbound packets discarded
+      - name: ifOutErrors
+        help: For packet-oriented interfaces, the number of outbound
+      - name: ifOutQLen
+        help: The length of the output packet queue
+      - name: laIndex
+        help: The index of the laEntry as a value
+      - name: laNames
+        help: The name of the load average
+      - name: laLoad
+        help: The load average as an integer
+      - name: laPerfLoad
+        help: The load average as an integer
+      - name: laPerfCPU
+        help: The average amount of CPU time
+      - name: laPerfIO
+        help: The average amount of IO time
+      - name: memTotalSwap
+        help: The total amount of swap space configured for this host
+      - name: memAvailSwap
+        help: The amount of swap space currently available
+      - name: memTotalReal
+        help: The total amount of real system memory
+      - name: memAvailReal
+        help: The amount of real system memory currently available
+      - name: memTotalFree
+        help: The total amount of memory available for use
+      - name: memMinimumSwap
+        help: The minimum amount of swap space reserved
+      - name: memShared
+        help: The amount of memory being used for shared purposes
+      - name: memBuffer
+        help: The amount of memory used for buffer purposes
+      - name: memCached
+        help: The amount of memory used for caching purposes
+      - name: diskIndex
+        help: Reference index of disk entry
+      - name: diskPath
+        help: Path where the disk is mounted
+      - name: diskDevice
+        help: The device name of the disk
+      - name: diskMinimum
+        help: The minimum space required to be free on the disk
+      - name: diskMinPercent
+        help: The minimum percentage of space required to be free
+      - name: diskTotal
+        help: The total disk space in KB
+      - name: diskAvail
+        help: The available disk space in KB
+      - name: diskUsed
+        help: The used disk space in KB
+      - name: diskPercent
+        help: The percentage of disk space used
+      - name: diskPercentNode
+        help: The percentage of disk nodes used
+      - name: diskErrorFlag
+        help: Flag indicating disk error status
+      - name: diskErrorMsg
+        help: Error message for the disk
+      - name: filesize
+        help: The file size in bytes
+      - name: processes
+        help: The number of processes
+      - name: processorFrw
+        help: Processor firmware version
+      - name: driveID
+        help: Drive identification
+      - name: diskType
+        help: Type of disk
+      - name: driveModel
+        help: Drive model name
+      - name: driveStatus
+        help: Drive operational status
+      - name: diskSMARTStatus
+        help: SMART status of the disk
+      - name: diskTemperature
+        help: Disk temperature in Celsius

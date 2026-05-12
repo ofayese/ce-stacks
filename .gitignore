@@ -1,0 +1,129 @@
+# =============================================================================
+# ce-stacks — root .gitignore
+# Covers: macOS/Synology sidecars, secrets, runtime data, Python artefacts
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# macOS & Synology filesystem garbage
+# ---------------------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+.AppleDouble
+.LSOverride
+@eaDir/
+@tmp/
+# Synology SMB temp files (Finder-over-SMB creates these)
+.smbdelete*
+# Synology package-manager junk
+.SynologyWorkingDirectory
+
+# ---------------------------------------------------------------------------
+# Secret material — NEVER commit
+# ---------------------------------------------------------------------------
+# Private keys (all forms)
+*.key
+*.pem
+*.p12
+*.pfx
+id_rsa
+id_rsa.*
+id_ed25519
+id_ed25519.pub
+id_ecdsa
+id_ecdsa.*
+id_dsa
+id_dsa.*
+account.key
+cert.key
+
+# ---------------------------------------------------------------------------
+# Runtime .env files — keep .env.example, never commit .env
+# ---------------------------------------------------------------------------
+.env
+.env.local
+.env.*.local
+# Allow the templates
+!.env.example
+
+# ---------------------------------------------------------------------------
+# Stack runtime data directories — contain secrets / large blobs
+# ---------------------------------------------------------------------------
+# acme.sh certificates and account keys
+stacks/acme-sh/data/
+
+# Ollama models + SSH identity
+stacks/ollama/data/
+
+# GitHub Desktop SSL material
+stacks/github-desktop/config/ssl/
+
+# Generic runtime data patterns (per-stack data dirs that hold runtime state)
+# Specific stacks that generate runtime secrets inside data/
+stacks/databases/data/
+stacks/code-server/data/
+stacks/zabbix/data/
+
+# ---------------------------------------------------------------------------
+# Docker / Compose artefacts
+# ---------------------------------------------------------------------------
+# Compose override files (local dev tweaks)
+docker-compose.override.yml
+compose.override.yaml
+
+# ---------------------------------------------------------------------------
+# Python artefacts (synology-api-bridge)
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ---------------------------------------------------------------------------
+# Node / JS (if any tooling added later)
+# ---------------------------------------------------------------------------
+node_modules/
+.npm/
+*.tgz
+
+# ---------------------------------------------------------------------------
+# Editor & IDE
+# ---------------------------------------------------------------------------
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+*.orig
+
+# ---------------------------------------------------------------------------
+# Repo test artefacts
+# ---------------------------------------------------------------------------
+HIVE_OBJECTIVE.md
+
+# ---------------------------------------------------------------------------
+# Logs & temp
+# ---------------------------------------------------------------------------
+*.log
+*.tmp
+*.bak
+tmp/
+temp/
+
+# ---------------------------------------------------------------------------
+# Git artefacts (Synology NAS git repo integrity)
+# ---------------------------------------------------------------------------
+# Synology EA sidecar bundles inside .git/ — handled by git hooks, not here
+# See scripts for EA cleanup tooling

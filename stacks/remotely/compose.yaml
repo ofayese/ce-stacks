@@ -1,0 +1,66 @@
+# Stack: remotely
+# Remote support platform: remote control, remote scripting, and IT support tooling.
+# Both the service and remote control use OUTGOING WebSocket connections over SSL/TLS.
+# No incoming ports need to be opened on the firewall beyond the web UI port.
+#
+# ⚠️  WebSocket required: Enable WebSocket in DSM Reverse Proxy for this container.
+#     DSM → Control Panel → Login Portal → Advanced → Reverse Proxy → Edit →
+#     Custom Header → Create → WebSocket (auto-adds Upgrade + Connection headers)
+#     Without this, remote control sessions fail over HTTPS.
+#
+# First deploy on the NAS:
+#   sudo mkdir -p /volume2/docker/ce-stacks/remotely/data
+#   cp .env.example .env
+#   docker compose up -d
+#
+# First use: navigate to http://10.0.1.15:5371
+#   Register the first account - it is automatically granted admin privileges.
+#   Set your server URL to the public HTTPS address used by the reverse proxy.
+
+services:
+  remotely:
+    container_name: remotely
+    image: immybot/remotely@sha256:9bdff2d8f7a9926731fe8394d9b0292eb5679153b1da7f3b80ecd9fa9823b89b
+    # Upstream does not publish semver tags; this service should stay digest-pinned.
+    # Refresh pin when needed:
+    #   docker pull immybot/remotely:latest
+    #   docker inspect immybot/remotely:latest --format '{{index .RepoDigests 0}}'
+    mem_limit: 1g
+    # ASP.NET Core + SignalR hub; 1g covers concurrent remote sessions on a homelab.
+    cpu_shares: 512
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    ports:
+      - 10.0.1.15:5371:5000
+    volumes:
+      # SQLite DB, agent installers, and app data live here.
+      - ${STACK_ROOT}/remotely/data:/app/AppData:rw
+    environment:
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - TZ=${TZ:-America/New_York}
+      - ASPNETCORE_ENVIRONMENT=Production
+      # SQLite is the default; swap to PostgreSQL for multi-server setups.
+      - Remotely_ApplicationOptions__DbProvider=SQLite
+      # Required when behind a reverse proxy (Traefik or DSM reverse proxy).
+      # Set to the LAN IP of the proxy or 0.0.0.0/0 for any trusted upstream.
+      # Without this, X-Forwarded-For headers are rejected and client IPs are wrong.
+      - Remotely_ApplicationOptions__KnownProxies__0=${REMOTELY_KNOWN_PROXY:-10.0.1.15}
+      # Public-facing URL used to generate agent download links.
+      # Change to your actual HTTPS hostname served by the reverse proxy.
+      - Remotely_ApplicationOptions__ServerUrl=${REMOTELY_SERVER_URL:-https://remotely.otsorundscore.olutechsys.com}
+    # Healthcheck type A: HTTP probe - ASP.NET Core Debian image ships curl.
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://localhost:5000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    labels:
+      - com.centurylinklabs.watchtower.enable=true

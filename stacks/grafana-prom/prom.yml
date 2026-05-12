@@ -1,0 +1,49 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: "node-exporter"
+    static_configs:
+      - targets: ["prometheus-node:9100"]
+
+  - job_name: "snmp-exporter"
+    metrics_path: /snmp
+    static_configs:
+      - targets: ["prometheus-snmp:9116"]
+        labels:
+          job: snmp
+
+  - job_name: "cadvisor"
+    static_configs:
+      - targets: ["prometheus-cadvisor:8080"]
+
+  - job_name: "synology-nas"
+    scrape_interval: 30s
+    static_configs:
+      - targets: ["10.0.1.15:161"]
+        labels:
+          instance: otsorundscore
+      - targets: ["10.0.1.24:161"]
+        labels:
+          instance: misfitsds
+    metrics_path: /snmp
+    params:
+      module: [synology]
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - target_label: __address__
+        replacement: prometheus-snmp:9116
+
+  - job_name: "watchtower"
+    scrape_interval: 10m
+    metrics_path: /v1/metrics
+    bearer_token_file: /etc/prometheus/watchtower_bearer_token
+    static_configs:
+      # Host-published Watchtower HTTP API (watchtower/compose.yaml ports).
+      - targets: ["10.0.1.15:18787"]

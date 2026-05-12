@@ -1,0 +1,10 @@
+# stacks/databases/.gitignore
+# Database engine data directories — NEVER commit live database files.
+# These directories contain live PostgreSQL and MariaDB data files,
+# WAL logs, lock files, and binary data that changes constantly at runtime.
+# Committing these corrupts the database and pollutes git history with binary blobs.
+db/
+db/**
+secrets/
+secrets/**
+.env

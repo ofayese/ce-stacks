@@ -1,0 +1,53 @@
+registry:
+  cloudflare-ai-gateway:
+    ref: ""
+  cloudflare-dns-analytics:
+    ref: ""
+  cloudflare-docs:
+    ref: ""
+  cloudflare-graphql:
+    ref: ""
+  cloudflare-workers-bindings:
+    ref: ""
+  cloudflare-workers-builds:
+    ref: ""
+  curl:
+    ref: ""
+  databutton:
+    ref: ""
+  desktop-commander:
+    ref: ""
+  docker:
+    ref: ""
+  docker-docs:
+    ref: ""
+  dotnet-types-explorer:
+    ref: ""
+  duckduckgo:
+    ref: ""
+  fetch:
+    ref: ""
+  filesystem:
+    ref: ""
+  github-official:
+    ref: ""
+  gitmcp:
+    ref: ""
+  mcp-python-refactoring:
+    ref: ""
+  memory:
+    ref: ""
+  microsoft-learn:
+    ref: ""
+  playwright:
+    ref: ""
+  remote-mcp:
+    ref: ""
+  rust-mcp-filesystem:
+    ref: ""
+  sequentialthinking:
+    ref: ""
+  time:
+    ref: ""
+  webflow-remote:
+    ref: ""

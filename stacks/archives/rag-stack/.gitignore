@@ -1,0 +1,5 @@
+# stacks/rag-stack/.gitignore
+# Vector DB, model storage, pipeline data — never commit
+data/
+data/**
+.env

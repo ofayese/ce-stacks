@@ -1,0 +1,56 @@
+services:
+  holyclaude:
+    image: coderluii/holyclaude@sha256:e897a524634b762ed486cfe38a49367ae60d78c11355dc59c700b7b9377f48de
+    container_name: holyclaude
+    hostname: holyclaude
+    shm_size: 2g
+    cap_add:
+      - SYS_ADMIN
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
+      - no-new-privileges:true
+    mem_limit: 4g
+    cpu_shares: 768
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - curl -fs http://127.0.0.1:3001/ >/dev/null 2>&1 || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    ports:
+      - 3059:3059
+      - 3001:3001
+    env_file:
+      - .env
+    environment:
+      - TZ=America/New_York
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL:-}
+      - NOTIFY_DISCORD=${NOTIFY_DISCORD:-false}
+      - OLLAMA_HOST=${OLLAMA_HOST:-http://10.0.1.15:11434}
+      - ANYTHINGLLM_API_URL=${ANYTHINGLLM_API_URL:-http://10.0.1.15:3002}
+      - ANYTHINGLLM_API_TOKEN=${ANYTHINGLLM_API_TOKEN:-}
+      - QDRANT_URL=${QDRANT_URL:-http://10.0.1.15:6333}
+      - QDRANT_API_KEY=${QDRANT_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - CURSOR_API_KEY=${CURSOR_API_KEY:-}
+    volumes:
+      - claude-home:/home/claude/.claude
+      - ${HOLYCLAUDE_WORKSPACE:-/volume2/docker/ce-stacks}:/workspace
+      - cloudcli-data:/home/claude/.cloudcli
+    labels:
+      - com.centurylinklabs.watchtower.enable=true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+volumes:
+  claude-home: {}
+  cloudcli-data: {}
+networks: {}

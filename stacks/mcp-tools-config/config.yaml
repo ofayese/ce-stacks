@@ -1,0 +1,13 @@
+desktop-commander:
+  paths:
+    - '"/Users/laolufayese/"'
+filesystem:
+  paths:
+    - '"/Users/laolufayese/"'
+rust-mcp-filesystem:
+  allow_write: false
+  allowed_directories:
+    - /Users/laolufayese/Public
+    - smb://otsorundscore._smb._tcp.local/Volumes/DevStorage
+    - smb://otsorundscore._smb._tcp.local/docker
+  enable_roots: true

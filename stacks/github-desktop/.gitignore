@@ -1,0 +1,8 @@
+# Secrets — never commit live credentials
+.env
+
+# Runtime data — large, transient, OS-generated
+config/
+data/
+*.log
+.DS_Store

@@ -1,0 +1,39 @@
+services:
+  openresume:
+    container_name: OpenResume
+    # Digest resolved on trusted host: docker pull yuihtt/open-resume:<tag> && docker image inspect … RepoDigests[0]
+    # Never reuse a digest from another Docker Hub namespace.
+    image: yuihtt/open-resume@sha256:c3d089d648d00a71162a8dc7a6b919efc1bbc5da22ca9a82ff751e22651b0e9e
+    mem_limit: 512m
+    cpu_shares: 512
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    ports:
+      - 10.0.1.15:8889:3000
+    environment:
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - NODE_ENV=production
+      - NEXT_PUBLIC_BASE_URL=${NEXT_PUBLIC_BASE_URL:-https://resume.otsorundscore.olutechsys.com}
+      - TZ=${TZ:-America/New_York}
+    extra_hosts:
+      - "otsorundscore.olutechsys.com:10.0.1.15"
+    # Healthcheck type: B — HTTP probe (node http; verify after image bumps via scripts/audit-healthcheck-tools.sh)
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "require('http').get('http://127.0.0.1:3000/',(r)=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    labels:
+      - com.centurylinklabs.watchtower.enable=true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

@@ -1,0 +1,90 @@
+services:
+  traefik:
+    image: traefik:v3.6.2
+    container_name: traefik-ots
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    ports:
+      # CRITICAL: host port maps to INTERNAL entrypoint port.
+      # Traefik listens on :80 (web) and :443 (websecure) INSIDE the container.
+      # Publishing host:8880 → container:80 (NOT :8880 which has no listener).
+      # Publishing host:6443 → container:443 (NOT :6443 which has no listener).
+      # "server unexpectedly dropped the connection" means a host port was
+      # published but the container has no listener on that internal port.
+      - ${TRAEFIK_HTTP_PUBLISH:-8880}:80
+      - ${TRAEFIK_HTTPS_PUBLISH:-6443}:443
+      # Dashboard / ping host publish: maps host :9080 (default) to container :8080.
+      # Serves /ping always; serves /dashboard/ only when TRAEFIK_DASHBOARD=true.
+      # Access with trailing slash:
+      #   http://10.0.1.15:9080/dashboard/
+      # "404 page not found" on /: correct when dashboard is disabled.
+      - ${TRAEFIK_DASHBOARD_PORT:-9080}:8080
+    volumes:
+      # /var/run socket context
+      # docker.sock :ro — Traefik reads Docker labels only.
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${ACME_CERT_ROOT:-/volume2/certs/acme}/otsorundscore:/certs/otsorundscore:ro
+      - ${STACK_ROOT}/traefik-ots/data:/data:rw
+      - ${STACK_ROOT}/traefik-ots/config:/etc/traefik:rw
+    environment:
+      - TZ=${TZ:-America/New_York}
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - CF_DNS_API_TOKEN=${CF_Token}
+    command:
+      # Avoid outbound calls to update.traefik.io (often DNS-timeout on NAS / split-horizon).
+      - --global.checkNewVersion=false
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.file.filename=/etc/traefik/tls.yaml
+      # web entrypoint listens on :80 INSIDE the container (not the host port).
+      # Host port is controlled by TRAEFIK_HTTP_PUBLISH in the ports block above.
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      # websecure entrypoint listens on :443 INSIDE the container.
+      - --entrypoints.websecure.address=:443
+      # traefik entrypoint for dashboard/ping on :8080 inside container.
+      - --entrypoints.traefik.address=:8080
+      - --ping=true
+      - --certificatesResolvers.cloudflare.acme.email=${ACME_EMAIL:-hostmaster@example.com}
+      - --certificatesResolvers.cloudflare.acme.storage=/data/acme.json
+      - --certificatesResolvers.cloudflare.acme.dnsChallenge.provider=cloudflare
+      # Traefik v3.6+: delayBeforeCheck deprecated — use propagation.delayBeforeChecks
+      - --certificatesResolvers.cloudflare.acme.dnsChallenge.propagation.delayBeforeChecks=10s
+      # When TRAEFIK_DASHBOARD=true: dashboard served at :8080/dashboard/ (trailing slash)
+      # When false (production): :8080 serves only /ping - accessing / returns 404 (correct)
+      - --api.dashboard=${TRAEFIK_DASHBOARD:-false}
+      - --api.insecure=${TRAEFIK_DASHBOARD:-false}
+      - --log.level=${TRAEFIK_LOG_LEVEL:-WARN}
+      - --accesslog=true
+    # Healthcheck type E: built-in binary healthcheck.
+    # Probes /ping on the traefik entrypoint - works regardless of dashboard state.
+    healthcheck:
+      test:
+        - CMD
+        - traefik
+        - healthcheck
+        - --ping
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 15s
+    networks:
+      - traefik-ots
+networks:
+  traefik-ots:
+    # name: override prevents Docker double-name artefact.
+    name: traefik-ots
+    driver: bridge
+    ipam:
+      config:
+        # Subnet registry: 172.23.0.0/24 allocated to traefik-ots
+        - subnet: 172.23.0.0/24
+          gateway: 172.23.0.1

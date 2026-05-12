@@ -1,0 +1,30 @@
+services:
+  acme-sh:
+    image: neilpang/acme.sh:3.1.3
+    container_name: AcmeSh
+    mem_limit: 128m
+    cpu_shares: 256
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    # No healthcheck: acme-sh is a cron-style renewal daemon.
+    # It does not expose HTTP or TCP endpoints.
+    # Certificate renewal success is verified via Synology cert store.
+    environment:
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - TZ=America/New_York
+      - CF_Token=${CF_Token}
+      - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
+    network_mode: host
+    volumes:
+      - ${STACK_ROOT}/acme-sh/data:/acme.sh
+      - ${ACME_CERT_ROOT:-/volume2/certs/acme}:/volume2/certs/acme
+    command: daemon
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    labels:
+      - com.centurylinklabs.watchtower.enable=true

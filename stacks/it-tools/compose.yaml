@@ -1,0 +1,32 @@
+services:
+  it-tools:
+    container_name: IT-Tools
+    image: corentinth/it-tools:2024.10.22-7ca5933
+    mem_limit: 256m
+    cpu_shares: 256
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    ports:
+      - 10.0.1.15:8894:80
+    environment:
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - TZ=${TZ:-America/New_York}
+    labels:
+      - com.centurylinklabs.watchtower.enable=true
+    healthcheck:
+      test:
+        - CMD
+        - wget
+        - -qO-
+        - http://localhost:80/
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"

@@ -1,0 +1,176 @@
+services:
+  postgres:
+    container_name: Zabbix-Postgres
+    image: postgres:15-alpine
+    mem_limit: 1g
+    cpu_shares: 1024
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    networks:
+      - zabbix-net
+    environment:
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - TZ=${TZ:-America/New_York}
+      - POSTGRES_DB=${POSTGRES_DB:-zabbix}
+      - POSTGRES_USER=${POSTGRES_USER:-zabbix}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-changeme}
+    volumes:
+      - ${STACK_ROOT}/zabbix/db:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD
+        - pg_isready
+        - -U
+        - zabbix
+        - -d
+        - zabbix
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    labels:
+      - com.centurylinklabs.watchtower.enable=false
+  zabbix-server:
+    container_name: Zabbix-Server
+    image: zabbix/zabbix-server-pgsql:alpine-7.4.3
+    mem_limit: 1g
+    cpu_shares: 1024
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    networks:
+      - zabbix-net
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - ${ZABBIX_SERVER_PUBLISH:-10051}:10051
+    environment:
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - TZ=${TZ:-America/New_York}
+      - DB_SERVER_HOST=postgres
+      - DB_SERVER_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB:-zabbix}
+      - POSTGRES_USER=${POSTGRES_USER:-zabbix}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-changeme}
+    volumes:
+      - ${STACK_ROOT}/zabbix/data:/var/lib/zabbix
+    healthcheck:
+      test:
+        - CMD
+        - zabbix_server
+        - -R
+        - diaginfo
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    labels:
+      - com.centurylinklabs.watchtower.enable=false
+  zabbix-web:
+    container_name: Zabbix-Web
+    image: zabbix/zabbix-web-nginx-pgsql:alpine-7.4.3
+    mem_limit: 512m
+    cpu_shares: 768
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    networks:
+      - zabbix-net
+    depends_on:
+      postgres:
+        condition: service_healthy
+      zabbix-server:
+        condition: service_healthy
+    ports:
+      - ${ZABBIX_WEB_PORT:-8532}:8080
+    environment:
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - TZ=${TZ:-America/New_York}
+      - DB_SERVER_HOST=postgres
+      - DB_SERVER_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB:-zabbix}
+      - POSTGRES_USER=${POSTGRES_USER:-zabbix}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-changeme}
+      - ZBX_SERVER_HOST=zabbix-server
+      - ZBX_SERVER_PORT=10051
+      - PHP_TZ=${TZ:-America/New_York}
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://localhost:8080/ping
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    labels:
+      - com.centurylinklabs.watchtower.enable=false
+  # ──────────────────────────────────────────────────────────────────
+  # ZABBIX AGENT OPTIONS - read before uncommenting
+  # ──────────────────────────────────────────────────────────────────
+  # The NAS is monitored via SNMPv3 (see README.md → SNMPv3 / Agent options).
+  # SNMPv3 covers: disks, RAID, temperature, fans, UPS, network,
+  # volume usage. No agent is required for this.
+  #
+  # For NAS OS-level monitoring (processes, logs, custom scripts):
+  #   Install the Zabbix Agent package from SynoCommunity Package
+  #   Center. It runs natively on DSM and connects to this Zabbix
+  #   Server container at 127.0.0.1:10051 (port 10051 is published
+  #   to the NAS host by the zabbix-server service above).
+  #   No changes to this compose file are needed for that.
+  #   See README.md (Agent options, Option 1) for setup steps.
+  #
+  # The container below is for Docker container monitoring ONLY.
+  # It requires privileged mode and host-side bind mounts to see
+  # NAS host metrics - avoid this unless you specifically need
+  # Docker container metrics in Zabbix. Security Advisor will flag
+  # privileged mode. See docs/hive/NAS_DEPLOYMENT.md.
+  #
+  # zabbix-agent2:
+  #   image: zabbix/zabbix-agent2:alpine-7.4-latest
+  #   container_name: zabbix-agent2
+  #   # privileged: true  # required to see host metrics from container
+  #   # network_mode: host  # required for host-level monitoring
+  #   # volumes:
+  #   #   - /proc:/proc:ro
+  #   #   - /sys:/sys:ro
+  #   #   - /var/run:/var/run:ro
+  #   #   - ${STACK_ROOT}/zabbix/config:/etc/zabbix:rw
+  #   environment:
+  #     - PUID=${PUID:-0}
+  #     - PGID=${PGID:-0}
+  #     - ZBX_SERVER_HOST=zabbix-server
+  #     - ZBX_HOSTNAME=${ZBX_AGENT_HOSTNAME:-synology-nas}
+  #   restart: unless-stopped
+  #   networks:
+  #     - zabbix-net
+
+networks:
+  zabbix-net:
+    name: zabbix-net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.24.0.0/24
+          gateway: 172.24.0.1

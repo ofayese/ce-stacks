@@ -1,0 +1,67 @@
+# ============================================================================
+# Homepage Settings — olutechsys Homelab (DS723+)
+# ============================================================================
+#
+# GENERAL
+
+title: olutechsys Homelab
+description: DS723+ — Docker stack dashboard
+startUrl: http://10.0.1.15:7575
+theme: dark
+color: slate
+headerStyle: clean
+language: en
+target: _blank
+hideVersion: true
+
+# SYNOLOGY DS723+ OPTIMIZATION
+# • 4-column layout for Infrastructure/Management/Development/Productivity
+#   Fits well on typical 16:9 monitors at 1920x1080+
+# • 3-column layout for AI and Search & Tools (fewer services)
+#
+# If you change monitor resolution or prefer different layout density:
+# • Add more columns for wide displays: columns: 6
+# • Reduce columns for mobile/tablet: columns: 2
+#
+# THEME NOTES
+# • Theme 'dark' is optimized for night use (default)
+# • Color 'slate' provides good contrast
+# • Try other colors: amber, blue, cyan, emerald, fuchsia, gray, green,
+#   indigo, lime, orange, pink, purple, red, rose, sky, teal, violet, yellow
+# • See: https://gethomepage.dev/configs/settings/ for full options
+
+# LAYOUT CONFIGURATION
+# Organizes services into sections with specified column width
+
+layout:
+  Infrastructure:
+    style: row
+    columns: 4 # Portainer, Dockge, Watchtower, Dozzle fit in 4 columns
+  Management:
+    style: row
+    columns: 4 # Adminer, phpMyAdmin, DSM, etc.
+  Development:
+    style: row
+    columns: 4 # Code-Server, databases, MySQL, PostgreSQL
+  Productivity:
+    style: row
+    columns: 4 # Codex Docs, OpenResume, MongoDB
+  AI:
+    style: row
+    columns: 3 # Ollama, Open WebUI, fewer services
+  Search & Tools:
+    style: row
+    columns: 3 # SearXNG, IT-Tools, acme.sh
+
+# OPTIONAL: WIDGET PROVIDERS
+# Some Homepage widgets require external API keys.
+# Add them here or leave commented if not using those widgets.
+#
+# Supported providers:
+#  openweathermap: <api_key>    (Weather widget)
+#  github: <token>              (GitHub stats)
+#  mastodon: <instance_url>     (Mastodon feeds)
+# See: https://gethomepage.dev/configs/settings/ for full list
+
+providers:
+  # openweathermap: your-api-key-here

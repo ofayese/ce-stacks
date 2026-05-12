@@ -1,0 +1,2 @@
+# Operator TLS material (never commit)
+certs/*.pem

@@ -1,0 +1,216 @@
+cloudflare-ai-gateway: []
+
+cloudflare-dns-analytics: []
+
+cloudflare-docs:
+  - search_cloudflare_documentation
+  - migrate_pages_to_workers_guide
+
+cloudflare-graphql: []
+
+cloudflare-workers-bindings: []
+
+cloudflare-workers-builds: []
+
+curl:
+  - curl
+
+databutton:
+  - submit_app_requirements
+
+desktop-commander:
+  - create_directory
+  - edit_block
+  - force_terminate
+  - get_config
+  - get_file_info
+  - get_more_search_results
+  - get_prompts
+  - get_recent_tool_calls
+  - get_usage_stats
+  - give_feedback_to_desktop_commander
+  - interact_with_process
+  - kill_process
+  - list_directory
+  - list_processes
+  - list_searches
+  - list_sessions
+  - move_file
+  - read_file
+  - read_multiple_files
+  - read_process_output
+  - set_config_value
+  - start_process
+  - start_search
+  - stop_search
+  - write_file
+  - write_pdf
+
+docker:
+  - docker
+
+docker-docs: []
+
+dotnet-types-explorer:
+  - ReferencedAssembliesExplorer
+  - NamespacesExplorer
+  - NamespaceTypes
+  - NuGetPackageSearch
+  - NuGetPackageVersions
+
+duckduckgo:
+  - fetch_content
+  - search
+
+fetch:
+  - fetch
+
+filesystem:
+  - create_directory
+  - directory_tree
+  - edit_file
+  - get_file_info
+  - list_allowed_directories
+  - list_directory
+  - move_file
+  - read_file
+  - read_multiple_files
+  - search_files
+  - write_file
+
+github-official:
+  - add_comment_to_pending_review
+  - add_issue_comment
+  - assign_copilot_to_issue
+  - create_branch
+  - create_or_update_file
+  - create_pull_request
+  - create_repository
+  - delete_file
+  - fork_repository
+  - get_commit
+  - get_file_contents
+  - get_label
+  - get_latest_release
+  - get_me
+  - get_release_by_tag
+  - get_tag
+  - get_team_members
+  - get_teams
+  - issue_read
+  - issue_write
+  - list_branches
+  - list_commits
+  - list_issue_types
+  - list_issues
+  - list_pull_requests
+  - list_releases
+  - list_tags
+  - merge_pull_request
+  - pull_request_read
+  - pull_request_review_write
+  - push_files
+  - request_copilot_review
+  - search_code
+  - search_issues
+  - search_pull_requests
+  - search_repositories
+  - search_users
+  - sub_issue_write
+  - update_pull_request
+  - update_pull_request_branch
+
+gitmcp:
+  - match_common_libs_owner_repo_mapping
+  - fetch_generic_documentation
+  - search_generic_documentation
+  - search_generic_code
+  - fetch_generic_url_content
+
+mcp-python-refactoring:
+  - analyze_python_file
+  - analyze_python_package
+  - analyze_security_and_patterns
+  - analyze_test_coverage
+  - find_long_functions
+  - find_package_issues
+  - get_extraction_guidance
+  - get_package_metrics
+  - tdd_refactoring_guidance
+
+memory:
+  - add_observations
+  - create_entities
+  - create_relations
+  - delete_entities
+  - delete_observations
+  - delete_relations
+  - open_nodes
+  - read_graph
+  - search_nodes
+
+microsoft-learn:
+  - microsoft_docs_search
+  - microsoft_docs_fetch
+  - microsoft_code_sample_search
+
+playwright:
+  - browser_click
+  - browser_close
+  - browser_console_messages
+  - browser_drag
+  - browser_evaluate
+  - browser_file_upload
+  - browser_fill_form
+  - browser_handle_dialog
+  - browser_hover
+  - browser_navigate
+  - browser_navigate_back
+  - browser_network_requests
+  - browser_press_key
+  - browser_resize
+  - browser_run_code
+  - browser_select_option
+  - browser_snapshot
+  - browser_tabs
+  - browser_take_screenshot
+  - browser_type
+  - browser_wait_for
+
+remote-mcp:
+  - ListRemoteMCPServers
+
+rust-mcp-filesystem:
+  - calculate_directory_size
+  - create_directory
+  - directory_tree
+  - edit_file
+  - find_duplicate_files
+  - find_empty_directories
+  - get_file_info
+  - head_file
+  - list_allowed_directories
+  - list_directory
+  - list_directory_with_sizes
+  - move_file
+  - read_file_lines
+  - read_media_file
+  - read_multiple_media_files
+  - read_multiple_text_files
+  - read_text_file
+  - search_files
+  - search_files_content
+  - tail_file
+  - unzip_file
+  - write_file
+  - zip_directory
+  - zip_files
+
+sequentialthinking:
+  - sequentialthinking
+
+time:
+  - convert_time
+  - get_current_time
+
+webflow-remote: []

@@ -1,0 +1,74 @@
+# SearXNG settings — copy to settings.yml beside this file on the NAS:
+#   cp config/settings.yml.example config/settings.yml
+# then set server.secret_key (required):
+#   openssl rand -hex 32
+#
+# Compose mounts: .../searxng/config:/etc/searxng
+use_default_settings: true
+
+general:
+  instance_name: "olutechsys Search"
+  debug: false
+  donation_url: false
+  privacypolicy_url: false
+
+server:
+  secret_key: "REPLACE_WITH_OUTPUT_OF_openssl_rand_hex_32"
+  limiter: true
+  image_proxy: true
+  port: 8080
+  bind_address: "0.0.0.0"
+  base_url: "https://search.otsorundscore.olutechsys.com/"
+  http_protocol_version: "1.1"
+  method: "POST"
+
+ui:
+  static_use_hash: true
+  default_locale: "en"
+  query_in_title: true
+  infinite_scroll: true
+  default_theme: simple
+  theme_args:
+    simple_style: dark
+
+search:
+  safe_search: 0
+  autocomplete: "google"
+  default_lang: "en"
+  ban_time_on_fail: 5
+  max_ban_time_on_fail: 120
+
+redis:
+  url: redis://redis:6379/0
+
+engines:
+  # Disable flaky default engine that often returns 403/rate-limit during init.
+  - name: wikidata
+    disabled: true
+  - name: google
+    engine: google
+    use_mobile_ui: false
+    shortcut: g
+  - name: ddg
+    engine: duckduckgo
+    shortcut: d
+  - name: brave
+    engine: brave
+    shortcut: br
+  - name: github
+    engine: github
+    shortcut: gh
+  - name: stackoverflow
+    engine: stackoverflow
+    shortcut: so
+  - name: wikipedia
+    engine: wikipedia
+    shortcut: wp
+    display_type: infobox
+
+outgoing:
+  request_timeout: 3.0
+  useragent_suffix: ""
+  pool_connections: 100
+  pool_maxsize: 15
+  enable_http2: true

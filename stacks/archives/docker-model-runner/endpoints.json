@@ -1,0 +1,31 @@
+{
+  "dockerModelRunner": {
+    "hostTcpPort": 12434,
+    "openaiCompatibleBaseUrl": "http://localhost:12434/engines/v1",
+    "anthropicCompatibleBaseUrl": "http://localhost:12434",
+    "ollamaCompatibleBaseUrl": "http://localhost:12434",
+    "containerBaseUrlDockerDesktop": "http://model-runner.docker.internal"
+  },
+  "cursor": {
+    "openaiOverrideBaseUrl": "http://localhost:12434/engines/v1",
+    "apiKeyPlaceholder": "not-needed",
+    "modelIdExample": "docker.io/ai/llama3.2:latest",
+    "modelsFromEnginesV1": [
+      "docker.io/ai/llama3.2:latest",
+      "docker.io/ai/phi4:latest",
+      "docker.io/ai/ministral3-vllm:latest",
+      "docker.io/ai/gemma4:latest",
+      "docker.io/ai/ministral3:latest",
+      "docker.io/ai/gemma3:latest",
+      "docker.io/ai/qwen3-coder:latest",
+      "docker.io/ai/devstral-small-2:latest",
+      "docker.io/ai/gemma4-safetensors:latest",
+      "docker.io/ai/gpt-oss:latest",
+      "docker.io/ai/deepcoder-preview:latest",
+      "docker.io/ai/smollm2:latest"
+    ]
+  },
+  "claudeCode": {
+    "anthropicBaseUrlEnv": "http://localhost:12434"
+  }
+}

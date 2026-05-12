@@ -1,0 +1,26 @@
+# ============================================================================
+# Kubernetes Integration (DISABLED)
+# ============================================================================
+#
+# WHY IS THIS FILE HERE?
+# Homepage supports Kubernetes monitoring for multi-node deployments
+# (e.g., K3s, K8s clusters). Your setup uses Synology DS723+ with
+# Docker Compose only, so Kubernetes integration is not needed.
+#
+# WHEN TO USE KUBERNETES
+# Uncomment and configure this file if you:
+# • Deploy services on a Kubernetes cluster
+# • Use K3s, K8s, or similar orchestration platform
+# • Need cross-host service discovery
+#
+# KUBERNETES CONFIGURATION
+# For Kubernetes setup examples, see:
+# https://gethomepage.dev/configs/services/#kubernetes
+#
+# Until then, this file can remain empty or commented out.
+#
+
+# kubernetes:
+#   mode: cluster  # or 'proxy' for external clusters
+#   namespace: default
+# ... additional config ...

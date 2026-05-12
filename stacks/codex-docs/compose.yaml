@@ -1,0 +1,64 @@
+services:
+  mongodb:
+    container_name: CodexDocs-MongoDB
+    image: mongo:7.0.21
+    mem_limit: 512m
+    cpu_shares: 512
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    volumes:
+      - ${STACK_ROOT}/codex-docs/db:/data/db:rw
+    environment:
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - MONGO_INITDB_DATABASE=codexdocs
+      - TZ=America/New_York
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    labels:
+      - com.centurylinklabs.watchtower.enable=false
+
+  codex-docs:
+    container_name: CodexDocs
+    # Upstream publishes rolling tags; pin when a semver tag is available.
+    image: ghcr.io/codex-team/codex.docs@sha256:c25f47c7f5af84206cef1fcedb2debcd25ba9ce1d4c6e5a33a0f273faff5a41f
+    mem_limit: 256m
+    cpu_shares: 256
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    ports:
+      - "10.0.1.15:8896:3000"
+    volumes:
+      - ${STACK_ROOT}/codex-docs/data:/usr/src/app/uploads:rw
+    env_file:
+      - .env
+    environment:
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - MONGODB_URI=mongodb://mongodb:27017/codexdocs
+      - APP_SECRET=${APP_SECRET}
+      - PORT=3000
+      - TZ=America/New_York
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    extra_hosts:
+      - "otsorundscore.olutechsys.com:10.0.1.15"
+    labels:
+      - com.centurylinklabs.watchtower.enable=true

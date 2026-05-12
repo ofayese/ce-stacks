@@ -1,0 +1,124 @@
+services:
+  mariadb:
+    container_name: MariaDB
+    image: mariadb:11.4.10
+    mem_limit: 2g
+    cpu_shares: 768
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    restart: unless-stopped
+    volumes:
+      - ${STACK_ROOT}/databases/db/mariadb:/var/lib/mysql:rw
+    environment:
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/mariadb_root_pw
+      - MYSQL_DATABASE=appdb
+      - MYSQL_USER=appuser
+      - MYSQL_PASSWORD_FILE=/run/secrets/mariadb_app_pw
+      - TZ=America/New_York
+    secrets:
+      - mariadb_root_pw
+      - mariadb_app_pw
+    healthcheck:
+      test:
+        - CMD
+        - healthcheck.sh
+        - --connect
+        - --innodb_initialized
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    labels:
+      - com.centurylinklabs.watchtower.enable=true
+  postgres:
+    container_name: PostgreSQL
+    image: postgres:16-alpine
+    mem_limit: 1g
+    cpu_shares: 768
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    restart: unless-stopped
+    volumes:
+      - ${STACK_ROOT}/databases/db/postgres:/var/lib/postgresql/data:rw
+    environment:
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - POSTGRES_DB=appdb
+      - POSTGRES_USER=appuser
+      - POSTGRES_PASSWORD_FILE=/run/secrets/postgres_pw
+      - TZ=America/New_York
+    secrets:
+      - postgres_pw
+    healthcheck:
+      test:
+        - CMD
+        - pg_isready
+        - -U
+        - appuser
+        - -d
+        - appdb
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    labels:
+      - com.centurylinklabs.watchtower.enable=true
+  adminer:
+    container_name: Adminer
+    image: adminer:5.4.2-standalone
+    mem_limit: 256m
+    cpu_shares: 256
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    restart: unless-stopped
+    ports:
+      - 10.0.1.15:8895:8080
+    environment:
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - ADMINER_DEFAULT_SERVER=mariadb
+      - ADMINER_DESIGN=hydra
+      - TZ=America/New_York
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    # Healthcheck type B: own binary probe (image ships CLI tool for this)
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -fs
+        - http://localhost:8080/
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    labels:
+      - com.centurylinklabs.watchtower.enable=true
+secrets:
+  mariadb_root_pw:
+    file: ${STACK_ROOT}/databases/secrets/mariadb_root_pw.txt
+  mariadb_app_pw:
+    file: ${STACK_ROOT}/databases/secrets/mariadb_app_pw.txt
+  postgres_pw:
+    file: ${STACK_ROOT}/databases/secrets/postgres_pw.txt
+networks: {}

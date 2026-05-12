@@ -1,0 +1,258 @@
+# ============================================================================
+# Homepage Services Configuration
+# ============================================================================
+#
+# OVERVIEW
+# Each service below uses:
+#   server: my-docker       → References the socket in docker.yaml
+#   container: ContainerName → Must match compose.yaml exactly (CASE-SENSITIVE)
+#
+# The 'container:' value is critical. If it doesn't match the actual
+# container_name: in the compose file, the status indicator (green/red dot)
+# won't appear.
+#
+# SEE ALSO
+# For the authoritative mapping of service → container → compose file,
+# refer to CONTAINER_MAPPING.md (in this directory).
+#
+# ORGANIZATION
+# Services are grouped by function:
+#   - Infrastructure:  Docker management (Portainer, Dockge, etc.)
+#   - Management:      Monitoring & admin (Dozzle, Adminer, phpMyAdmin)
+#   - Development:     Code editors, databases (Code-Server, MySQL, PostgreSQL)
+#   - Productivity:    Documentation & tools (Codex Docs, OpenResume)
+#   - AI:              Large language models (Ollama, Open WebUI)
+#   - Search & Tools:  Utilities (SearXNG, IT-Tools, acme.sh)
+#
+# ============================================================================
+
+- Infrastructure:
+    - Portainer:
+        # Container name from: portainer/compose.yaml (service: portainer)
+        icon: portainer.png
+        href: https://10.0.1.15:9443/
+        description: Docker management UI & remote agent orchestration
+        server: my-docker
+        container: portainer
+        siteMonitor: http://10.0.1.15:9000/
+        widget:
+          type: portainer
+          url: https://10.0.1.15:9443
+          env: 1 # Portainer environment ID (verify in Portainer → Endpoints)
+          # Set PORTAINER_API_KEY in stacks/homepage/.env (gitignored)
+          # Generate: Portainer → Account Settings → Access Tokens → Add
+          key: ${PORTAINER_API_KEY}
+
+    - Portainer Agent:
+        # Container name from: portainer/compose.yaml (service: portainer_agent)
+        icon: portainer.png
+        href: https://10.0.1.15:9001/
+        description: Edge agent for remote orchestration
+        server: my-docker
+        container: portainer_agent
+        # siteMonitor omitted: agent uses mTLS — HTTP probe returns
+        # HTTP/1.0 400 → HPE_CLOSED_CONNECTION in Homepage logs.
+
+    - Dockge:
+        # Container name: "Dockge" — set by Synology startup script (docker run --name="Dockge")
+        # Host port: 5571 → container port 5001. NOT the same as Synology DSM (port 5001).
+        icon: dockge.png
+        href: http://10.0.1.15:5571/
+        description: Lightweight Docker Compose stack manager UI
+        server: my-docker
+        container: Dockge
+        siteMonitor: http://10.0.1.15:5571/
+        widget:
+          type: dockge
+          url: http://10.0.1.15:5571
+          # Credentials required for widget API. Store in homepage/.env (gitignored):
+          #   DOCKGE_USERNAME=<your-dockge-login>
+          #   DOCKGE_PASSWORD=<your-dockge-password>
+          username: ${DOCKGE_USERNAME}
+          password: ${DOCKGE_PASSWORD}
+
+    - Watchtower:
+        # Container name from: watchtower/compose.yaml (service: watchtower)
+        icon: watchtower.png
+        description: Automatic container updates (daily 4 AM EST)
+        server: my-docker
+        container: Watchtower
+
+- Management:
+    - Dozzle:
+        # Container name from: dozzle/compose.yaml (service: dozzle)
+        icon: dozzle.png
+        href: http://10.0.1.15:8892/
+        description: Real-time Docker logs aggregator
+        server: my-docker
+        container: Dozzle
+        siteMonitor: http://10.0.1.15:8892/
+
+    - Adminer:
+        # Container name from: databases/compose.yaml (service: adminer)
+        icon: adminer.png
+        href: http://10.0.1.15:8895/
+        description: MariaDB + PostgreSQL admin UI
+        server: my-docker
+        container: Adminer
+        siteMonitor: http://10.0.1.15:8895/
+
+    - phpMyAdmin (Code-Server):
+        # Container name from: code-server/compose.yaml (service: phpmyadmin)
+        icon: phpmyadmin.png
+        href: http://10.0.1.15:8378/
+        description: MySQL admin for Code-Server dev database (port 3307)
+        server: my-docker
+        container: CodeServerPMA
+        siteMonitor: http://10.0.1.15:8378/
+
+    - Synology DSM:
+        icon: synology.png
+        href: https://10.0.1.15:5001/
+        description: DS723+ control panel
+        siteMonitor: https://10.0.1.15:5001/
+
+- Development:
+    - Code-Server:
+        # Container name from: code-server/compose.yaml (service: code-server)
+        icon: vscode.png
+        href: http://10.0.1.15:8377/
+        description: VS Code in the browser (full IDE)
+        server: my-docker
+        container: CodeServer
+        siteMonitor: http://10.0.1.15:8377/
+
+    - MySQL (Code-Server):
+        # Container name from: code-server/compose.yaml (service: db)
+        icon: mysql.png
+        description: Dev database (MySQL 8.3, port 3307 external)
+        server: my-docker
+        container: CodeServerDB
+
+    - MariaDB:
+        # Container name from: databases/compose.yaml (service: mariadb)
+        icon: mariadb.png
+        description: Shared application database (MariaDB LTS)
+        server: my-docker
+        container: MariaDB
+
+    - PostgreSQL:
+        # Container name from: databases/compose.yaml (service: postgres)
+        icon: postgres.png
+        description: Shared application database (PostgreSQL 16)
+        server: my-docker
+        container: PostgreSQL
+
+- Productivity:
+    - Codex Docs:
+        # Container name from: codex-docs/compose.yaml (service: codex-docs)
+        icon: bookstack.png
+        href: http://10.0.1.15:8896/
+        description: Internal documentation wiki & knowledge base
+        server: my-docker
+        container: CodexDocs
+        siteMonitor: http://10.0.1.15:8896/
+
+    - Codex MongoDB:
+        # Container name from: codex-docs/compose.yaml (service: mongodb)
+        icon: mongodb.png
+        description: Backing database for Codex Docs
+        server: my-docker
+        container: CodexDocs-MongoDB
+
+    - OpenResume:
+        icon: mdi-file-document-edit
+        href: http://10.0.1.15:8889/
+        description: Resume builder (Next.js)
+        server: my-docker
+        container: OpenResume
+        siteMonitor: http://10.0.1.15:8889/
+
+- AI:
+    - Open WebUI:
+        # Container name from: ollama/compose.yaml (service: open-webui)
+        icon: open-webui.png
+        href: http://10.0.1.15:8893/
+        description: olutechsys AI — Chat interface to local LLMs
+        server: my-docker
+        container: otsai-webui
+        siteMonitor: http://10.0.1.15:8893/
+
+    - Ollama:
+        # Container name from: ollama/compose.yaml (service: ollama)
+        # Homepage v1.12 does not support an Ollama widget type.
+        # Keep this as a plain service card (status + link + site monitor).
+        icon: ollama.png
+        href: http://10.0.1.15:11434/
+        description: Local LLM API server (inference engine)
+        server: my-docker
+        container: otsai-server
+        siteMonitor: http://10.0.1.15:11434/
+
+- Search & Tools:
+    - SearXNG:
+        # Container name from: searxng/compose.yaml (service: searxng)
+        # Widget type: searxng (Homepage must support this plugin)
+        icon: searxng.png
+        href: http://10.0.1.15:8888/
+        description: Private metasearch engine (no tracking)
+        server: my-docker
+        container: SearXNG
+        siteMonitor: http://10.0.1.15:8888/
+        widget:
+          type: searxng
+          url: http://10.0.1.15:8888
+
+    - IT-Tools:
+        # Container name from: it-tools/compose.yaml (service: it-tools)
+        icon: it-tools.png
+        href: http://10.0.1.15:8894/
+        description: Developer & administrator utility belt
+        server: my-docker
+        container: IT-Tools
+        siteMonitor: http://10.0.1.15:8894/
+
+    - acme.sh:
+        # Container name from: acme-sh/compose.yaml (service: acme-sh)
+        icon: lets-encrypt.png
+        description: Let's Encrypt certificate renewal (Cloudflare DNS)
+        server: my-docker
+        container: AcmeSh
+# ============================================================================
+# HOW TO ADD A NEW SERVICE
+# ============================================================================
+#
+# 1. Deploy the new service via its compose.yaml
+#    Example:
+#      docker compose -f /path/to/compose.yaml up -d
+#
+# 2. Get the exact container name (case-sensitive):
+#      docker ps --filter "name=MyService" --format "{{.Names}}"
+#    OR look in its compose.yaml for the line: container_name: MyService
+#
+# 3. Add to services.yaml with this format:
+#
+#    - My Service:
+#        icon: my-service.png              # icon name from Homepage icon pack
+#        href: http://10.0.1.15:PORT/      # external link (optional)
+#        description: Brief description    # shows under service name
+#        server: my-docker                 # always use the socket
+#        container: MyService              # MUST match compose.yaml exactly (CASE-SENSITIVE)
+#        siteMonitor: http://10.0.1.15:PORT/  # health endpoint (optional)
+#
+# 4. Optionally add a widget (if Homepage has support for this service):
+#    widget:
+#      type: plugin-name                   # e.g., ollama, searxng, portainer
+#      url: http://10.0.1.15:PORT          # internal container address
+#      # ... additional widget config per Homepage docs
+#
+# 5. Update CONTAINER_MAPPING.md with the new service for future reference
+#
+# 6. Restart Homepage:
+#      docker compose -f compose.yaml restart
+#
+# 7. Verify the new service appears:
+#      cd /volume2/docker/ce-stacks/stacks/homepage
+#      bash verify-integration.sh
+#
+# ============================================================================

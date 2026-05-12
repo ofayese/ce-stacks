@@ -1,0 +1,152 @@
+services:
+  code-server:
+    image: codercom/code-server:4.117.0-39
+    container_name: CodeServer
+    user: ${PUID:-0}:${PGID:-0}
+    mem_limit: 4g
+    cpu_shares: 1024
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    restart: unless-stopped
+    ports:
+      - 10.0.1.15:8377:8080
+    volumes:
+      - ${STACK_ROOT}/code-server/config:/home/coder/.config/code-server:rw
+      - ${STACK_ROOT}/code-server/data:/home/coder/.local/share/code-server:rw
+      - ${CODE_SERVER_HOST_DOCKER_BIND:?set CODE_SERVER_HOST_DOCKER_BIND in
+        .env}:/home/coder/project/docker:rw # EXEMPT operator wide bind (see stack README)
+      - ${CODE_SERVER_HOST_HOME_BIND:?set CODE_SERVER_HOST_HOME_BIND in
+        .env}:/home/coder/project/home:rw # EXEMPT operator home bind
+
+      # /var/run socket context
+      # SECURITY: docker.sock :rw — In-IDE Docker needs full API access for build, run, and compose operations.
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+    environment:
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - TZ=${TZ:-America/New_York}
+      - DOCKER_USER=${DOCKER_USER:-ofayese}
+      - HOME=/home/coder
+      - PASSWORD=${CODE_SERVER_PASSWORD}
+      - PROXY_DOMAIN=${PROXY_DOMAIN:-}
+    group_add:
+      - "0"
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -fs
+        - http://localhost:8080/
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    labels:
+      - com.centurylinklabs.watchtower.enable=true
+    networks:
+      - code-server-net
+  db:
+    image: mysql:8.3.0
+    container_name: CodeServerDB
+    mem_limit: 2g
+    cpu_shares: 512
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    restart: unless-stopped
+    ports:
+      - 10.0.1.15:3307:3306
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ${STACK_ROOT}/code-server/config/mysql-init:/docker-entrypoint-initdb.d:ro
+    environment:
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-development}
+      - MYSQL_USER=${MYSQL_USER:-developer}
+      - MYSQL_PASSWORD=${PMA_CONTROLPASS}
+      - TZ=${TZ:-America/New_York}
+    healthcheck:
+      test:
+        - CMD
+        - mysqladmin
+        - ping
+        - -h
+        - localhost
+        - -uroot
+        - --silent
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    labels:
+      - com.centurylinklabs.watchtower.enable=false
+    networks:
+      - code-server-net
+  phpmyadmin:
+    image: phpmyadmin:5.2.2-apache
+    container_name: CodeServerPMA
+    mem_limit: 512m
+    cpu_shares: 256
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    restart: unless-stopped
+    ports:
+      - 10.0.1.15:8378:80
+    volumes:
+      - ${STACK_ROOT}/code-server/config/phpmyadmin:/etc/phpmyadmin:rw
+      - ${STACK_ROOT}/code-server/data/phpmyadmin_sessions:/sessions:rw
+    environment:
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - PMA_HOST=db
+      - PMA_PORT=3306
+      - PMA_CONTROLUSER=${PMA_CONTROLUSER:-pma}
+      - PMA_CONTROLPASS=${PMA_CONTROLPASS}
+      - PMA_BLOWFISH_SECRET=${PMA_BLOWFISH_SECRET}
+      - PMA_ABSOLUTE_URI=${PMA_ABSOLUTE_URI:-}
+      - HIDE_PHP_VERSION=1
+      - TZ=${TZ:-America/New_York}
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -fs
+        - http://localhost/
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    depends_on:
+      db:
+        condition: service_healthy
+    labels:
+      - com.centurylinklabs.watchtower.enable=true
+    networks:
+      - code-server-net
+volumes:
+  mysql_data:
+    driver: local
+networks:
+  code-server-net:
+    name: code-server-net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.2.0/24
+          gateway: 172.28.2.1

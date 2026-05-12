@@ -1,0 +1,28 @@
+- resources:
+    label: DS723+
+    cpu: true
+    memory: true
+    disk: /
+    uptime: true
+    units: imperial
+
+- search:
+    provider: custom
+    url: http://10.0.1.15:8888/search?q=
+    target: _blank
+
+- datetime:
+    text_size: xl
+    format:
+      timeStyle: short
+      dateStyle: long
+
+- greeting:
+    text_size: 3xl
+    text: "Welcome back, Laolu"
+
+- openmeteo:
+    label: Home
+    timezone: America/New_York
+    units: imperial
+    cache: 5

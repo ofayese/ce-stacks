@@ -1,0 +1,3 @@
+# stacks/grafana-prom/.gitignore — operator secrets and generated tokens (never commit)
+secrets/*.txt
+secrets/**/*.txt
