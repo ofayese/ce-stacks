@@ -1,187 +1,267 @@
+# snmp.yml — prom/snmp-exporter v0.30.x compatible
+# Generated format: each metric requires oid + type.
+# Auth: SNMPv3 credentials must be set to match your NAS DSM SNMPv3 config.
+# DSM → Control Panel → Terminal & SNMP → SNMP → SNMPv3 tab.
+#
+# To update credentials, edit the public_v3 auth block below.
+# auth_protocol: MD5 | SHA | SHA224 | SHA256 | SHA384 | SHA512
+# priv_protocol: DES | AES | AES192 | AES256
+
 auths:
   public_v3:
-    version: 3
-    user_engine_id: 800007E5f95e4f4f5f95e4f4f5f95e4f4f
-    username: demoadmin
+    community: public
     security_level: authPriv
+    username: ${SNMP_USERNAME:-snmpadmin}
+    password: ${SNMP_AUTH_PASSWORD:-changeme}
     auth_protocol: SHA
-    auth_password: foobardemo123
     priv_protocol: AES
-    priv_password: foobardemo123
-    engine_boots: 0
-    engine_time: 0
-    max_repetitions: 25
+    priv_password: ${SNMP_PRIV_PASSWORD:-changeme}
+    version: 3
 
 modules:
   synology:
     walk:
-      - interfaces
-      - ifXTable
-      - sysUpTime
-      - sysDescr
-      - sysName
-      - sysObjectID
-      - laIndex
-      - laNames
-      - laLoad
-      - laPerfLoad
-      - laPerfCPU
-      - laPerfIO
-      - memTotalSwap
-      - memAvailSwap
-      - memTotalReal
-      - memAvailReal
-      - memTotalFree
-      - memMinimumSwap
-      - memShared
-      - memBuffer
-      - memCached
-      - diskIndex
-      - diskPath
-      - diskDevice
-      - diskMinimum
-      - diskMinPercent
-      - diskTotal
-      - diskAvail
-      - diskUsed
-      - diskPercent
-      - diskPercentNode
-      - diskErrorFlag
-      - diskErrorMsg
-      - filesize
-      - processes
-      - processorFrw
-      - driveID
-      - diskType
-      - driveModel
-      - driveStatus
-      - diskSMARTStatus
-      - diskTemperature
-    get:
-      - sysName
-      - sysDescr
+      - 1.3.6.1.2.1.1          # system
+      - 1.3.6.1.2.1.2          # interfaces
+      - 1.3.6.1.2.1.31.1.1     # ifXTable
+      - 1.3.6.1.4.1.2021.4     # memTable (UCD-SNMP-MIB)
+      - 1.3.6.1.4.1.2021.10    # laTable (load average)
+      - 1.3.6.1.4.1.2021.11    # systemStats (CPU)
+      - 1.3.6.1.4.1.2021.13.15 # diskIOTable
+      - 1.3.6.1.4.1.6574.1     # synoSystem
+      - 1.3.6.1.4.1.6574.2     # synoDisk
+      - 1.3.6.1.4.1.6574.3     # synoRaid
+      - 1.3.6.1.4.1.6574.5     # synoUPS
+      - 1.3.6.1.4.1.6574.6     # synologyStorageIO
     metrics:
+      # ── System ──────────────────────────────────────────────────────────
       - name: sysUpTime
-        help: The time (in hundredths of a second)
+        oid: 1.3.6.1.2.1.1.3.0
+        type: gauge
+        help: The time (in hundredths of a second) since the network management portion of the system was last re-initialized
       - name: sysDescr
+        oid: 1.3.6.1.2.1.1.1.0
+        type: DisplayString
         help: A textual description of the entity
       - name: sysName
-        help: An administratively assigned name
-      - name: sysObjectID
-        help: The vendor's authoritative identification
-      - name: interfaces
-        help: The number of network interfaces
-      - name: ifIndex
-        help: A unique value for each interface
-      - name: ifDescr
-        help: A textual string containing information
-      - name: ifType
-        help: The type of interface
-      - name: ifMtu
-        help: The size of the largest datagram
-      - name: ifSpeed
-        help: An estimate of the interface's current bandwidth
-      - name: ifPhysAddress
-        help: The interface's address at its protocol sublayer
+        oid: 1.3.6.1.2.1.1.5.0
+        type: DisplayString
+        help: An administratively assigned name for this managed node
+
+      # ── Interfaces ──────────────────────────────────────────────────────
       - name: ifAdminStatus
+        oid: 1.3.6.1.2.1.2.2.1.7
+        type: gauge
         help: The desired state of the interface
+        indexes:
+          - labelname: ifIndex
+            type: gauge
+        lookups:
+          - labels: [ifIndex]
+            labelname: ifDescr
+            oid: 1.3.6.1.2.1.2.2.1.2
+            type: DisplayString
       - name: ifOperStatus
+        oid: 1.3.6.1.2.1.2.2.1.8
+        type: gauge
         help: The current operational state of the interface
-      - name: ifLastChange
-        help: The value of sysUpTime at the time the interface
+        indexes:
+          - labelname: ifIndex
+            type: gauge
+        lookups:
+          - labels: [ifIndex]
+            labelname: ifDescr
+            oid: 1.3.6.1.2.1.2.2.1.2
+            type: DisplayString
       - name: ifInOctets
+        oid: 1.3.6.1.2.1.2.2.1.10
+        type: counter
         help: The total number of octets received on the interface
-      - name: ifInUcastPkts
-        help: The number of packets delivered
-      - name: ifInNUcastPkts
-        help: The number of non-unicast packets delivered
-      - name: ifInDiscards
-        help: The number of inbound packets discarded
-      - name: ifInErrors
-        help: For packet-oriented interfaces
-      - name: ifInUnknownProtos
-        help: The number of packets received via the interface
+        indexes:
+          - labelname: ifIndex
+            type: gauge
+        lookups:
+          - labels: [ifIndex]
+            labelname: ifDescr
+            oid: 1.3.6.1.2.1.2.2.1.2
+            type: DisplayString
       - name: ifOutOctets
+        oid: 1.3.6.1.2.1.2.2.1.16
+        type: counter
         help: The total number of octets transmitted out of the interface
-      - name: ifOutUcastPkts
-        help: The total number of unicast packets that higher-level
-      - name: ifOutNUcastPkts
-        help: The total number of non-unicast packets that higher-level
-      - name: ifOutDiscards
-        help: The number of outbound packets discarded
+        indexes:
+          - labelname: ifIndex
+            type: gauge
+        lookups:
+          - labels: [ifIndex]
+            labelname: ifDescr
+            oid: 1.3.6.1.2.1.2.2.1.2
+            type: DisplayString
+      - name: ifInErrors
+        oid: 1.3.6.1.2.1.2.2.1.14
+        type: counter
+        help: The number of inbound packets that contained errors
+        indexes:
+          - labelname: ifIndex
+            type: gauge
+        lookups:
+          - labels: [ifIndex]
+            labelname: ifDescr
+            oid: 1.3.6.1.2.1.2.2.1.2
+            type: DisplayString
       - name: ifOutErrors
-        help: For packet-oriented interfaces, the number of outbound
-      - name: ifOutQLen
-        help: The length of the output packet queue
-      - name: laIndex
-        help: The index of the laEntry as a value
-      - name: laNames
-        help: The name of the load average
-      - name: laLoad
-        help: The load average as an integer
-      - name: laPerfLoad
-        help: The load average as an integer
-      - name: laPerfCPU
-        help: The average amount of CPU time
-      - name: laPerfIO
-        help: The average amount of IO time
-      - name: memTotalSwap
-        help: The total amount of swap space configured for this host
-      - name: memAvailSwap
-        help: The amount of swap space currently available
+        oid: 1.3.6.1.2.1.2.2.1.20
+        type: counter
+        help: The number of outbound packets that could not be transmitted because of errors
+        indexes:
+          - labelname: ifIndex
+            type: gauge
+        lookups:
+          - labels: [ifIndex]
+            labelname: ifDescr
+            oid: 1.3.6.1.2.1.2.2.1.2
+            type: DisplayString
+
+      # ── Memory (UCD-SNMP-MIB) ────────────────────────────────────────────
       - name: memTotalReal
-        help: The total amount of real system memory
+        oid: 1.3.6.1.4.1.2021.4.5.0
+        type: gauge
+        help: Total RAM in machine
       - name: memAvailReal
-        help: The amount of real system memory currently available
-      - name: memTotalFree
-        help: The total amount of memory available for use
-      - name: memMinimumSwap
-        help: The minimum amount of swap space reserved
-      - name: memShared
-        help: The amount of memory being used for shared purposes
+        oid: 1.3.6.1.4.1.2021.4.6.0
+        type: gauge
+        help: Available RAM
+      - name: memTotalSwap
+        oid: 1.3.6.1.4.1.2021.4.3.0
+        type: gauge
+        help: Total swap space configured
+      - name: memAvailSwap
+        oid: 1.3.6.1.4.1.2021.4.4.0
+        type: gauge
+        help: Available swap space
       - name: memBuffer
-        help: The amount of memory used for buffer purposes
+        oid: 1.3.6.1.4.1.2021.4.14.0
+        type: gauge
+        help: Memory used for buffer purposes
       - name: memCached
-        help: The amount of memory used for caching purposes
-      - name: diskIndex
-        help: Reference index of disk entry
-      - name: diskPath
-        help: Path where the disk is mounted
-      - name: diskDevice
-        help: The device name of the disk
-      - name: diskMinimum
-        help: The minimum space required to be free on the disk
-      - name: diskMinPercent
-        help: The minimum percentage of space required to be free
-      - name: diskTotal
-        help: The total disk space in KB
-      - name: diskAvail
-        help: The available disk space in KB
-      - name: diskUsed
-        help: The used disk space in KB
-      - name: diskPercent
-        help: The percentage of disk space used
-      - name: diskPercentNode
-        help: The percentage of disk nodes used
-      - name: diskErrorFlag
-        help: Flag indicating disk error status
-      - name: diskErrorMsg
-        help: Error message for the disk
-      - name: filesize
-        help: The file size in bytes
-      - name: processes
-        help: The number of processes
-      - name: processorFrw
-        help: Processor firmware version
-      - name: driveID
-        help: Drive identification
-      - name: diskType
-        help: Type of disk
-      - name: driveModel
-        help: Drive model name
-      - name: driveStatus
-        help: Drive operational status
-      - name: diskSMARTStatus
-        help: SMART status of the disk
-      - name: diskTemperature
+        oid: 1.3.6.1.4.1.2021.4.15.0
+        type: gauge
+        help: Memory used for caching purposes
+
+      # ── CPU (UCD-SNMP-MIB) ──────────────────────────────────────────────
+      - name: ssCpuUser
+        oid: 1.3.6.1.4.1.2021.11.9.0
+        type: gauge
+        help: Percentage of CPU time spent processing user-level code
+      - name: ssCpuSystem
+        oid: 1.3.6.1.4.1.2021.11.10.0
+        type: gauge
+        help: Percentage of CPU time spent processing system-level code
+      - name: ssCpuIdle
+        oid: 1.3.6.1.4.1.2021.11.11.0
+        type: gauge
+        help: Percentage of CPU time spent idle
+
+      # ── Load average (UCD-SNMP-MIB) ─────────────────────────────────────
+      - name: laLoad
+        oid: 1.3.6.1.4.1.2021.10.1.3
+        type: DisplayString
+        help: The load average as a string
+        indexes:
+          - labelname: laIndex
+            type: gauge
+        lookups:
+          - labels: [laIndex]
+            labelname: laNames
+            oid: 1.3.6.1.4.1.2021.10.1.2
+            type: DisplayString
+
+      # ── Synology system (SYNOLOGY-SYSTEM-MIB) ───────────────────────────
+      - name: synoSystemCpuFanStatus
+        oid: 1.3.6.1.4.1.6574.1.4.1.0
+        type: gauge
+        help: CPU fan status (1=Normal, 2=Failed)
+      - name: synoSystemSystemFanStatus
+        oid: 1.3.6.1.4.1.6574.1.4.2.0
+        type: gauge
+        help: System fan status (1=Normal, 2=Failed)
+      - name: synoSystemPowerStatus
+        oid: 1.3.6.1.4.1.6574.1.3.0
+        type: gauge
+        help: Power status (1=Normal, 2=Failed)
+      - name: synoSystemTemperature
+        oid: 1.3.6.1.4.1.6574.1.2.0
+        type: gauge
+        help: System temperature in Celsius
+      - name: synoSystemUpgradeAvailable
+        oid: 1.3.6.1.4.1.6574.1.5.4.0
+        type: gauge
+        help: DSM upgrade available (1=Available, 2=Unavailable, 3=Connecting, 4=Disconnected, 5=Others)
+
+      # ── Synology disk (SYNOLOGY-DISK-MIB) ───────────────────────────────
+      - name: synoDiskName
+        oid: 1.3.6.1.4.1.6574.2.1.1.2
+        type: DisplayString
+        help: Disk name
+        indexes:
+          - labelname: diskIndex
+            type: gauge
+      - name: synoDiskStatus
+        oid: 1.3.6.1.4.1.6574.2.1.1.5
+        type: gauge
+        help: Disk status (1=Normal, 2=Initialized, 3=NotInitialized, 4=SystemPartitionFailed, 5=Crashed)
+        indexes:
+          - labelname: diskIndex
+            type: gauge
+        lookups:
+          - labels: [diskIndex]
+            labelname: synoDiskName
+            oid: 1.3.6.1.4.1.6574.2.1.1.2
+            type: DisplayString
+      - name: synoDiskTemperature
+        oid: 1.3.6.1.4.1.6574.2.1.1.6
+        type: gauge
         help: Disk temperature in Celsius
+        indexes:
+          - labelname: diskIndex
+            type: gauge
+        lookups:
+          - labels: [diskIndex]
+            labelname: synoDiskName
+            oid: 1.3.6.1.4.1.6574.2.1.1.2
+            type: DisplayString
+
+      # ── Synology RAID (SYNOLOGY-RAID-MIB) ───────────────────────────────
+      - name: synoRaidName
+        oid: 1.3.6.1.4.1.6574.3.1.1.2
+        type: DisplayString
+        help: RAID volume name
+        indexes:
+          - labelname: raidIndex
+            type: gauge
+      - name: synoRaidStatus
+        oid: 1.3.6.1.4.1.6574.3.1.1.3
+        type: gauge
+        help: RAID status (1=Normal, 2=Repairing, 3=Migrating, 4=Expanding, 5=Deleting, 6=Creating, 7=RaidSyncing, 8=RaidParityChecking, 9=RaidAssembling, 10=Canceling, 11=Degrade, 12=Crashed)
+        indexes:
+          - labelname: raidIndex
+            type: gauge
+        lookups:
+          - labels: [raidIndex]
+            labelname: synoRaidName
+            oid: 1.3.6.1.4.1.6574.3.1.1.2
+            type: DisplayString
+
+      # ── Synology UPS (SYNOLOGY-UPS-MIB) ─────────────────────────────────
+      - name: synoUPSDeviceModel
+        oid: 1.3.6.1.4.1.6574.5.1.1.1.0
+        type: DisplayString
+        help: UPS device model
+      - name: synoUPSBatteryChargeValue
+        oid: 1.3.6.1.4.1.6574.5.1.1.13.0
+        type: gauge
+        help: UPS battery charge percentage
+      - name: synoUPSBatteryRuntimeValue
+        oid: 1.3.6.1.4.1.6574.5.1.1.15.0
+        type: gauge
+        help: UPS battery runtime remaining in seconds

@@ -172,5 +172,6 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.24.0.0/24
-          gateway: 172.24.0.1
+        # Moved from 172.24.0.0/24 — blocked by openresume_default /16 auto-network.
+        - subnet: 172.30.0.0/24
+          gateway: 172.30.0.1
