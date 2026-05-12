@@ -25,7 +25,9 @@ REPO_ENV="${REPO_ROOT}/.env"
 STACKS_IN_REPO="${REPO_ROOT}/stacks"
 
 # Prefer stacks inside this repo (this layout). Else sibling ../stacks next to the
-# clone parent. Else STACK_ROOT_OVERRIDE or /volume2/docker/ce-stacks.
+# clone parent. Else STACK_ROOT_OVERRIDE or /volume2/docker/ce-stacks/stacks.
+# IMPORTANT: STACK_ROOT points to the stacks/ subdirectory, NOT the repo root.
+# All compose volume paths use ${STACK_ROOT}/<stack-name>/... notation.
 if [[ -d "${STACKS_IN_REPO}" ]]; then
 	STACK_ROOT="${STACKS_IN_REPO}"
 	[[ "${LIST_ONLY}" -eq 0 ]] && echo "Auto-detected STACK_ROOT (repo stacks/): ${STACK_ROOT}"
@@ -35,7 +37,8 @@ else
 		STACK_ROOT="${CANDIDATE_STACKS}"
 		[[ "${LIST_ONLY}" -eq 0 ]] && echo "Auto-detected STACK_ROOT (sibling stacks/): ${STACK_ROOT}"
 	else
-		STACK_ROOT="${STACK_ROOT_OVERRIDE:-/volume2/docker/ce-stacks}"
+		# Default includes /stacks suffix — STACK_ROOT is the stacks/ dir, not repo root.
+		STACK_ROOT="${STACK_ROOT_OVERRIDE:-/volume2/docker/ce-stacks/stacks}"
 		if [[ "${LIST_ONLY}" -eq 0 ]]; then
 			echo "Using default STACK_ROOT: ${STACK_ROOT}"
 			echo "(Override with: STACK_ROOT_OVERRIDE=/your/path sudo bash scripts/init-nas.sh)"
@@ -56,7 +59,8 @@ STACK_MANIFEST=(
 	# ── data only ─────────────────────────────────────────────────────
 	"acme-sh:data"
 	"dozzle:data"
-	"ollama:data"
+	# ollama: data/ollama (model storage) and data/open-webui must exist as subdirs.
+	"ollama:data/ollama,data/open-webui"
 	# rag-stack: qdrant vector storage + anythingllm workspaces + pipelines pipeline definitions
 	"rag-stack:data,config"
 	# remotely: SQLite DB + generated agent installers/download payloads
@@ -68,7 +72,9 @@ STACK_MANIFEST=(
 	"homepage:data,config"
 	"searxng:data,config"
 	"synology-api-bridge:data"
-	"grafana-prom:data,config"
+	# grafana-prom: data/grafana and data/prometheus must exist as subdirs before deploy.
+	# Synology does not auto-create leaf bind-mount paths.
+	"grafana-prom:data/grafana,data/prometheus,config"
 
 	# ── data,db ───────────────────────────────────────────────────────
 	"codex-docs:data,db"
