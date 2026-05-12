@@ -112,6 +112,7 @@ create_container() {
     mkdir -p "${PORTAINER_DATA}"
     $DOCKER run -d \
         --name="$NAME" \
+        --network=ce-internal \
         -p 10.0.1.15:9000:9000 \
         -p 10.0.1.15:9443:9443 \
         --restart=unless-stopped \
@@ -139,6 +140,7 @@ create_agent_container() {
     # Build the docker run command; conditionally add TLS mounts/env.
     set -- \
         --name="$AGENT_NAME" \
+        --network=ce-internal \
         -p 10.0.1.15:9001:9001 \
         --restart=unless-stopped \
         --security-opt no-new-privileges:true \
