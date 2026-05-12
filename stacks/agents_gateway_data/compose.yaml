@@ -35,3 +35,13 @@ services:
       - TZ=America/New_York
     labels:
       - com.centurylinklabs.watchtower.enable=true
+    networks:
+      - agents-gateway-net
+networks:
+  agents-gateway-net:
+    name: agents-gateway-net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.31.7.0/24
+          gateway: 172.31.7.1

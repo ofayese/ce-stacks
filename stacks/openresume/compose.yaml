@@ -32,8 +32,18 @@ services:
       start_period: 20s
     labels:
       - com.centurylinklabs.watchtower.enable=true
+    networks:
+      - openresume-net
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
+networks:
+  openresume-net:
+    name: openresume-net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.31.3.0/24
+          gateway: 172.31.3.1

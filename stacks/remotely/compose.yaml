@@ -64,3 +64,13 @@ services:
         max-file: "3"
     labels:
       - com.centurylinklabs.watchtower.enable=true
+    networks:
+      - remotely-net
+networks:
+  remotely-net:
+    name: remotely-net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.31.5.0/24
+          gateway: 172.31.5.1

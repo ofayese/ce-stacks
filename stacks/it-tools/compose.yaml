@@ -15,6 +15,8 @@ services:
       - TZ=${TZ:-America/New_York}
     labels:
       - com.centurylinklabs.watchtower.enable=true
+    networks:
+      - it-tools-net
     healthcheck:
       test:
         - CMD
@@ -30,3 +32,11 @@ services:
       options:
         max-size: 10m
         max-file: "3"
+networks:
+  it-tools-net:
+    name: it-tools-net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.31.2.0/24
+          gateway: 172.31.2.1

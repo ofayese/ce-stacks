@@ -34,6 +34,8 @@ services:
         max-file: "3"
     labels:
       - com.centurylinklabs.watchtower.enable=false
+    networks:
+      - searxng-net
   searxng:
     container_name: SearXNG
     image: searxng/searxng:2026.4.29-cba0cffa8
@@ -73,3 +75,13 @@ services:
         max-file: "3"
     labels:
       - com.centurylinklabs.watchtower.enable=true
+    networks:
+      - searxng-net
+networks:
+  searxng-net:
+    name: searxng-net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.31.4.0/24
+          gateway: 172.31.4.1

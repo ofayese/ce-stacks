@@ -26,6 +26,8 @@ services:
         max-file: "3"
     labels:
       - com.centurylinklabs.watchtower.enable=true
+    networks:
+      - dozzle-net
     healthcheck:
       test:
         - CMD
@@ -35,3 +37,11 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+networks:
+  dozzle-net:
+    name: dozzle-net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.31.0.0/24
+          gateway: 172.31.0.1

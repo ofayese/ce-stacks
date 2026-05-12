@@ -15,8 +15,18 @@ services:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
     restart: "no" # intentional: one-shot placeholder service
+    networks:
+      - mcp-tools-net
     logging:
       driver: json-file
       options:
         max-size: "1m"
         max-file: "1"
+networks:
+  mcp-tools-net:
+    name: mcp-tools-net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.31.8.0/24
+          gateway: 172.31.8.1

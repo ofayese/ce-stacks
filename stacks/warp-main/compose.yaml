@@ -96,5 +96,6 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.23.0.0/24
-          gateway: 172.23.0.1
+        # Moved from 172.23.0.0/24 — blocked by it-tools_default /16 auto-network.
+        - subnet: 172.25.0.0/24
+          gateway: 172.25.0.1
