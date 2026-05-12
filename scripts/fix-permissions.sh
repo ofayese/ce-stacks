@@ -10,11 +10,11 @@ set -euo pipefail
 
 _script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="${_script_dir}"
-while [[ ! -f "${ROOT}/HIVE_OBJECTIVE.md" && "${ROOT}" != "/" ]]; do
+while [[ ! -d "${ROOT}/.git" && "${ROOT}" != "/" ]]; do
 	ROOT="$(dirname "${ROOT}")"
 done
-[[ -f "${ROOT}/HIVE_OBJECTIVE.md" ]] || {
-	echo "ERROR: could not find repo root (HIVE_OBJECTIVE.md) above ${_script_dir}" >&2
+[[ -d "${ROOT}/.git" ]] || {
+	echo "ERROR: could not find repo root (.git) above ${_script_dir}" >&2
 	exit 1
 }
 
@@ -25,7 +25,7 @@ else
 	if [[ -f "${REPO_ENV}" ]] && grep -q '^STACK_ROOT=' "${REPO_ENV}" 2>/dev/null; then
 		STACKS_ROOT="$(grep '^STACK_ROOT=' "${REPO_ENV}" | tail -n1 | cut -d= -f2-)"
 	else
-		STACKS_ROOT="/volume2/docker/ce-stacks"
+		STACKS_ROOT="/volume2/docker/ce-stacks/stacks"
 	fi
 fi
 
