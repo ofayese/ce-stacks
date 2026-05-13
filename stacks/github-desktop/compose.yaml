@@ -21,7 +21,7 @@ services:
       timeout: 10s
       retries: 3
       start_period: 90s
-     ports:
+    ports:
       - mode: ingress
         host_ip: 10.0.1.15
         target: 3001
