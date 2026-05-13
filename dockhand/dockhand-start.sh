@@ -134,11 +134,11 @@ create_container() {
         --log-opt max-size=10m \
         --log-opt max-file=3 \
         --label com.centurylinklabs.watchtower.enable=true \
-        --health-cmd='curl -fs http://127.0.0.1:3000/health >/dev/null || exit 1' \
+        --health-cmd='wget --quiet --tries=1 --spider http://127.0.0.1:3000/health || exit 1' \
         --health-interval=30s \
-        --health-timeout=10s \
-        --health-retries=3 \
-        --health-start-period=60s \
+        --health-timeout=20s \
+        --health-retries=5 \
+        --health-start-period=120s \
         -v /var/run/docker.sock:/var/run/docker.sock \
         -v "${DOCKHAND_DATA}:/app/data" \
         -e PUID="$PUID" \
