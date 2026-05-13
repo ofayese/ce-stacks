@@ -3,8 +3,8 @@
 # Dockhand startup script - Synology DSM rc.d replacement
 # =============================================================================
 # Drop this file at /usr/local/etc/rc.d/dockhand.sh on the NAS and chmod +x it.
-# Source of truth: /volume2/docker/dockhand/dockhand-start.sh
-# (Original: ce-stacks repo at stacks/dockhand/dockhand-start.sh)
+# Source of truth: /volume2/docker/dockhand/scripts/dockhand-start.sh
+# (Original: ce-stacks repo at dockhand/scripts/dockhand-start.sh)
 #
 # Manages the Dockhand container lifecycle with validation, health checks,
 # and permission verification. Designed for single-host Docker management

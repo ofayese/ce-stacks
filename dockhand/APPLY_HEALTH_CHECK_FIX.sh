@@ -47,7 +47,7 @@ docker stop dockhand || true
 docker rm dockhand || true
 
 echo "Updating RC script with fixed health check..."
-sudo cp /volume2/docker/ce-stacks/dockhand/dockhand-start.sh /usr/local/etc/rc.d/dockhand.sh
+sudo cp /volume2/docker/dockhand/scripts/dockhand-start.sh /usr/local/etc/rc.d/dockhand.sh
 sudo chmod +x /usr/local/etc/rc.d/dockhand.sh
 
 echo "Restarting Dockhand with fixed RC script..."

@@ -41,13 +41,13 @@ cp -r /volume2/docker/ce-stacks/dockhand /volume2/docker/dockhand
 
 # Verify
 ls -la /volume2/docker/dockhand/
-# Should show: compose.yaml, dockhand-start.sh, MIGRATION.md, etc.
+# Should show: scripts/, docs/, README.md, .env.example, compose.yaml, etc.
 ```
 
 ### Step 2: Install RC Script
 
 ```bash
-sudo cp /volume2/docker/dockhand/dockhand-start.sh /usr/local/etc/rc.d/dockhand.sh
+sudo cp /volume2/docker/dockhand/scripts/dockhand-start.sh /usr/local/etc/rc.d/dockhand.sh
 sudo chmod +x /usr/local/etc/rc.d/dockhand.sh
 ```
 
@@ -77,9 +77,9 @@ Once Dockhand is running on your NAS:
 
 | File | Location | Purpose |
 |---|---|---|
-| `dockhand-start.sh` | `/usr/local/etc/rc.d/dockhand.sh` | DSM startup script |
-| `MIGRATION.md` | `/volume2/docker/dockhand/MIGRATION.md` | Step-by-step guide |
-| `dockhand-validate.sh` | `/volume2/docker/dockhand/dockhand-validate.sh` | Validation checks |
+| `scripts/dockhand-start.sh` | `/usr/local/etc/rc.d/dockhand.sh` | DSM startup script |
+| `docs/MIGRATION.md` | `/volume2/docker/dockhand/docs/MIGRATION.md` | Step-by-step guide |
+| `scripts/dockhand-validate.sh` | `/volume2/docker/dockhand/scripts/dockhand-validate.sh` | Validation checks |
 | `README.md` | `/volume2/docker/dockhand/README.md` | Configuration reference |
 | `compose.yaml` | `/volume2/docker/dockhand/compose.yaml` | Reference definition |
 | `.env.example` | `/volume2/docker/dockhand/.env.example` | Env var template |

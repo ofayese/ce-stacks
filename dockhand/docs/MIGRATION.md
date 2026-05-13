@@ -60,7 +60,7 @@ sudo chmod 755 /volume2/docker/dockhand
 
 ```bash
 # Copy the RC script to system startup
-sudo cp /volume2/docker/dockhand/dockhand-start.sh /usr/local/etc/rc.d/dockhand.sh
+sudo cp /volume2/docker/dockhand/scripts/dockhand-start.sh /usr/local/etc/rc.d/dockhand.sh
 sudo chmod +x /usr/local/etc/rc.d/dockhand.sh
 
 # Start Dockhand immediately
@@ -133,7 +133,7 @@ Run the validation script to ensure Dockhand is properly configured and can acce
 
 ```bash
 # Run health checks
-bash /volume2/docker/dockhand/dockhand-validate.sh
+bash /volume2/docker/dockhand/scripts/dockhand-validate.sh
 ```
 
 ## Step 5: Set Up Git Webhook for Auto-Sync
@@ -452,9 +452,9 @@ A: Edit the compose.yaml in `/volume2/docker/ce-stacks/stacks/<stack>/`, commit,
 ## Support
 
 - **Dockhand Docs**: https://dockhand.pro/manual
-- **Dockhand GitHub**: https://github.com/fnsys/dockhand (if available)
-- **Your Repo**: Check `stacks/dockhand/MIGRATION.md` for troubleshooting
+- **Your Repo Docs**: `/volume2/docker/dockhand/docs/` on NAS or `dockhand/docs/` in ce-stacks repo
+- **Dockhand GitHub**: https://github.com/fnsys/dockhand
 
 ---
 
-**Migration completed**: Celebrate! Your ce-stacks infrastructure is now managed by Dockhand with git-backed deployments.
+**Migration completed**: Your ce-stacks infrastructure is now managed by Dockhand with git-backed deployments.

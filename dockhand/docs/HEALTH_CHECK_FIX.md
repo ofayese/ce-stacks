@@ -10,7 +10,7 @@
 
 ## ✅ Fix Applied
 
-Updated `dockhand/dockhand-start.sh` health check with:
+Updated `dockhand/scripts/dockhand-start.sh` health check with:
 
 **Before:**
 
@@ -148,7 +148,7 @@ curl http://10.0.1.15:3866/health
 Run the diagnostic script:
 
 ```bash
-bash /volume2/docker/dockhand/health-check-fix.sh
+bash /volume2/docker/dockhand/scripts/health-check-fix.sh
 ```
 
 Or check manually:
@@ -158,7 +158,7 @@ Or check manually:
 curl -v http://10.0.1.15:3866/health
 
 # 2. Check inside container
-docker exec dockhand curl http://127.0.0.1:3000/health
+docker exec dockhand wget --quiet --tries=1 --spider http://127.0.0.1:3000/health && echo "✓ Health check works" || echo "✗ Health check failed"
 
 # 3. Check logs
 docker logs dockhand | tail -50
@@ -174,15 +174,15 @@ docker exec dockhand ss -tlnp | grep 3000
 
 ## Files Updated
 
-- ✅ `dockhand/dockhand-start.sh` - Updated health check parameters
-- ✅ `dockhand/HEALTH_CHECK_DEBUG.md` - Created comprehensive debugging guide
-- ✅ `dockhand/health-check-fix.sh` - Created diagnostic script
+- ✅ `dockhand/scripts/dockhand-start.sh` - Updated health check parameters
+- ✅ `dockhand/docs/HEALTH_CHECK_DEBUG.md` - Created comprehensive debugging guide
+- ✅ `dockhand/scripts/health-check-fix.sh` - Created diagnostic script
 
 ---
 
 ## Documentation
 
-Full debugging guide available at: `dockhand/HEALTH_CHECK_DEBUG.md`
+Full debugging guide available at: `dockhand/docs/HEALTH_CHECK_DEBUG.md`
 
 Contains:
 

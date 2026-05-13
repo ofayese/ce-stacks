@@ -200,7 +200,7 @@ docker logs -f dockhand
 ## Reference
 
 **RC Script Location**: `/usr/local/etc/rc.d/dockhand.sh`  
-**RC Script Source**: `dockhand/dockhand-start.sh`  
+**RC Script Source**: `dockhand/scripts/dockhand-start.sh`  
 **Data Directory**: `/volume2/docker/dockhand/`  
 **Web UI**: `http://10.0.1.15:3866`
 
