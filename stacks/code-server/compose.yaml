@@ -51,7 +51,7 @@ services:
     networks:
       - code-server-net
   db:
-    image: mysql:8.3.0
+    image: mysql:8.3
     container_name: CodeServerDB
     mem_limit: 2g
     cpu_shares: 512
@@ -90,7 +90,7 @@ services:
       retries: 10
       start_period: 30s
     labels:
-      - com.centurylinklabs.watchtower.enable=false
+      - com.centurylinklabs.watchtower.enable=true
     networks:
       - code-server-net
   phpmyadmin:

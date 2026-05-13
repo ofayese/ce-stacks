@@ -1,20 +1,16 @@
 # snmp.yml — prom/snmp-exporter v0.30.x compatible
-# Generated format: each metric requires oid + type.
-# Auth: SNMPv3 credentials must be set to match your NAS DSM SNMPv3 config.
-# DSM → Control Panel → Terminal & SNMP → SNMP → SNMPv3 tab.
+# Metric names are aligned with Grafana dashboard 13516 (Synology SNMP Dashboard).
+# Auth: SNMPv3 credentials injected at runtime via --config.expand-environment-variables.
+# DSM → Control Panel → Terminal & SNMP → SNMPv3 tab.
 #
-# To update credentials, edit the public_v3 auth block below.
-# auth_protocol: MD5 | SHA | SHA224 | SHA256 | SHA384 | SHA512
-# priv_protocol: DES | AES | AES192 | AES256
+# Plain ${VAR} syntax required — snmp-exporter's --config.expand-environment-variables
+# uses Go os.ExpandEnv which does not support the ${VAR:-default} shell fallback form.
+# Values are set in .env and passed to the container via compose.yaml environment block.
 
 auths:
   public_v3:
     community: public
     security_level: authPriv
-    # Plain ${VAR} syntax required — snmp-exporter's --config.expand-env uses
-    # Go os.ExpandEnv which does not support the ${VAR:-default} shell fallback form.
-    # Actual values must be set in .env (see .env.example: SNMP_USERNAME, SNMP_AUTH_PASSWORD,
-    # SNMP_PRIV_PASSWORD) and are injected into the container via compose.yaml environment block.
     username: ${SNMP_USERNAME}
     password: ${SNMP_AUTH_PASSWORD}
     auth_protocol: SHA
@@ -26,12 +22,12 @@ modules:
   synology:
     walk:
       - 1.3.6.1.2.1.1          # system
-      - 1.3.6.1.2.1.2          # interfaces
-      - 1.3.6.1.2.1.31.1.1     # ifXTable
+      - 1.3.6.1.2.1.2          # interfaces (ifTable)
+      - 1.3.6.1.2.1.31.1.1    # ifXTable (ifHCOctets, ifName, ifHighSpeed)
       - 1.3.6.1.4.1.2021.4     # memTable (UCD-SNMP-MIB)
       - 1.3.6.1.4.1.2021.10    # laTable (load average)
       - 1.3.6.1.4.1.2021.11    # systemStats (CPU)
-      - 1.3.6.1.4.1.2021.13.15 # diskIOTable
+      - 1.3.6.1.4.1.2021.13.15 # diskIOTable (spaceIO metrics)
       - 1.3.6.1.4.1.6574.1     # synoSystem
       - 1.3.6.1.4.1.6574.2     # synoDisk
       - 1.3.6.1.4.1.6574.3     # synoRaid
@@ -43,16 +39,44 @@ modules:
         oid: 1.3.6.1.2.1.1.3.0
         type: gauge
         help: The time (in hundredths of a second) since the network management portion of the system was last re-initialized
-      - name: sysDescr
-        oid: 1.3.6.1.2.1.1.1.0
-        type: DisplayString
-        help: A textual description of the entity
-      - name: sysName
-        oid: 1.3.6.1.2.1.1.5.0
-        type: DisplayString
-        help: An administratively assigned name for this managed node
 
-      # ── Interfaces ──────────────────────────────────────────────────────
+      # ── Synology system status (SYNOLOGY-SYSTEM-MIB) ────────────────────
+      - name: systemStatus
+        oid: 1.3.6.1.4.1.6574.1.1.0
+        type: gauge
+        help: System status (1=Normal, 2=Failed)
+
+      - name: temperature
+        oid: 1.3.6.1.4.1.6574.1.2.0
+        type: gauge
+        help: System temperature in Celsius
+
+      - name: powerStatus
+        oid: 1.3.6.1.4.1.6574.1.3.0
+        type: gauge
+        help: Power status (1=Normal, 2=Failed)
+
+      - name: cpuFanStatus
+        oid: 1.3.6.1.4.1.6574.1.4.1.0
+        type: gauge
+        help: CPU fan status (1=Normal, 2=Failed)
+
+      - name: systemFanStatus
+        oid: 1.3.6.1.4.1.6574.1.4.2.0
+        type: gauge
+        help: System fan status (1=Normal, 2=Failed)
+
+      - name: upgradeAvailable
+        oid: 1.3.6.1.4.1.6574.1.5.4.0
+        type: gauge
+        help: DSM upgrade available (1=Available, 2=Unavailable, 3=Connecting, 4=Disconnected, 5=Others)
+
+      - name: serviceUsers
+        oid: 1.3.6.1.4.1.6574.1.5.1.0
+        type: gauge
+        help: Number of service users currently connected
+
+      # ── Interfaces (ifTable) ─────────────────────────────────────────────
       - name: ifAdminStatus
         oid: 1.3.6.1.2.1.2.2.1.7
         type: gauge
@@ -62,9 +86,10 @@ modules:
             type: gauge
         lookups:
           - labels: [ifIndex]
-            labelname: ifDescr
-            oid: 1.3.6.1.2.1.2.2.1.2
+            labelname: ifName
+            oid: 1.3.6.1.2.1.31.1.1.1.1
             type: DisplayString
+
       - name: ifOperStatus
         oid: 1.3.6.1.2.1.2.2.1.8
         type: gauge
@@ -74,103 +99,216 @@ modules:
             type: gauge
         lookups:
           - labels: [ifIndex]
-            labelname: ifDescr
-            oid: 1.3.6.1.2.1.2.2.1.2
+            labelname: ifName
+            oid: 1.3.6.1.2.1.31.1.1.1.1
             type: DisplayString
+
+      - name: ifSpeed
+        oid: 1.3.6.1.2.1.2.2.1.5
+        type: gauge
+        help: Interface speed in bits per second
+        indexes:
+          - labelname: ifIndex
+            type: gauge
+        lookups:
+          - labels: [ifIndex]
+            labelname: ifName
+            oid: 1.3.6.1.2.1.31.1.1.1.1
+            type: DisplayString
+
+      - name: ifPhysAddress
+        oid: 1.3.6.1.2.1.2.2.1.6
+        type: PhysAddress48
+        help: Interface MAC address
+        indexes:
+          - labelname: ifIndex
+            type: gauge
+        lookups:
+          - labels: [ifIndex]
+            labelname: ifName
+            oid: 1.3.6.1.2.1.31.1.1.1.1
+            type: DisplayString
+
       - name: ifInOctets
         oid: 1.3.6.1.2.1.2.2.1.10
         type: counter
-        help: The total number of octets received on the interface
+        help: Total octets received on the interface (32-bit fallback)
         indexes:
           - labelname: ifIndex
             type: gauge
         lookups:
           - labels: [ifIndex]
-            labelname: ifDescr
-            oid: 1.3.6.1.2.1.2.2.1.2
+            labelname: ifName
+            oid: 1.3.6.1.2.1.31.1.1.1.1
             type: DisplayString
+
       - name: ifOutOctets
         oid: 1.3.6.1.2.1.2.2.1.16
         type: counter
-        help: The total number of octets transmitted out of the interface
+        help: Total octets transmitted on the interface (32-bit fallback)
         indexes:
           - labelname: ifIndex
             type: gauge
         lookups:
           - labels: [ifIndex]
-            labelname: ifDescr
-            oid: 1.3.6.1.2.1.2.2.1.2
+            labelname: ifName
+            oid: 1.3.6.1.2.1.31.1.1.1.1
             type: DisplayString
+
       - name: ifInErrors
         oid: 1.3.6.1.2.1.2.2.1.14
         type: counter
-        help: The number of inbound packets that contained errors
+        help: Inbound packets with errors
         indexes:
           - labelname: ifIndex
             type: gauge
         lookups:
           - labels: [ifIndex]
-            labelname: ifDescr
-            oid: 1.3.6.1.2.1.2.2.1.2
+            labelname: ifName
+            oid: 1.3.6.1.2.1.31.1.1.1.1
             type: DisplayString
+
       - name: ifOutErrors
         oid: 1.3.6.1.2.1.2.2.1.20
         type: counter
-        help: The number of outbound packets that could not be transmitted because of errors
+        help: Outbound packets that could not be transmitted due to errors
         indexes:
           - labelname: ifIndex
             type: gauge
         lookups:
           - labels: [ifIndex]
-            labelname: ifDescr
-            oid: 1.3.6.1.2.1.2.2.1.2
+            labelname: ifName
+            oid: 1.3.6.1.2.1.31.1.1.1.1
+            type: DisplayString
+
+      - name: ifInDiscards
+        oid: 1.3.6.1.2.1.2.2.1.13
+        type: counter
+        help: Inbound packets discarded despite no errors
+        indexes:
+          - labelname: ifIndex
+            type: gauge
+        lookups:
+          - labels: [ifIndex]
+            labelname: ifName
+            oid: 1.3.6.1.2.1.31.1.1.1.1
+            type: DisplayString
+
+      - name: ifOutDiscards
+        oid: 1.3.6.1.2.1.2.2.1.19
+        type: counter
+        help: Outbound packets discarded despite no errors
+        indexes:
+          - labelname: ifIndex
+            type: gauge
+        lookups:
+          - labels: [ifIndex]
+            labelname: ifName
+            oid: 1.3.6.1.2.1.31.1.1.1.1
+            type: DisplayString
+
+      # ── ifXTable — high-capacity (64-bit) counters ───────────────────────
+      - name: ifConnectorPresent
+        oid: 1.3.6.1.2.1.31.1.1.1.17
+        type: gauge
+        help: Whether a physical connector is present on the interface
+        indexes:
+          - labelname: ifIndex
+            type: gauge
+        lookups:
+          - labels: [ifIndex]
+            labelname: ifName
+            oid: 1.3.6.1.2.1.31.1.1.1.1
+            type: DisplayString
+
+      - name: ifHCInOctets
+        oid: 1.3.6.1.2.1.31.1.1.1.6
+        type: counter
+        help: Total octets received (64-bit)
+        indexes:
+          - labelname: ifIndex
+            type: gauge
+        lookups:
+          - labels: [ifIndex]
+            labelname: ifName
+            oid: 1.3.6.1.2.1.31.1.1.1.1
+            type: DisplayString
+
+      - name: ifHCOutOctets
+        oid: 1.3.6.1.2.1.31.1.1.1.10
+        type: counter
+        help: Total octets transmitted (64-bit)
+        indexes:
+          - labelname: ifIndex
+            type: gauge
+        lookups:
+          - labels: [ifIndex]
+            labelname: ifName
+            oid: 1.3.6.1.2.1.31.1.1.1.1
             type: DisplayString
 
       # ── Memory (UCD-SNMP-MIB) ────────────────────────────────────────────
       - name: memTotalReal
         oid: 1.3.6.1.4.1.2021.4.5.0
         type: gauge
-        help: Total RAM in machine
+        help: Total RAM in machine (kB)
+
       - name: memAvailReal
         oid: 1.3.6.1.4.1.2021.4.6.0
         type: gauge
-        help: Available RAM
-      - name: memTotalSwap
-        oid: 1.3.6.1.4.1.2021.4.3.0
+        help: Available RAM (kB)
+
+      - name: memTotalFree
+        oid: 1.3.6.1.4.1.2021.4.11.0
         type: gauge
-        help: Total swap space configured
-      - name: memAvailSwap
-        oid: 1.3.6.1.4.1.2021.4.4.0
+        help: Total free memory including swap (kB)
+
+      - name: memShared
+        oid: 1.3.6.1.4.1.2021.4.13.0
         type: gauge
-        help: Available swap space
+        help: Shared memory (kB)
+
       - name: memBuffer
         oid: 1.3.6.1.4.1.2021.4.14.0
         type: gauge
-        help: Memory used for buffer purposes
+        help: Memory used for buffers (kB)
+
       - name: memCached
         oid: 1.3.6.1.4.1.2021.4.15.0
         type: gauge
-        help: Memory used for caching purposes
+        help: Memory used for caching (kB)
+
+      - name: memTotalSwap
+        oid: 1.3.6.1.4.1.2021.4.3.0
+        type: gauge
+        help: Total swap space configured (kB)
+
+      - name: memAvailSwap
+        oid: 1.3.6.1.4.1.2021.4.4.0
+        type: gauge
+        help: Available swap space (kB)
 
       # ── CPU (UCD-SNMP-MIB) ──────────────────────────────────────────────
       - name: ssCpuUser
         oid: 1.3.6.1.4.1.2021.11.9.0
         type: gauge
-        help: Percentage of CPU time spent processing user-level code
+        help: Percentage of CPU time spent in user space
+
       - name: ssCpuSystem
         oid: 1.3.6.1.4.1.2021.11.10.0
         type: gauge
-        help: Percentage of CPU time spent processing system-level code
+        help: Percentage of CPU time spent in system/kernel space
+
       - name: ssCpuIdle
         oid: 1.3.6.1.4.1.2021.11.11.0
         type: gauge
         help: Percentage of CPU time spent idle
 
       # ── Load average (UCD-SNMP-MIB) ─────────────────────────────────────
-      - name: laLoad
-        oid: 1.3.6.1.4.1.2021.10.1.3
-        type: DisplayString
-        help: The load average as a string
+      - name: laLoadInt
+        oid: 1.3.6.1.4.1.2021.10.1.5
+        type: gauge
+        help: Load average as integer (multiplied by 100)
         indexes:
           - labelname: laIndex
             type: gauge
@@ -180,37 +318,87 @@ modules:
             oid: 1.3.6.1.4.1.2021.10.1.2
             type: DisplayString
 
-      # ── Synology system (SYNOLOGY-SYSTEM-MIB) ───────────────────────────
-      - name: synoSystemCpuFanStatus
-        oid: 1.3.6.1.4.1.6574.1.4.1.0
-        type: gauge
-        help: CPU fan status (1=Normal, 2=Failed)
-      - name: synoSystemSystemFanStatus
-        oid: 1.3.6.1.4.1.6574.1.4.2.0
-        type: gauge
-        help: System fan status (1=Normal, 2=Failed)
-      - name: synoSystemPowerStatus
-        oid: 1.3.6.1.4.1.6574.1.3.0
-        type: gauge
-        help: Power status (1=Normal, 2=Failed)
-      - name: synoSystemTemperature
-        oid: 1.3.6.1.4.1.6574.1.2.0
-        type: gauge
-        help: System temperature in Celsius
-      - name: synoSystemUpgradeAvailable
-        oid: 1.3.6.1.4.1.6574.1.5.4.0
-        type: gauge
-        help: DSM upgrade available (1=Available, 2=Unavailable, 3=Connecting, 4=Disconnected, 5=Others)
+      # ── Disk IO (UCD-SNMP-MIB diskIOTable — spaceIO metrics) ────────────
+      - name: spaceIONReadX
+        oid: 1.3.6.1.4.1.2021.13.15.1.1.12
+        type: counter
+        help: 64-bit bytes read from disk since boot
+        indexes:
+          - labelname: spaceIOIndex
+            type: gauge
+        lookups:
+          - labels: [spaceIOIndex]
+            labelname: spaceIODevice
+            oid: 1.3.6.1.4.1.2021.13.15.1.1.2
+            type: DisplayString
+
+      - name: spaceIONWrittenX
+        oid: 1.3.6.1.4.1.2021.13.15.1.1.13
+        type: counter
+        help: 64-bit bytes written to disk since boot
+        indexes:
+          - labelname: spaceIOIndex
+            type: gauge
+        lookups:
+          - labels: [spaceIOIndex]
+            labelname: spaceIODevice
+            oid: 1.3.6.1.4.1.2021.13.15.1.1.2
+            type: DisplayString
+
+      - name: spaceIOReads
+        oid: 1.3.6.1.4.1.2021.13.15.1.1.5
+        type: counter
+        help: Number of read operations since boot
+        indexes:
+          - labelname: spaceIOIndex
+            type: gauge
+        lookups:
+          - labels: [spaceIOIndex]
+            labelname: spaceIODevice
+            oid: 1.3.6.1.4.1.2021.13.15.1.1.2
+            type: DisplayString
+
+      - name: spaceIOWrites
+        oid: 1.3.6.1.4.1.2021.13.15.1.1.6
+        type: counter
+        help: Number of write operations since boot
+        indexes:
+          - labelname: spaceIOIndex
+            type: gauge
+        lookups:
+          - labels: [spaceIOIndex]
+            labelname: spaceIODevice
+            oid: 1.3.6.1.4.1.2021.13.15.1.1.2
+            type: DisplayString
 
       # ── Synology disk (SYNOLOGY-DISK-MIB) ───────────────────────────────
-      - name: synoDiskName
-        oid: 1.3.6.1.4.1.6574.2.1.1.2
+      - name: diskModel
+        oid: 1.3.6.1.4.1.6574.2.1.1.3
         type: DisplayString
-        help: Disk name
+        help: Disk model name
         indexes:
           - labelname: diskIndex
             type: gauge
-      - name: synoDiskStatus
+        lookups:
+          - labels: [diskIndex]
+            labelname: diskName
+            oid: 1.3.6.1.4.1.6574.2.1.1.2
+            type: DisplayString
+
+      - name: diskType
+        oid: 1.3.6.1.4.1.6574.2.1.1.4
+        type: DisplayString
+        help: Disk type (e.g. SATA, SSD, NVMe)
+        indexes:
+          - labelname: diskIndex
+            type: gauge
+        lookups:
+          - labels: [diskIndex]
+            labelname: diskName
+            oid: 1.3.6.1.4.1.6574.2.1.1.2
+            type: DisplayString
+
+      - name: diskStatus
         oid: 1.3.6.1.4.1.6574.2.1.1.5
         type: gauge
         help: Disk status (1=Normal, 2=Initialized, 3=NotInitialized, 4=SystemPartitionFailed, 5=Crashed)
@@ -219,10 +407,11 @@ modules:
             type: gauge
         lookups:
           - labels: [diskIndex]
-            labelname: synoDiskName
+            labelname: diskName
             oid: 1.3.6.1.4.1.6574.2.1.1.2
             type: DisplayString
-      - name: synoDiskTemperature
+
+      - name: diskTemperature
         oid: 1.3.6.1.4.1.6574.2.1.1.6
         type: gauge
         help: Disk temperature in Celsius
@@ -231,19 +420,12 @@ modules:
             type: gauge
         lookups:
           - labels: [diskIndex]
-            labelname: synoDiskName
+            labelname: diskName
             oid: 1.3.6.1.4.1.6574.2.1.1.2
             type: DisplayString
 
       # ── Synology RAID (SYNOLOGY-RAID-MIB) ───────────────────────────────
-      - name: synoRaidName
-        oid: 1.3.6.1.4.1.6574.3.1.1.2
-        type: DisplayString
-        help: RAID volume name
-        indexes:
-          - labelname: raidIndex
-            type: gauge
-      - name: synoRaidStatus
+      - name: raidStatus
         oid: 1.3.6.1.4.1.6574.3.1.1.3
         type: gauge
         help: RAID status (1=Normal, 2=Repairing, 3=Migrating, 4=Expanding, 5=Deleting, 6=Creating, 7=RaidSyncing, 8=RaidParityChecking, 9=RaidAssembling, 10=Canceling, 11=Degrade, 12=Crashed)
@@ -252,19 +434,95 @@ modules:
             type: gauge
         lookups:
           - labels: [raidIndex]
-            labelname: synoRaidName
+            labelname: raidName
             oid: 1.3.6.1.4.1.6574.3.1.1.2
             type: DisplayString
 
+      - name: raidTotalSize
+        oid: 1.3.6.1.4.1.6574.3.1.1.4
+        type: gauge
+        help: RAID volume total size in KB
+        indexes:
+          - labelname: raidIndex
+            type: gauge
+        lookups:
+          - labels: [raidIndex]
+            labelname: raidName
+            oid: 1.3.6.1.4.1.6574.3.1.1.2
+            type: DisplayString
+
+      - name: raidFreeSize
+        oid: 1.3.6.1.4.1.6574.3.1.1.5
+        type: gauge
+        help: RAID volume free size in KB
+        indexes:
+          - labelname: raidIndex
+            type: gauge
+        lookups:
+          - labels: [raidIndex]
+            labelname: raidName
+            oid: 1.3.6.1.4.1.6574.3.1.1.2
+            type: DisplayString
+
+      # ── Synology Storage IO (SYNOLOGY-STORAGEIO-MIB) ────────────────────
+      - name: storageIONReadX
+        oid: 1.3.6.1.4.1.6574.101.1.1.5
+        type: counter
+        help: 64-bit bytes read from storage device since boot
+        indexes:
+          - labelname: storageIOIndex
+            type: gauge
+        lookups:
+          - labels: [storageIOIndex]
+            labelname: storageIODevice
+            oid: 1.3.6.1.4.1.6574.101.1.1.2
+            type: DisplayString
+
+      - name: storageIONWrittenX
+        oid: 1.3.6.1.4.1.6574.101.1.1.6
+        type: counter
+        help: 64-bit bytes written to storage device since boot
+        indexes:
+          - labelname: storageIOIndex
+            type: gauge
+        lookups:
+          - labels: [storageIOIndex]
+            labelname: storageIODevice
+            oid: 1.3.6.1.4.1.6574.101.1.1.2
+            type: DisplayString
+
+      - name: storageIOReads
+        oid: 1.3.6.1.4.1.6574.101.1.1.3
+        type: counter
+        help: Number of read operations on storage device since boot
+        indexes:
+          - labelname: storageIOIndex
+            type: gauge
+        lookups:
+          - labels: [storageIOIndex]
+            labelname: storageIODevice
+            oid: 1.3.6.1.4.1.6574.101.1.1.2
+            type: DisplayString
+
+      - name: storageIOWrites
+        oid: 1.3.6.1.4.1.6574.101.1.1.4
+        type: counter
+        help: Number of write operations on storage device since boot
+        indexes:
+          - labelname: storageIOIndex
+            type: gauge
+        lookups:
+          - labels: [storageIOIndex]
+            labelname: storageIODevice
+            oid: 1.3.6.1.4.1.6574.101.1.1.2
+            type: DisplayString
+
       # ── Synology UPS (SYNOLOGY-UPS-MIB) ─────────────────────────────────
-      - name: synoUPSDeviceModel
-        oid: 1.3.6.1.4.1.6574.5.1.1.1.0
-        type: DisplayString
-        help: UPS device model
       - name: synoUPSBatteryChargeValue
         oid: 1.3.6.1.4.1.6574.5.1.1.13.0
         type: gauge
         help: UPS battery charge percentage
+
       - name: synoUPSBatteryRuntimeValue
         oid: 1.3.6.1.4.1.6574.5.1.1.15.0
         type: gauge

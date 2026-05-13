@@ -6,19 +6,10 @@ services:
     shm_size: 1g
     mem_limit: 2g
     cpu_shares: 512
-    # security_opt and cap_add are required for GitHub Desktop (Electron)
-    # to render inside a KasmVNC container. Standard for LinuxServer.io
-    # GUI images. Security Advisor will flag these - intentional.
-    # See docs/hive/NAS_DEPLOYMENT.md for acknowledgement.
-    # Omit no-new-privileges:true: Electron's setuid chrome-sandbox cannot
-    # gain privileges under PR_NO_NEW_PRIVS; on DSM (often no unprivileged
-    # user namespaces) that breaks the renderer. Do not add --no-sandbox here.
     security_opt:
       - seccomp:unconfined
     cap_add:
       - IPC_LOCK
-    # Healthcheck type: B - TCP probe on KasmVNC internal port 3000.
-    # start_period is long - Electron initialisation takes 60-90s.
     healthcheck:
       test:
         - CMD
@@ -30,8 +21,12 @@ services:
       timeout: 10s
       retries: 3
       start_period: 90s
-    ports:
-      - ${GITHUB_DESKTOP_PORT:-3405}:3001
+     ports:
+      - mode: ingress
+        host_ip: 10.0.1.15
+        target: 3001
+        published: "3405"
+        protocol: tcp
     volumes:
       - ${STACK_ROOT}/github-desktop/config:/config:rw
     environment:
