@@ -4,7 +4,7 @@ PowerShell Universal provides **scheduled jobs**, **API endpoints**, and a **NOC
 
 ## Prerequisites
 
-- **TLS:** Host-named wildcard PEMs under `${ACME_CERT_ROOT}/otsorundscore/` (OTS NAS) per [`docs/hive/SERVICE_MAP.md`](../../docs/hive/SERVICE_MAP.md). Traefik rule in compose: `psu.otsorundscore.olutechsys.com`.
+- **TLS:** Host-named wildcard PEMs under `${ACME_CERT_ROOT}/otsorundscore/` (OTS NAS). Traefik rule in compose: `psu.otsorundscore.olutechsys.com`.
 - **Network:** `traefik-ots` stack must exist (external Docker network `traefik-ots`).
 - **DNS:** Public + split-horizon records for `psu.otsorundscore.olutechsys.com` (and `.olutech.systems` if used).
 
@@ -27,7 +27,7 @@ Versioned PSU config lives under **`data/Repository/`** on the NAS (`.universal/
 
 ## Authentication
 
-Interactive PSU Admin login uses **PowerShell Universal defaults** from the image unless you configure auth inside PSU (e.g. OpenID in Admin) per [PowerShell Universal — OpenID Connect](https://docs.powershelluniversal.com/config/security/openid-connect). This repo’s tracked **`compose.yaml`** does **not** inject OIDC env. **Google Workspace → DSM** (NAS login portal only) is separate — see [`docs/hive/GOOGLE_WORKSPACE_OAUTH_NAS_LOGIN.md`](../../docs/hive/GOOGLE_WORKSPACE_OAUTH_NAS_LOGIN.md).
+Interactive PSU Admin login uses **PowerShell Universal defaults** from the image unless you configure auth inside PSU (e.g. OpenID in Admin) per [PowerShell Universal — OpenID Connect](https://docs.powershelluniversal.com/config/security/openid-connect). This repo’s tracked **`compose.yaml`** does **not** inject OIDC env. **Google Workspace → DSM** (NAS login portal only) is separate.
 
 **APIs:** **`PSU_AUTH_TOKEN`**, **`DOCKGE_USERNAME`** / **`DOCKGE_PASSWORD`**, and **`NAS_PULL_APP_TOKEN`** power jobs, Dockge API, and webhooks — see **`universal/endpoints/dockge-api.ps1`**.
 

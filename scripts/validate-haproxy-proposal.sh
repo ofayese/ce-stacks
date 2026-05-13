@@ -4,18 +4,13 @@
 set -euo pipefail
 _script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="${_script_dir}"
-while [[ ! -f "${ROOT}/HIVE_OBJECTIVE.md" && "${ROOT}" != "/" ]]; do
+while [[ ! -f "${ROOT}/README.md" && "${ROOT}" != "/" ]]; do
 	ROOT="$(dirname "${ROOT}")"
 done
 cfg="${ROOT}/stacks/_haproxy/haproxy.cfg"
 map_src="${ROOT}/stacks/_haproxy/maps/host.map"
 if [[ ! -f "${cfg}" ]]; then
 	echo "validate-haproxy-proposal: missing ${cfg}" >&2
-	exit 1
-fi
-wrapper="${ROOT}/docs/hive/proposals/_haproxy/haproxy.cfg"
-if [[ ! -f "${wrapper}" ]]; then
-	echo "validate-haproxy-proposal: missing ${wrapper}" >&2
 	exit 1
 fi
 if [[ ! -f "${map_src}" ]]; then
@@ -62,23 +57,5 @@ if ! run_haproxy_check "${TMP}/haproxy.cfg"; then
 	echo "validate-haproxy-proposal: FAIL (stacks/_haproxy/haproxy.cfg)" >&2
 	exit 1
 fi
-
-# Proposal wrapper must resolve to this canonical file (OSS HAProxy docker builds omit `include` — cannot smoke-test include via -c).
-_wrapper_dir="$(cd "$(dirname "${wrapper}")" && pwd)"
-_include_line="$(grep -E '^[[:space:]]*include[[:space:]]+' "${wrapper}" | head -1 || true)"
-if [[ -z "${_include_line}" ]]; then
-	echo "validate-haproxy-proposal: FAIL (no include line in ${wrapper})" >&2
-	exit 1
-fi
-_include_rel="$(echo "${_include_line}" | awk '{print $2}')"
-_resolved=""
-if cd "${_wrapper_dir}"; then
-	_resolved="$(realpath "${_include_rel}" 2>/dev/null || true)"
-fi
-_canonical="$(realpath "${cfg}" 2>/dev/null || echo "${cfg}")"
-if [[ "${_resolved}" != "${_canonical}" ]]; then
-	echo "validate-haproxy-proposal: FAIL (proposal include resolves to '${_resolved}', expected '${_canonical}')" >&2
-	exit 1
-fi
-echo "validate-haproxy-proposal: OK (canonical cfg + proposal include path)"
+echo "validate-haproxy-proposal: OK (stacks/_haproxy/haproxy.cfg)"
 exit 0

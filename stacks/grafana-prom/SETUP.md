@@ -15,7 +15,7 @@ This Docker Compose stack provides complete monitoring for Synology NAS using Gr
 
 1. **UID and GID for Grafana/Prometheus processes** (see `.env.example`):
 
-   - Repo default on NAS: **`SYNO_UID=0`** / **`SYNO_GID=0`** (root) per `HIVE_OBJECTIVE.md`.
+   - Repo default on NAS: **`SYNO_UID=0`** / **`SYNO_GID=0`** (root) per `README.md`.
    - Override only on non-NAS dev hosts if you must run processes as a non-root numeric user.
 
 2. **Enable SNMP on your Synology NAS**:
@@ -28,7 +28,7 @@ This Docker Compose stack provides complete monitoring for Synology NAS using Gr
 
 3. **Configure firewall rules** (if enabled):
    - Allow traffic on ports: **3340** (Grafana), **9090** (Prometheus), **9116** (SNMP exporter relay), **9100** (node exporter), **8080** (cAdvisor), and **UDP 161** from the Prometheus container host to **each Synology SNMP target** (see **`prom.yml`** — default **`10.0.1.15`** OTS and **`10.0.1.24`** MFT).
-   - Docker bridge subnets for this stack follow **`docs/hive/NAS_DEPLOYMENT.md` → Docker network subnet registry** (e.g. **`grafana-net`**, **`prometheus-net`** under **`172.22.x.0/24`**). **Do not** use **`192.168.x.x`** in compose networks; examples below that used **`192.168.50.0/24`** / **`192.168.51.0/24`** are **non-prod placeholders only** — replace with your LAN CIDRs when opening the host firewall to admins.
+   - Docker bridge subnets for this stack follow the Docker network subnet registry (e.g. **`grafana-net`**, **`prometheus-net`** under **`172.22.x.0/24`**). **Do not** use **`192.168.x.x`** in compose networks; examples below that used **`192.168.50.0/24`** / **`192.168.51.0/24`** are **non-prod placeholders only** — replace with your LAN CIDRs when opening the host firewall to admins.
 
 ## Setup Instructions
 
@@ -37,7 +37,7 @@ This Docker Compose stack provides complete monitoring for Synology NAS using Gr
 Edit `.env`:
 
 ```bash
-SYNO_UID=0                  # Default root on NAS (see HIVE_OBJECTIVE.md)
+SYNO_UID=0                  # Default root on NAS (see README.md)
 SYNO_GID=0
 TIMEZONE=America/New_York   # IANA TZ
 NAS_IP=10.0.1.15            # Management LAN IP for SNMP targets
@@ -92,7 +92,7 @@ docker compose ps
 
 ## Network Configuration
 
-Two isolated networks are created (see **`compose.yaml`** — this stack uses **`172.22.0.0/24`** and **`172.22.1.0/24`** with gateways **`172.22.0.1`** / **`172.22.1.1`**, aligned with **`docs/hive/NAS_DEPLOYMENT.md` → Docker network subnet registry**). **Do not** use **`192.168.x.x`** in compose for this fleet.
+Two isolated networks are created (see **`compose.yaml`** — this stack uses **`172.22.0.0/24`** and **`172.22.1.0/24`** with gateways **`172.22.0.1`** / **`172.22.1.1`**, aligned with the Docker network subnet registry). **Do not** use **`192.168.x.x`** in compose for this fleet.
 
 - `grafana-net`: Grafana ↔ Prometheus
 - `prometheus-net`: All exporters and Watchtower

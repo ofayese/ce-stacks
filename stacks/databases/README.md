@@ -10,7 +10,7 @@ MariaDB + PostgreSQL + Adminer for any service that needs a shared DB. Distinct 
 
 ## Startup order
 
-**adminer** starts after **mariadb** and **postgres** are **healthy**. NAS operator flow: **`docs/hive/NAS_DEPLOYMENT.md`** → **Dockge stack lifecycle (Compose v2)**.
+**adminer** starts after **mariadb** and **postgres** are **healthy**. Use Portainer or `docker compose up -d` from the stack directory.
 
 ## Volumes
 
@@ -95,10 +95,10 @@ On the NAS, set `STACK_ROOT` to your real path (e.g. `/volume2/docker/ce-stacks/
 
 | Directory                    | Hyper Backup | Method                                                                                          |
 | ---------------------------- | ------------ | ----------------------------------------------------------------------------------------------- |
-| `${STACK_ROOT}/databases/db` | **Exclude**  | Database dumps (`docker exec` → vendor tools; see `docs/hive/NAS_DEPLOYMENT.md` → Hyper Backup) |
+| `${STACK_ROOT}/databases/db` | **Exclude**  | Database dumps (`docker exec` → vendor tools)                                                    |
 
 There is no separate app-level `data/` bind for this stack; engine files live under **`db/`** only.
 
 ## Out of scope
 
-Backup strategy lives in `docs/hive/proposals/_backups/PROPOSAL.md` (queen-led).
+Backup strategy is managed separately.

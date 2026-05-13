@@ -23,6 +23,6 @@ Lowest-risk stack in the fleet — stateless, no volumes, no secrets, no inter-s
 
 ## Related docs
 
-- [`docs/hive/STACK_OPTIMIZATION_CUSTOMIZATION.md`](../../docs/hive/STACK_OPTIMIZATION_CUSTOMIZATION.md) — optional Traefik BasicAuth and tool hygiene.
-- [`docs/hive/NAS_DEPLOYMENT.md`](../../docs/hive/NAS_DEPLOYMENT.md) — fleet HTTP/HTTPS port reference (`8894` on the NAS table).
-- [`docs/hive/GOOGLE_WORKSPACE_OAUTH_NAS_LOGIN.md`](../../docs/hive/GOOGLE_WORKSPACE_OAUTH_NAS_LOGIN.md) — identity/OAuth patterns when exposing utilities externally.
+- Stack Optimization / Customization — optional Traefik BasicAuth and tool hygiene.
+- NAS Deployment — fleet HTTP/HTTPS port reference (`8894` on the NAS table).
+- Google Workspace OAuth / NAS Login — identity/OAuth patterns when exposing utilities externally.

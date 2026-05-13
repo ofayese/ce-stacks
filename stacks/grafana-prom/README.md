@@ -4,7 +4,7 @@ Synology-oriented **Grafana** + **Prometheus** + exporters (`node-exporter`, `sn
 
 ## Startup order
 
-**prometheus** starts after **node-exporter**, **snmp-exporter**, and **cadvisor** are **healthy**. See **`docs/hive/NAS_DEPLOYMENT.md`** → **Dockge stack lifecycle (Compose v2)**.
+**prometheus** starts after **node-exporter**, **snmp-exporter**, and **cadvisor** are **healthy**. Use Portainer or `docker compose up -d` from the stack directory.
 
 ## Ports (defaults)
 
@@ -40,15 +40,15 @@ mkdir -p "${STACK_ROOT}/grafana-prom/data/grafana" "${STACK_ROOT}/grafana-prom/d
 sudo bash scripts/fix-permissions.sh
 ```
 
-Run `fix-permissions.sh` from the **git repo root** (the directory that contains `HIVE_OBJECTIVE.md`).
+Run `fix-permissions.sh` from the **git repo root** (the directory that contains `README.md`).
 
 ## Environment
 
-Copy [`.env.example`](./.env.example) → `.env`. **`SYNO_UID` / `SYNO_GID`** default to **0** (root) for NAS; see `HIVE_OBJECTIVE.md` for rationale.
+Copy [`.env.example`](./.env.example) → `.env`. **`SYNO_UID` / `SYNO_GID`** default to **0** (root) for NAS; see `README.md` for rationale.
 
 ## cAdvisor / docker.sock
 
-**cAdvisor** mounts host `/`, `/sys`, `/var/run`, and **`/var/run/docker.sock` (ro)** for metrics. This is a **documented NAS exception** (see `HIVE_OBJECTIVE.md` → NAS Deployment Notes). Do not widen mounts without review.
+**cAdvisor** mounts host `/`, `/sys`, `/var/run`, and **`/var/run/docker.sock` (ro)** for metrics. This is a **documented NAS exception**. Do not widen mounts without review.
 
 ## Offline / outbound
 
@@ -63,4 +63,4 @@ This stack does **not** use a host `db/` bind for a database engine; Prometheus 
 | `${STACK_ROOT}/grafana-prom/data`                             | Include      | File copy |
 | `${STACK_ROOT}/grafana-prom/prom.yml`, `snmp.yml`, `secrets/` | Include      | File copy |
 
-Use **Hyper Backup** for off-device retention; pair with **Snapshot Replication** on the BTRFS volume per `docs/hive/NAS_DEPLOYMENT.md`.
+Use **Hyper Backup** for off-device retention; pair with **Snapshot Replication** on the BTRFS volume.

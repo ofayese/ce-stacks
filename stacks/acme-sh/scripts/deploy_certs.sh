@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Stage HAProxy PEM bundles (fullchain + privkey) from acme.sh output under HAPROXY_CERT_STAGE_DIR (default
 # /volume2/certs/acme/haproxy). Optionally restart one Traefik stack. Does not reload or restart HAProxy.
-# Host-run (preferred). See docs/hive/proposals/acme-sh/ACME_DEPLOY_HOOK_ADR.md
+# Host-run (preferred). See stacks/acme-sh/scripts/deploy_certs.sh header for ADR rationale.
 set -euo pipefail
 
 usage() {

@@ -25,7 +25,7 @@ There is **no** separate `data/` bind in the default `compose.yaml`; manifest us
 
 **`PUID` / `PGID`** default to **root (`0`/`0`)** on the NAS (same as other stacks). Override in `.env` for local Linux dev if needed.
 
-**Security Advisor** will flag **`seccomp:unconfined`** and **`IPC_LOCK`** — both are **required** for Electron/KasmVNC and are **intentional**. This stack **does not** set **`no-new-privileges:true`**: Chromium/Electron relies on a setuid sandbox helper, which is blocked when `PR_NO_NEW_PRIVS` is set (common failure on Synology without user-namespace sandbox fallbacks). See **`docs/hive/NAS_DEPLOYMENT.md`** → **Security Advisor warnings**.
+**Security Advisor** will flag **`seccomp:unconfined`** and **`IPC_LOCK`** — both are **required** for Electron/KasmVNC and are **intentional**. This stack **does not** set **`no-new-privileges:true`**: Chromium/Electron relies on a setuid sandbox helper, which is blocked when `PR_NO_NEW_PRIVS` is set (common failure on Synology without user-namespace sandbox fallbacks).
 
 ## Use case in this repo
 

@@ -15,7 +15,7 @@
 #   6. PUID/PGID: default root (0:0) for Synology bind-mount ownership; override if needed.
 #   7. sleep 20 retained — required for Synology Docker daemon startup sequence.
 #
-# Default PUID/PGID are root (0:0), matching `HIVE_OBJECTIVE.md` NAS notes. Override only
+# Default PUID/PGID are root (0:0) for Synology bind-mount ownership. Override only
 # if a non-root owner is required for the stacks directory.
 #
 # App state: ${DOCKGE_ROOT}/data/ is bind-mounted at /app/data (dockge.db, etc.).

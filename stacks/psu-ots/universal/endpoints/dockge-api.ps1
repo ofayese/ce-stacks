@@ -230,46 +230,12 @@ if (Get-Command New-PSUEndpoint -ErrorAction SilentlyContinue) {
         if (Test-Path -LiteralPath $cached) {
             return (Get-Content -LiteralPath $cached -Raw -Encoding UTF8)
         }
-        $repo = Get-RepoRoot
-        $inv = Join-Path $repo "docs/hive/tools/inventory.py"
-        if (-not (Test-Path -LiteralPath $inv)) {
-            if (Get-Command New-PSUApiResponse -ErrorAction SilentlyContinue) {
-                return (New-PSUApiResponse -StatusCode 404 -Body '{"error":"inventory.py not found under /nas-repo"}' -ContentType "application/json")
-            }
-            return '{"error":"inventory.py not found"}'
+        # inventory.py (hive toolchain) removed. Live analysis unavailable;
+        # only pre-cached reports (analyzer-latest.json) are served by this endpoint.
+        if (Get-Command New-PSUApiResponse -ErrorAction SilentlyContinue) {
+            return (New-PSUApiResponse -StatusCode 404 -Body '{"error":"live analysis unavailable — no cached report found"}' -ContentType "application/json")
         }
-        try {
-            $tmpOut = [System.IO.Path]::GetTempFileName()
-            $tmpErr = [System.IO.Path]::GetTempFileName()
-            $p = Start-Process -FilePath "python3" -ArgumentList @($inv, "--all", "--analyze", "--json") -WorkingDirectory $repo -PassThru -NoNewWindow -RedirectStandardOutput $tmpOut -RedirectStandardError $tmpErr
-            if ($null -eq $p) {
-                Remove-Item $tmpOut, $tmpErr -ErrorAction SilentlyContinue
-                return (@{ error = "failed to start python3" } | ConvertTo-Json)
-            }
-            if (-not $p.WaitForExit(120000)) {
-                try { $p.Kill() } catch { }
-                Remove-Item $tmpOut, $tmpErr -ErrorAction SilentlyContinue
-                if (Get-Command New-PSUApiResponse -ErrorAction SilentlyContinue) {
-                    return (New-PSUApiResponse -StatusCode 504 -Body '{"error":"inventory analyzer timed out"}' -ContentType "application/json")
-                }
-                return '{"error":"timeout"}'
-            }
-            if ($p.ExitCode -ne 0) {
-                $stderr = ""
-                if (Test-Path $tmpErr) { $stderr = (Get-Content -LiteralPath $tmpErr -Raw -ErrorAction SilentlyContinue) }
-                Remove-Item $tmpOut, $tmpErr -ErrorAction SilentlyContinue
-                return (@{ error = "inventory failed"; exitCode = $p.ExitCode; stderr = $stderr } | ConvertTo-Json -Depth 4)
-            }
-            $stdout = Get-Content -LiteralPath $tmpOut -Raw -Encoding UTF8
-            Remove-Item $tmpOut, $tmpErr -ErrorAction SilentlyContinue
-            $rr = Get-PSUReportsRoot
-            if (-not (Test-Path -LiteralPath $rr)) { New-Item -ItemType Directory -Path $rr -Force | Out-Null }
-            $stdout | Set-Content -LiteralPath (Join-Path $rr "analyzer-latest.json") -Encoding UTF8
-            return $stdout
-        }
-        catch {
-            return (@{ error = $_.Exception.Message } | ConvertTo-Json)
-        }
+        return '{"error":"live analysis unavailable"}'
     }
 
     New-PSUEndpoint -Url "/api/v1/git/status" -Method GET -Endpoint {

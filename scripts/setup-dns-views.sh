@@ -64,7 +64,7 @@ if ! sudo mkdir -p "$CONF_DIR"; then
 fi
 
 if ! sudo tee "$CONF_PATH" >/dev/null <<'EOF'; then
-# Split-horizon — dnsmasq address= overrides (see docs/hive/SYNOLOGY_DNS_VIEWS.md)
+# Split-horizon — dnsmasq address= overrides
 address=/ots.olutechsys.com/10.0.1.15
 address=/.ots.olutechsys.com/10.0.1.15
 address=/mft.olutechsys.com/10.0.1.24

@@ -38,7 +38,7 @@ For 4096-bit RSA, substitute `--keylength 4096` in every `--issue` block below
 
 - **Primary (Traefik + host-named services):** under **`${ACME_CERT_ROOT}`** (default `/volume2/certs/acme`), PEM trees **`otsorundscore/`** and **`misfitsds/`** — Traefik mounts these for **`*.otsorundscore.*`** and **`*.misfitsds.*`** on both **`.olutechsys.com`** and **`.olutech.systems`**. Follow the **`--issue`** / **`--install-cert`** blocks for those dirs first when standing up TLS for the Dockge fleet.
 - **Optional / broader:** **`wildcard/`**, **`otsorundscore-sub/`**, **`misfitsds-sub/`** cover apex + multi-zone + optional extra SANs for operators who keep consolidated or overlapping orders; skip creating dirs you never issue for.
-- **Legacy / lab / operator-specific:** historical **`*.ots.*`** / **`*.mft.*`** service hostnames are deprecated for **new** work (see root **`AGENTS.md`**). **`deploy-*.bash`** under **`${ACME_CERT_ROOT}`**, **`daemon-tls.json`** (TLS-only Docker), and similar assets remain documented for back-compat or laptop staging; for HAProxy bundles from Dockge stacks prefer **`stacks/acme-sh/scripts/deploy_certs.sh`** with **`ACME_PROFILE`** / **`BUNDLE_SPECS`** per **`docs/hive/proposals/acme-sh/ACME_DEPLOY_HOOK_ADR.md`**.
+- **Legacy / lab / operator-specific:** historical **`*.ots.*`** / **`*.mft.*`** service hostnames are deprecated for **new** work (see root **`AGENTS.md`**). **`deploy-*.bash`** under **`${ACME_CERT_ROOT}`**, **`daemon-tls.json`** (TLS-only Docker), and similar assets remain documented for back-compat or laptop staging; for HAProxy bundles from Dockge stacks prefer **`stacks/acme-sh/scripts/deploy_certs.sh`** with **`ACME_PROFILE`** / **`BUNDLE_SPECS`**.
 
 ## NAS hosts & LAN IPs (reference)
 
@@ -129,7 +129,7 @@ After new or renewed PEMs under **`${ACME_CERT_ROOT}`** (profiles such as **`ots
    - **Single profile (optional):** with **`BUNDLE_SPECS` unset**, set **`ACME_PROFILE=otsorundscore`** or **`misfitsds`** to stage **one** HAProxy bundle using the default filename mapping (see script header).  
    - **Traefik:** set **`TRAEFIK_PROFILE=ots`** or **`mft`** (or **`TRAEFIK_STACK=traefik-ots`** / **`traefik-mft`**) so **only one** Traefik stack is restarted; defaults skip Traefik if unset.  
    - **HAProxy validate:** when staging matches the live cert dir, **`haproxy -c`** runs against **`HAPROXY_CFG`** (default **`${STACK_ROOT}/_haproxy/haproxy.cfg`**) if **`HAPROXY_BIN`** is executable (Synology package default **`/volume1/@appstore/haproxy/sbin/haproxy`**).  
-   - Rationale: **[`docs/hive/proposals/acme-sh/ACME_DEPLOY_HOOK_ADR.md`](../../docs/hive/proposals/acme-sh/ACME_DEPLOY_HOOK_ADR.md)** (host-run vs in-container).
+   - Rationale: host-run vs in-container ADR (see `stacks/acme-sh/scripts/deploy_certs.sh` header).
 
 2. **TLS edge verify:** **`stacks/acme-sh/scripts/verify_serving.sh`** — requires **`CONNECT_HOST`**; set **`CONNECT_PORT`** (default **`6443`**), **`SNI`** (defaults to **`CONNECT_HOST`**), **`MIN_VALID_DAYS`** (default **21** for **`openssl x509 -checkend`**), optional **`EXPECTED_SUBJECT`**. On TLS / subject / expiry failure, posts to **`DISCORD_WEBHOOK_URL`** when set (same variable name as **`stacks/acme-sh/.env.example`**).
 

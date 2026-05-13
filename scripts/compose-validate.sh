@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 # Validate Compose files parse and interpolate (no pull / no run).
-# Repo root = ancestor containing HIVE_OBJECTIVE.md; compose stacks live under stacks/.
+# Repo root = ancestor containing README.md; compose stacks live under stacks/.
 set -euo pipefail
 _script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="${_script_dir}"
-while [[ ! -f "${ROOT}/HIVE_OBJECTIVE.md" && "${ROOT}" != "/" ]]; do
+while [[ ! -f "${ROOT}/README.md" && "${ROOT}" != "/" ]]; do
 	ROOT="$(dirname "${ROOT}")"
 done
-[[ -f "${ROOT}/HIVE_OBJECTIVE.md" ]] || {
-	echo "ERROR: could not find repo root (HIVE_OBJECTIVE.md) above ${_script_dir}" >&2
+[[ -f "${ROOT}/README.md" ]] || {
+	echo "ERROR: could not find repo root (README.md) above ${_script_dir}" >&2
 	exit 1
 }
 STACKS="${ROOT}/stacks"

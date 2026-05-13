@@ -9,7 +9,7 @@ Local LLM runtime (`ollama`) + open-webui front-end. CPU-only on this NAS — no
 
 ## Startup order
 
-**otsai-webui** and **`ollama-model-init`** wait on **ollama** being **healthy**. Model pulls still use the script’s wait loop. NAS flow: **`docs/hive/NAS_DEPLOYMENT.md`** → **Dockge stack lifecycle (Compose v2)**.
+**otsai-webui** and **`ollama-model-init`** wait on **ollama** being **healthy**. Model pulls still use the script’s wait loop. Use Portainer or `docker compose up -d` from the stack directory.
 
 ## Volumes
 
@@ -27,7 +27,7 @@ Local LLM runtime (`ollama`) + open-webui front-end. CPU-only on this NAS — no
 
 ## Authentication
 
-This stack’s compose wires **local Open WebUI login** (`WEBUI_AUTH=1`) only. For **Google → DSM** (NAS login portal), see [`docs/hive/GOOGLE_WORKSPACE_OAUTH_NAS_LOGIN.md`](../../docs/hive/GOOGLE_WORKSPACE_OAUTH_NAS_LOGIN.md). Optional **SSO inside Open WebUI** (OAuth/OIDC) is configured in the app or via extra env per [Open WebUI SSO](https://docs.openwebui.com/troubleshooting/sso/) — not via tracked compose here.
+This stack’s compose wires **local Open WebUI login** (`WEBUI_AUTH=1`) only. For **Google → DSM** (NAS login portal), configure OAuth/OIDC in DSM separately. Optional **SSO inside Open WebUI** (OAuth/OIDC) is configured in the app or via extra env per [Open WebUI SSO](https://docs.openwebui.com/troubleshooting/sso/) — not via tracked compose here.
 
 ## Health
 

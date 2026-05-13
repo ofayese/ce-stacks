@@ -9,7 +9,7 @@ Internal documentation hub powered by codex.team's [codex.docs](https://github.c
 
 ## Startup order
 
-**codex-docs** waits on **mongodb** being **healthy**. See **`docs/hive/NAS_DEPLOYMENT.md`** → **Dockge stack lifecycle (Compose v2)**.
+**codex-docs** waits on **mongodb** being **healthy**. Use Portainer or `docker compose up -d` from the stack directory.
 
 ## Required env (`.env`)
 
@@ -50,8 +50,8 @@ Mongo data persists at `${STACK_ROOT}/codex-docs/db`. Never `rm -rf` without a s
 | Directory                       | Hyper Backup | Method                                                                                       |
 | ------------------------------- | ------------ | -------------------------------------------------------------------------------------------- |
 | `${STACK_ROOT}/codex-docs/data` | Include      | File copy                                                                                    |
-| `${STACK_ROOT}/codex-docs/db`   | **Exclude**  | `docker exec CodexDocs-MongoDB mongodump` (see `docs/hive/NAS_DEPLOYMENT.md` → Hyper Backup) |
+| `${STACK_ROOT}/codex-docs/db`   | **Exclude**  | `docker exec CodexDocs-MongoDB mongodump`                                                    |
 
 ## Status note
 
-This stack historically shipped `APP_SECRET=REPLACE_WITH_RANDOM_SECRET` in compose.yaml. Verify the running container's `APP_SECRET` is a real random value before treating data as authoritative; see `docs/hive/proposals/codex-docs/PROPOSAL.md`.
+This stack historically shipped `APP_SECRET=REPLACE_WITH_RANDOM_SECRET` in compose.yaml. Verify the running container's `APP_SECRET` is a real random value before treating data as authoritative.

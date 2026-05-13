@@ -26,7 +26,7 @@
 # SYNOLOGY SPECIFICS
 # • Mount point in compose.yaml: /var/run/docker.sock:/var/run/docker.sock:ro
 #   - :ro = read-only (essential for security)
-# • Repo default PUID:PGID = 0:0 (root) on Synology per HIVE_OBJECTIVE.md; override in compose env if needed.
+# • Repo default PUID:PGID = 0:0 (root) on Synology per README.md → Key Conventions; override in compose env if needed.
 # • All services in this stack use label com.centurylinklabs.watchtower.enable=true
 # • Compose uses each stack’s default project network (user-defined bridge), not Docker’s literal bridge network.
 #

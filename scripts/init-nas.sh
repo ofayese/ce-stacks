@@ -110,8 +110,8 @@ STACK_MANIFEST=(
 # Stacks intentionally absent from STACK_MANIFEST.
 # These have no persistent host bind mounts under ${STACK_ROOT}.
 # Listed here so the manifest exhaustiveness check can account
-# for them without requiring a dummy entry. (Not read by this script - see
-# docs/hive/NAS_DEPLOYMENT.md for the matching `diff` / `grep -vE` list.)
+# for them without requiring a dummy entry. (Not read by this script —
+# see scripts/verify-stack-manifest.sh for the exhaustiveness check.)
 # shellcheck disable=SC2034
 MANIFEST_EXEMPT=(
 	"agents_gateway_data" # docker.sock only

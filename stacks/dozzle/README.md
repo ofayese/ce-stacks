@@ -22,7 +22,7 @@ Shell-free probe (`/dozzle --version`) because current Dozzle images do not ship
 
 ## RACI
 
-This stack's worker is the **cross-cutting log-visibility owner** per HIVE_OBJECTIVE.md. The `logging:` driver/options on every other stack must be Dozzle-friendly (`json-file` with `max-size` / `max-file`). See `docs/hive/proposals/_baseline/PROPOSAL.md` §1 for the canonical block.
+This stack's worker is the **cross-cutting log-visibility owner**. The `logging:` driver/options on every other stack must be Dozzle-friendly (`json-file` with `max-size` / `max-file`).
 
 ## Security note
 

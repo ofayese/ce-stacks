@@ -21,7 +21,7 @@ Installed PEMs under `${ACME_CERT_ROOT:-/volume2/certs/acme}` are consumed by ot
 
 ## Post-issue deploy + verify (HAProxy / Traefik)
 
-- **`acme-sh/scripts/deploy_certs.sh`** — host-run: PEM → combined bundles under **`HAPROXY_CERT_STAGE_DIR`** (default **`/volume2/certs/acme/haproxy`**, created if missing); optional **`haproxy -c`** only when that dir matches **`${STACK_ROOT}/_haproxy/certs`**; optional single-stack Traefik restart (**`TRAEFIK_PROFILE`** / **`TRAEFIK_STACK`**). Does not reload HAProxy. See **`SETUP.md`** §7 and ADR **[`../../docs/hive/proposals/acme-sh/ACME_DEPLOY_HOOK_ADR.md`](../../docs/hive/proposals/acme-sh/ACME_DEPLOY_HOOK_ADR.md)**.
+- **`acme-sh/scripts/deploy_certs.sh`** — host-run: PEM → combined bundles under **`HAPROXY_CERT_STAGE_DIR`** (default **`/volume2/certs/acme/haproxy`**, created if missing); optional **`haproxy -c`** only when that dir matches **`${STACK_ROOT}/_haproxy/certs`**; optional single-stack Traefik restart (**`TRAEFIK_PROFILE`** / **`TRAEFIK_STACK`**). Does not reload HAProxy. See **`SETUP.md`** §7.
 - **`acme-sh/scripts/verify_serving.sh`** — fail-closed OpenSSL SNI check (optional Discord on failure via **`DISCORD_WEBHOOK_URL`**).
 
 ## Required env (`.env`, gitignored)
@@ -77,7 +77,7 @@ No probe (host networking + daemon mode → no meaningful liveness probe). Verif
 
 - [AGENTS.md](AGENTS.md) — local lessons learned (rename pattern, dockerized issue flow, validation)
 - [SETUP.md](SETUP.md) — issue/install procedure (Dockge-first; legacy `deploy-*.bash` runbooks in [`archive/`](archive/))
-- [HIVE_OBJECTIVE.md](../HIVE_OBJECTIVE.md) — repo-wide guardrails
+- README.md — repo-wide guardrails
 
 ## Rollback
 

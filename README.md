@@ -1,12 +1,12 @@
 # ce-stacks
 
-Production Docker stack infrastructure for a Synology DS723+ NAS running DSM 7.3. All stacks are managed via [Portainer CE](https://www.portainer.io/) and deployed under the canonical root `/volume2/docker/ce-stacks`.
+Production Docker stack infrastructure for a Synology DS723+ NAS running DSM 7.3. All stacks are managed via [Dockhand](https://dockhand.pro/) and deployed under the canonical root `/volume2/docker/ce-stacks`.
 
 ## Architecture Overview
 
 - **NAS**: Synology DS723+ · DSM 7.3 · Docker Engine via Container Manager
 - **Stack root**: `/volume2/docker/ce-stacks`
-- **Portainer data**: `/volume2/docker/portainer` (outside stack root, persists across repo resets)
+- **Dockhand data**: `/volume2/docker/dockhand` (outside stack root, persists across repo resets)
 - **Network model**: All service ports bind to `10.0.1.15` (LAN IP) — no `0.0.0.0` bindings
 - **Compose format**: `compose.yaml` throughout (no `docker-compose.yml`)
 
@@ -61,30 +61,36 @@ cd /volume2/docker
 git clone https://github.com/ofayese/ce-stacks.git
 ```
 
-### 2. Install Portainer via RC script
+### 2. Install Dockhand via RC script
 
 ```bash
-sudo cp /volume2/docker/ce-stacks/scripts/portainer-start.sh /usr/local/etc/rc.d/portainer.sh
-sudo chmod +x /usr/local/etc/rc.d/portainer.sh
-sudo /usr/local/etc/rc.d/portainer.sh
+sudo cp /volume2/docker/ce-stacks/dockhand/dockhand-start.sh /usr/local/etc/rc.d/dockhand.sh
+sudo chmod +x /usr/local/etc/rc.d/dockhand.sh
+sudo /usr/local/etc/rc.d/dockhand.sh
 ```
 
-Portainer CE will be available at `https://10.0.1.15:9443` after first boot.
+Dockhand will be available at `http://10.0.1.15:3866` after health check passes (60s).
 
-### 3. Populate secrets
+**First-time setup**: See [`dockhand/README.md`](./dockhand/README.md) for UI initialization and git webhook configuration.
 
-Every stack that needs secrets has a `.env.example`. Copy and fill in each one before starting the stack:
+### 3. Initialize Dockhand
 
-```bash
-# Example for synology-api-bridge
-cd /volume2/docker/ce-stacks/stacks/synology-api-bridge
-cp .env.example .env
-nano .env   # fill in BRIDGE_SHARED_SECRET
-```
+Access the web UI at `http://10.0.1.15:3866` and:
 
-### 4. Register stacks in Portainer
+1. Create admin user (Settings > Authentication > Users)
+2. Add Docker environment (Settings > Environments > +Add: "DS723", Unix socket)
+3. Register git webhook (Settings > Webhooks) for auto-sync on repo push
 
-Add each stack via Portainer → Stacks → Add stack → Repository, pointing at this repo. Stacks read `compose.yaml` from their subdirectory.
+See [`stacks/dockhand/README.md`](./stacks/dockhand/README.md) for detailed steps.
+
+### 4. Import Stacks
+
+Dockhand auto-imports stacks from your ce-stacks repo via:
+
+- **Git webhook**: Push to repo → Dockhand auto-deploys (recommended)
+- **Manual upload**: Dockhand UI → Stacks → Create Stack → Upload compose.yaml
+
+For each stack, populate `.env` from `.env.example` before deployment.
 
 ### 5. Validate after changes
 
@@ -107,22 +113,35 @@ bash /volume2/docker/ce-stacks/scripts/verify-repo-layout.sh
 
 ## Network Subnets
 
-| Stack | Network name | Subnet |
-|---|---|---|
-| warp-main | warp-network | 172.23.0.0/24 |
-| zabbix | zabbix-net | 172.24.0.0/24 |
-| psu-ots | psu-ots-net | 172.25.0.0/24 |
+All bridge networks use explicit `/24` subnets to prevent Docker's auto-assigned `/16` ranges from creating collisions.
+
+| Stack | Network name | Subnet | Notes |
+|---|---|---|---|
+| *(backbone)* | ce-internal | 172.26.0.0/24 | External; created by `init-nas.sh` |
+| warp-main | warp-network | 172.25.0.0/24 | Moved from .23 (it-tools /16 collision) |
+| ollama | ollama-net | 172.27.0.0/24 | |
+| databases | db-net | 172.28.0.0/24 | |
+| code-server | code-server-net | 172.28.2.0/24 | |
+| grafana-prom | grafana-net | 172.29.0.0/24 | |
+| grafana-prom | prometheus-net | 172.29.1.0/24 | |
+| psu-ots | psu-ots-net | 172.32.0.0/24 | Moved from 172.25 (warp collision); 172.30 taken by zabbix |
+| dozzle | dozzle-net | 172.31.0.0/24 | |
+| watchtower | watchtower-net | 172.31.1.0/24 | |
+| agents_gateway_data | agents-gateway-net | 172.31.7.0/24 | |
+| mcp-tools-config | mcp-tools-net | 172.31.8.0/24 | |
+| zabbix | zabbix-net | 172.30.0.0/24 | Moved from 172.24 (openresume /16 collision) |
 
 The Docker default bridge `172.17.0.0/16` is reserved and must not be re-used.
 
-## Portainer CE Details
+## Dockhand Details
 
-Portainer lifecycle is managed exclusively by the RC script — not by a compose stack.
+Dockhand lifecycle is managed exclusively by the RC script — not by a compose stack.
 
-- **Script**: `scripts/portainer-start.sh` → installed at `/usr/local/etc/rc.d/portainer.sh`
-- **Image**: `portainer/portainer-ce:2.41.0-alpine` (supports `compose.yaml` natively)
-- **Ports**: `10.0.1.15:9000` (HTTP API), `10.0.1.15:9443` (HTTPS WebUI)
-- **Data**: `/volume2/docker/portainer` (outside this repo)
+- **Script**: `scripts/dockhand-start.sh` → installed at `/usr/local/etc/rc.d/dockhand.sh`
+- **Image**: `fnsys/dockhand:latest` (git-backed Compose orchestration)
+- **Port**: `10.0.1.15:3866` (HTTP WebUI)
+- **Data**: `/volume2/docker/dockhand` (outside this repo)
+- **Features**: Git webhooks, Compose visual editor, multi-environment support
 
 ## Synology DSM Notes
 

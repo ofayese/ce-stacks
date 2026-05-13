@@ -31,7 +31,7 @@ Cron format: `sec min hour dom mon dow`.
 
 Watchtower will pull patch/minor updates for any opt-in image whose tag is itself rolling (e.g. `:latest`, `:lts`, `:main`). For digest-pinned images, Watchtower notifies but cannot update — upgrades are manual by changing the digest in compose.yaml.
 
-Watchtower does **not** auto-update itself by label even with `watchtower.enable=true` set on its own container — by design (avoid the agent updating mid-run). Manual tag bumps remain the operator's job; see `docs/hive/proposals/watchtower/PROPOSAL.md`.
+Watchtower does **not** auto-update itself by label even with `watchtower.enable=true` set on its own container — by design (avoid the agent updating mid-run). Manual tag bumps remain the operator's job.
 
 ## Health
 

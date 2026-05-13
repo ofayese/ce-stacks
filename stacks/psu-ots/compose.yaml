@@ -95,5 +95,7 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.25.0.0/24
-          gateway: 172.25.0.1
+        # Moved from 172.25.0.0/24 (2026-05-13) — collided with warp-network (172.25.0.0/24).
+        # 172.30.0.0/24 was also taken (zabbix-net). 172.32.0.0/24 confirmed free.
+        - subnet: 172.32.0.0/24
+          gateway: 172.32.0.1

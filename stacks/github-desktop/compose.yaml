@@ -56,7 +56,6 @@ networks:
     driver: bridge
     ipam:
       config:
-        # Subnet registry: 172.20.0.0/24 allocated to github-desktop-net
-        # See docs/hive/NAS_DEPLOYMENT.md for full subnet registry.
+        # Subnet registry: 172.20.0.0/24 allocated to github-desktop-net (see README.md → Network Subnets)
         - subnet: 172.20.0.0/24
           gateway: 172.20.0.1

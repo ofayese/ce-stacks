@@ -33,7 +33,7 @@ Copy `.env.example` to `.env` and set `POSTGRES_PASSWORD` to a strong value. `ST
 
 ## Startup order
 
-**Postgres → zabbix-server → zabbix-web** via **`condition: service_healthy`**. After `git pull`, use **`docker compose up -d`** from this directory; see **`docs/hive/NAS_DEPLOYMENT.md`** → **Dockge stack lifecycle (Compose v2)** for NAS steps and timing.
+**Postgres → zabbix-server → zabbix-web** via **`condition: service_healthy`**. After `git pull`, use **`docker compose up -d`** from this directory. Use Portainer or `docker compose up -d` from the stack directory.
 
 ## Health
 
@@ -58,7 +58,7 @@ Label `com.centurylinklabs.watchtower.enable=true` on long-running services. Pin
 ## Operator notes
 
 - Default Zabbix UI login after first boot: **Admin** / **zabbix** — change immediately.
-- For Synology SNMPv3 + community template steps, see `docs/hive/proposals/zabbix/proposal.md`.
+- For Synology SNMPv3 + community template steps, see the proposal doc.
 
 ## SNMPv3 (NAS hardware — no agent)
 
@@ -147,7 +147,7 @@ After initial setup, if DSM is renamed the agent picks up the new hostname autom
 
 The **`zabbix-agent2`** service is **commented out** in `compose.yaml`. Enable only if you need **per-container** CPU/memory/status in Zabbix. It does **not** replace SNMPv3 or the native agent for NAS health.
 
-Uncomment only after reading the warnings in `compose.yaml` and documenting **privileged** mode in **`docs/hive/NAS_DEPLOYMENT.md`**.
+Uncomment only after reading the warnings in `compose.yaml` and documenting **privileged** mode.
 
 ### Monitoring architecture summary
 
@@ -162,5 +162,5 @@ Uncomment only after reading the warnings in `compose.yaml` and documenting **pr
 | Directory                     | Hyper Backup      | Method                                                           |
 | ----------------------------- | ----------------- | ---------------------------------------------------------------- |
 | `${STACK_ROOT}/zabbix/data`   | Include           | File copy                                                        |
-| `${STACK_ROOT}/zabbix/db`     | **Exclude**       | Postgres dump (see `docs/hive/NAS_DEPLOYMENT.md` → Hyper Backup) |
+| `${STACK_ROOT}/zabbix/db`     | **Exclude**       | Postgres dump (via `docker exec` → vendor tools)                 |
 | `${STACK_ROOT}/zabbix/config` | Include (if used) | File copy                                                        |

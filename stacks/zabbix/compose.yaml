@@ -143,9 +143,9 @@ services:
   #
   # The container below is for Docker container monitoring ONLY.
   # It requires privileged mode and host-side bind mounts to see
-  # NAS host metrics - avoid this unless you specifically need
+  # NAS host metrics — avoid this unless you specifically need
   # Docker container metrics in Zabbix. Security Advisor will flag
-  # privileged mode. See docs/hive/NAS_DEPLOYMENT.md.
+  # privileged mode.
   #
   # zabbix-agent2:
   #   image: zabbix/zabbix-agent2:alpine-7.4-latest

@@ -1,0 +1,38 @@
+services:
+  dockhand:
+    container_name: Dockhand
+    image: fnsys/dockhand:latest
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    mem_limit: 1g
+    cpu_shares: 512
+    ports:
+      - 10.0.1.15:3866:3000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${STACK_ROOT}/dockhand/data:/app/data:rw
+    environment:
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - SKIP_DF_COLLECTION=true
+      - TZ=America/New_York
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://127.0.0.1:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    labels:
+      - com.centurylinklabs.watchtower.enable=true
+    networks:
+      - ce-internal
+
+networks:
+  ce-internal:
+    external: true

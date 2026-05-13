@@ -9,7 +9,7 @@ Privacy-respecting metasearch engine, backed by Valkey (Redis fork) for caching.
 
 ## Startup order
 
-**searxng** starts after **redis** is **healthy**. See **`docs/hive/NAS_DEPLOYMENT.md`** → **Dockge stack lifecycle (Compose v2)**.
+**searxng** starts after **redis** is **healthy**. Use Portainer or `docker compose up -d` from the stack directory.
 
 ## Public hostname
 

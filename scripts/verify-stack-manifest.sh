@@ -4,10 +4,10 @@
 set -euo pipefail
 _script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="${_script_dir}"
-while [[ ! -f "${ROOT}/HIVE_OBJECTIVE.md" && "${ROOT}" != "/" ]]; do
+while [[ ! -f "${ROOT}/README.md" && "${ROOT}" != "/" ]]; do
 	ROOT="$(dirname "${ROOT}")"
 done
-[[ -f "${ROOT}/HIVE_OBJECTIVE.md" ]] || {
+[[ -f "${ROOT}/README.md" ]] || {
 	echo "ERROR: could not find repo root" >&2
 	exit 1
 }
