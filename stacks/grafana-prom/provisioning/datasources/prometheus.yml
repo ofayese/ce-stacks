@@ -1,0 +1,16 @@
+# Grafana datasource provisioning — ce-stacks/grafana-prom
+# Prometheus is auto-configured with a fixed UID so all provisioned dashboards
+# reference it consistently without any manual UI steps.
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    uid: prometheus-ce
+    url: http://prometheus-server:9090
+    access: proxy
+    isDefault: true
+    editable: false
+    jsonData:
+      httpMethod: POST
+      timeInterval: "15s"

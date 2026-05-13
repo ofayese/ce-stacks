@@ -1,0 +1,18 @@
+# Grafana dashboard provisioning — ce-stacks/grafana-prom
+# Grafana loads all JSON files from the path below on startup and on
+# updateIntervalSeconds. Dashboards are read-only in the UI (allowUiUpdates: false)
+# so that local edits don't drift from source-controlled JSON.
+apiVersion: 1
+
+providers:
+  - name: ce-stacks
+    orgId: 1
+    folder: NAS Monitoring
+    folderUid: nas-monitoring
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: false
+    options:
+      path: /etc/grafana/provisioning/dashboards
+      foldersFromFilesStructure: false

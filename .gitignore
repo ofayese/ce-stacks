@@ -65,6 +65,7 @@ stacks/github-desktop/config/ssl/
 stacks/databases/data/
 stacks/code-server/data/
 stacks/zabbix/data/
+stacks/grafana-prom/data/
 
 # ---------------------------------------------------------------------------
 # Docker / Compose artefacts

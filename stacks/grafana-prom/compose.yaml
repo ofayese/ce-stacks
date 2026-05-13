@@ -31,15 +31,16 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
+      start_period: 90s
     ports:
       - "10.0.1.15:3340:3000"
     volumes:
       - ${STACK_ROOT}/grafana-prom/data/grafana:/var/lib/grafana:rw
+      - ${STACK_ROOT}/grafana-prom/provisioning:/etc/grafana/provisioning:ro
     environment:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
       - TZ=${TIMEZONE}
-      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource,natel-discrete-panel,grafana-piechart-panel
     restart: unless-stopped
 
   prometheus:
@@ -104,6 +105,9 @@ services:
       - --collector.hwmon
       - --collector.meminfo
       - --collector.diskstats
+      # Required by Dashboard 1860 (Node Exporter Full) for network and filesystem panels.
+      - --collector.netdev
+      - --collector.filesystem
     container_name: Prometheus-Node
     hostname: prometheus-node
     networks:
@@ -142,6 +146,7 @@ services:
     image: prom/snmp-exporter:v0.30.1
     command:
       - "--config.file=/etc/snmp_exporter/snmp.yml"
+      - "--config.expand-env=true"
     container_name: Prometheus-SNMP
     hostname: prometheus-snmp
     networks:
@@ -161,6 +166,11 @@ services:
     environment:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
+      # SNMP credentials — values come from .env (see .env.example).
+      # snmp.yml uses ${SNMP_USERNAME} etc.; --config.expand-env resolves them at startup.
+      - SNMP_USERNAME=${SNMP_USERNAME}
+      - SNMP_AUTH_PASSWORD=${SNMP_AUTH_PASSWORD}
+      - SNMP_PRIV_PASSWORD=${SNMP_PRIV_PASSWORD}
     healthcheck:
       test:
         [

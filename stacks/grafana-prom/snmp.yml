@@ -11,11 +11,15 @@ auths:
   public_v3:
     community: public
     security_level: authPriv
-    username: ${SNMP_USERNAME:-snmpadmin}
-    password: ${SNMP_AUTH_PASSWORD:-changeme}
+    # Plain ${VAR} syntax required — snmp-exporter's --config.expand-env uses
+    # Go os.ExpandEnv which does not support the ${VAR:-default} shell fallback form.
+    # Actual values must be set in .env (see .env.example: SNMP_USERNAME, SNMP_AUTH_PASSWORD,
+    # SNMP_PRIV_PASSWORD) and are injected into the container via compose.yaml environment block.
+    username: ${SNMP_USERNAME}
+    password: ${SNMP_AUTH_PASSWORD}
     auth_protocol: SHA
     priv_protocol: AES
-    priv_password: ${SNMP_PRIV_PASSWORD:-changeme}
+    priv_password: ${SNMP_PRIV_PASSWORD}
     version: 3
 
 modules:
