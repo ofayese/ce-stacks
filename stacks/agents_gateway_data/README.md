@@ -1,6 +1,6 @@
 # agents_gateway_data — MCP gateway (DuckDuckGo)
 
-**Dockge / default:** run **`compose.yaml`** in this directory only. The alternate layout under **`duckduckgo/compose.yaml`** is for a nested sample — do **not** run both stacks on the same host (**8812**) without changing ports.
+**Default:** run **`compose.yaml`** in this directory only. The alternate layout under **`duckduckgo/compose.yaml`** is for a nested sample — do **not** run both stacks on the same host (**8812**) without changing ports.
 
 Experimental **Docker MCP Gateway** wiring for DuckDuckGo search MCP. Uses the host Docker API.
 
@@ -34,5 +34,5 @@ Images pull from Docker Hub / GHCR; outbound **HTTPS (443)** required. No extra 
 
 ## Related compose
 
-- Root [`compose.yaml`](./compose.yaml) — primary stack file Dockge should run.
+- Root [`compose.yaml`](./compose.yaml) — primary stack file to deploy.
 - [`duckduckgo/compose.yaml`](./duckduckgo/compose.yaml) — alternate layout; avoid running both on the same host port.

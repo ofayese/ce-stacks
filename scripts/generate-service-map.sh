@@ -80,9 +80,9 @@ BARE_METAL = [
     {"stack": "portainer", "service": "portainer-api",
      "hp": 9000, "cp": 9000,
      "desc": "Portainer CE - HTTP API"},
-    {"stack": "dockge", "service": "dockge",
-     "hp": 5571, "cp": 5001,
-     "desc": "Dockge - compose stack manager UI (fallback / secondary)"},
+    {"stack": "dockhand", "service": "dockhand",
+     "hp": 3866, "cp": 3000,
+     "desc": "Dockhand - git-backed compose stack manager UI"},
 ]
 
 # ── Resolve a port string that may contain ${VAR:-default} syntax ─────────────
@@ -166,7 +166,7 @@ lines += [
     "**TCP-only services** (MySQL on 3307, Zabbix server on 10051) do not serve HTTP -",
     "connect with a native client or tunneled TCP.",
     "",
-    "**Portainer** and **Dockge** are managed by RC scripts (`/usr/local/etc/rc.d/`) and",
+    "**Portainer** and **Dockhand** are managed by RC scripts (`/usr/local/etc/rc.d/`) and",
     "have no `compose.yaml`. They are included here for completeness.",
     "",
     "**Cloudflare Tunnel** (`cloudflared`, SynoCommunity package) exposes selected services",

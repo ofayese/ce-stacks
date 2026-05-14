@@ -17,7 +17,7 @@
 #
 # ORGANIZATION
 # Services are grouped by function:
-#   - Infrastructure:  Docker management (Portainer, Dockge, etc.)
+#   - Infrastructure:  Docker management (Portainer, Dockhand, etc.)
 #   - Management:      Monitoring & admin (Dozzle, Adminer, phpMyAdmin)
 #   - Development:     Code editors, databases (Code-Server, MySQL, PostgreSQL)
 #   - Productivity:    Documentation & tools (Codex Docs, OpenResume)
@@ -56,10 +56,9 @@
 
     - Dockhand:
         # Container name from: dockhand/compose.yaml (service: dockhand)
-        # Replaced Dockge as the stack management UI.
         icon: docker.png
         href: http://10.0.1.15:3866/
-        description: Git-backed Docker Compose stack manager (replaced Dockge)
+        description: Git-backed Docker Compose stack manager
         server: my-docker
         container: Dockhand
         siteMonitor: http://10.0.1.15:3866/

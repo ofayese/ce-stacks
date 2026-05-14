@@ -1,6 +1,6 @@
 # Archived excerpts from `SETUP.md` (2026-05-10)
 
-Material moved out of the live **[`../SETUP.md`](../SETUP.md)** because it duplicates the Dockge-first flow or documents **legacy per-host `deploy-*.bash`** paths. **Current operator path:** [Deploy acme-sh end-to-end](../SETUP.md#deploy-acme-sh-end-to-end-checklist) and **`../scripts/deploy_certs.sh`**.
+Material moved out of the live **[`../SETUP.md`](../SETUP.md)** because it duplicates the current flow or documents **legacy per-host `deploy-*.bash`** paths. **Current operator path:** [Deploy acme-sh end-to-end](../SETUP.md#deploy-acme-sh-end-to-end-checklist) and **`../scripts/deploy_certs.sh`**.
 
 Anchor for downstream links: **mTLS bundle section** → heading below (`<a id="mtls-bundle-reference"></a>`).
 
@@ -26,7 +26,7 @@ The canonical checklist is **Deploy acme-sh end-to-end** in `SETUP.md`. The foll
 ### 1. Start the container
 
 ```bash
-cd /volume1/​docker/dockge​/stacks/acme-sh
+cd /volume2/docker/ce-stacks/stacks/acme-sh
 docker compose up -d
 ```
 

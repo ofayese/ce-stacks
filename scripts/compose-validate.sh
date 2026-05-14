@@ -14,6 +14,10 @@ done
 STACKS="${ROOT}/stacks"
 cd "$ROOT"
 
+# Synology non-interactive SSH does not include /usr/local/bin in PATH.
+# Resolve docker binary once; caller can override via DOCKER=/path/to/docker.
+DOCKER="${DOCKER:-$(command -v docker 2>/dev/null || echo /usr/local/bin/docker)}"
+
 export COMPOSE_ENV_FILE="${ROOT}/.github/compose-ci.env"
 # Host bind mounts use ${STACK_ROOT}/<stack>/… - CI resolves to the real stacks/ path.
 export STACK_ROOT="${STACK_ROOT:-${STACKS}}"
@@ -96,7 +100,7 @@ while IFS= read -r f; do
 			echo "ERROR: could not cd to ${dir} (for ${rel})" >&2
 			exit 1
 		}
-		docker compose --env-file "${COMPOSE_ENV_FILE}" -f "${base}" config -q
+		"${DOCKER}" compose --env-file "${COMPOSE_ENV_FILE}" -f "${base}" config -q
 	) || {
 		echo "ERROR: docker compose config failed for ${rel}" >&2
 		exit 1

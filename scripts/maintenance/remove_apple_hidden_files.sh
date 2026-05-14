@@ -3,7 +3,7 @@
 # Safe-by-default: DRY_RUN=1 (no deletes). Use Task Scheduler only after dry-run review.
 #
 # Always removes DSM Search indexer junk under each scan root — directories named @eaDir and files
-# *@SynoEAStream / *@SynoResource — including under Dockge stack bind mounts (most stacks have no .git).
+# *@SynoEAStream / *@SynoResource — including under Docker stack bind mounts (most stacks have no .git).
 # Under .git/refs the same junk breaks git (e.g. fatal: bad object refs/.../@eaDir/...). Disable DSM
 # indexing on /volume2/docker for a permanent fix.
 #
@@ -14,10 +14,10 @@
 #     "Mac compatibility" / NFD handling is off — pair-based ._ cleanup may skip stubs until names align.
 #
 # Usage:
-#   Single tree (repo NAS root — one find covers stacks/*, .git/refs, and bind data under dockge/):
+#   Single tree (repo NAS root — one find covers stacks/*, .git/refs, and all bind data):
 #     DRY_RUN=1 APPLE_CLEANUP_ROOT=/volume2/docker/ce-stacks bash scripts/maintenance/remove_apple_hidden_files.sh
-#   Every Dockge stack folder only (.../stacks/<name>/ each as root — does NOT walk .../dockge/.git or files
-#   directly under .../dockge/ outside stacks/; use APPLE_CLEANUP_ROOT for that):
+#   Every stack folder only (.../stacks/<name>/ each as root — does NOT walk the repo .git or files
+#   directly under the repo root outside stacks/; use APPLE_CLEANUP_ROOT for that):
 #     DRY_RUN=1 APPLE_CLEANUP_STACKS_ROOT=/volume2/docker/ce-stacks/stacks bash scripts/maintenance/remove_apple_hidden_files.sh
 #   Both (e.g. git corruption at repo root plus per-stack pass; repo root walk also covers stacks, stacks pass is redundant):
 #     DRY_RUN=1 APPLE_CLEANUP_ROOT=/volume2/docker/ce-stacks APPLE_CLEANUP_STACKS_ROOT=/volume2/docker/ce-stacks/stacks bash scripts/maintenance/remove_apple_hidden_files.sh
@@ -30,7 +30,7 @@ set -euo pipefail
 DRY_RUN="${DRY_RUN:-1}"
 APPLE_CLEANUP_ROOT="${APPLE_CLEANUP_ROOT:-}"
 APPLE_CLEANUP_PATHS_FILE="${APPLE_CLEANUP_PATHS_FILE:-}"
-# If set, each immediate subdirectory of this path is used as a scan root (Dockge stacks layout).
+# If set, each immediate subdirectory of this path is used as a scan root (stacks/ layout).
 APPLE_CLEANUP_STACKS_ROOT="${APPLE_CLEANUP_STACKS_ROOT:-}"
 # Max size (bytes) for ._* resource-fork stubs; larger files are never candidates.
 MAX_DOT_UNDERSCORE_BYTES="${MAX_DOT_UNDERSCORE_BYTES:-65536}"
@@ -45,7 +45,7 @@ remove_apple_hidden_files.sh — prune .DS_Store, paired/small ._* stubs, .Apple
 
   DRY_RUN=1|0           default 1 — print actions only
   APPLE_CLEANUP_ROOT   single directory root (optional if PATHS_FILE or STACKS_ROOT set)
-  APPLE_CLEANUP_STACKS_ROOT  parent of stack dirs — each .../stacks/<child>/ is scanned only (not .../dockge/.git)
+  APPLE_CLEANUP_STACKS_ROOT  parent of stack dirs — each .../stacks/<child>/ is scanned only (not the repo .git root)
   APPLE_CLEANUP_PATHS_FILE  file with one absolute path per line
   MAX_DOT_UNDERSCORE_BYTES  default 65536 (find -size -Nc)
   APPLE_CLEANUP_ORPHAN_DOT_UNDERSCORE  default 0 — set 1 to delete tiny orphan ._ when sibling missing

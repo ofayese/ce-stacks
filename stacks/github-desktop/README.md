@@ -1,6 +1,6 @@
 # github-desktop
 
-GitHub Desktop (LinuxServer.io image) in a **browser** via **KasmVNC** — useful when you want to clone, commit, and push the Dockge repo **without SSH** to the NAS.
+GitHub Desktop (LinuxServer.io image) in a **browser** via **KasmVNC** — useful when you want to clone, commit, and push the ce-stacks repo **without SSH** to the NAS.
 
 ## Overview
 
@@ -29,7 +29,7 @@ There is **no** separate `data/` bind in the default `compose.yaml`; manifest us
 
 ## Use case in this repo
 
-Use this stack when you want to **work on the Dockge stacks repo from the NAS browser**: clone to `/config`-visible paths, commit, and **push** to your remote (e.g. GitHub) without opening an SSH session on the NAS.
+Use this stack when you want to **work on the ce-stacks repo from the NAS browser**: clone to `/config`-visible paths, commit, and **push** to your remote (e.g. GitHub) without opening an SSH session on the NAS.
 
 ## Healthcheck
 

@@ -41,7 +41,7 @@ Interactive PSU Admin login uses **PowerShell Universal defaults** from the imag
 | Script                      | Purpose                                            |
 | --------------------------- | -------------------------------------------------- |
 | `NAS-Fix-Permissions`       | Runs `fix-permissions.sh` against `PSU_STACK_ROOT` |
-| `NAS-Check-StackManager-Status` | Runs `check-dockge-http.sh`                        |
+| `NAS-Check-StackManager-Status` | Runs `check-stack-manager-http.sh`                 |
 | `NAS-Detect-Config-Drift`       | `git status` drift hints                           |
 | `NAS-Validate-SSL-Certs`        | OpenSSL notAfter on `fullchain.pem`                |
 | `NAS-Monitor-Stacks`            | Stack manager API inventory (needs credentials)    |

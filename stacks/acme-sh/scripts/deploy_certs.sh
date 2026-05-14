@@ -9,7 +9,7 @@ usage() {
 Usage: deploy_certs.sh [--no-traefik] [--no-haproxy-check]
 
 Environment:
-  STACK_ROOT              Required — Dockge stacks root (e.g. /volume2/docker/ce-stacks/stacks)
+  STACK_ROOT              Required — stacks root (e.g. /volume2/docker/ce-stacks/stacks)
   ACME_CERT_ROOT          Default /volume2/certs/acme — acme.sh PEM trees per profile
   HAPROXY_CERT_STAGE_DIR  Default /volume2/certs/acme/haproxy — HAProxy bundle output (created if missing)
   LIVE_HAPROXY_CERT_DIR   Default ${STACK_ROOT}/_haproxy/certs — if HAPROXY_CERT_STAGE_DIR equals this,
@@ -42,7 +42,7 @@ notify_discord() {
 	curl -fsS -X POST "${DISCORD_WEBHOOK_URL}" -H 'Content-Type: application/json' -d "${payload}" || true
 }
 
-STACK_ROOT="${STACK_ROOT:?Set STACK_ROOT to your Dockge stacks directory}"
+STACK_ROOT="${STACK_ROOT:?Set STACK_ROOT to your stacks directory (e.g. /volume2/docker/ce-stacks/stacks)}"
 ACME_CERT_ROOT="${ACME_CERT_ROOT:-/volume2/certs/acme}"
 SKIP_TRAEFIK="${SKIP_TRAEFIK:-0}"
 DO_TRAEFIK=1

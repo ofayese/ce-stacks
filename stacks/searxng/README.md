@@ -17,7 +17,7 @@ Privacy-respecting metasearch engine, backed by Valkey (Redis fork) for caching.
 
 ## Required state
 
-`/volume1/​docker/dockge​/stacks/searxng/config/settings.yml` — **not** in git (contains `secret_key`).
+`/volume2/docker/ce-stacks/stacks/searxng/config/settings.yml` — **not** in git (contains `secret_key`).
 
 1. Copy the template:
    ```bash

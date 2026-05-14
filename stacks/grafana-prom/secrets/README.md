@@ -10,8 +10,8 @@ Single-line bearer token shared by:
 Create on the NAS (never commit this file):
 
 ```bash
-openssl rand -hex 32 | tr -d '\n' > /volume1/​docker/dockge​/stacks/grafana-prom/secrets/watchtower_bearer_token.txt
-chmod 600 /volume1/​docker/dockge​/stacks/grafana-prom/secrets/watchtower_bearer_token.txt
+openssl rand -hex 32 | tr -d '\n' > /volume2/docker/ce-stacks/stacks/grafana-prom/secrets/watchtower_bearer_token.txt
+chmod 600 /volume2/docker/ce-stacks/stacks/grafana-prom/secrets/watchtower_bearer_token.txt
 ```
 
 Then redeploy Watchtower and the `grafana-prom` stack. Prometheus scrapes `http://10.0.1.15:18787/v1/metrics` (host-published Watchtower HTTP API).

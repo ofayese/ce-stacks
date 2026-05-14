@@ -13,8 +13,8 @@
 #   <redactions-file>   Absolute path to a `git filter-repo --replace-text`
 #                       expressions file. Must NOT live inside any clone of
 #                       this repo (the script refuses paths under
-#                       /Volumes/docker/dockge or /volume2/docker/ce-stacks).
-#                       Recommended location: /tmp/dockge-redactions.txt
+#                       /Volumes/docker/ce-stacks or /volume2/docker/ce-stacks).
+#                       Recommended location: /tmp/ce-stacks-redactions.txt
 #                       Format (one entry per line, literal substring):
 #                         <secret-value>==>REDACTED_PLACEHOLDER
 #                       Example (never commit real values):
@@ -22,9 +22,9 @@
 #
 #   <empty-work-dir>    Absolute path to an empty (or non-existent) working
 #                       directory. The script does ALL of its work here so
-#                       your live `/Volumes/docker/dockge` and the NAS clone
+#                       your live `/Volumes/docker/ce-stacks` and the NAS clone
 #                       at `/volume2/docker/ce-stacks` are never touched.
-#                       Recommended: /tmp/dockge-history-rewrite
+#                       Recommended: /tmp/ce-stacks-history-rewrite
 #
 # Prerequisites:
 #   - `git-filter-repo` installed and on PATH.
@@ -35,13 +35,13 @@
 #     ever pushed to a public remote - assume scrapers and forks already
 #     have it.
 #   - You are running this from a machine that has a clean workspace
-#     OUTSIDE both `/Volumes/docker/dockge` and `/volume2/docker/ce-stacks`.
+#     OUTSIDE both `/Volumes/docker/ce-stacks` and `/volume2/docker/ce-stacks`.
 #     The script will clone the remote fresh into <empty-work-dir>.
 #
 # What this script does:
 #   1. Validates inputs and toolchain.
-#   2. `git clone --mirror git@github.com:ofayese/dockge-ots.git`
-#      into <empty-work-dir>/dockge-ots.git
+#   2. `git clone --mirror git@github.com:ofayese/ce-stacks.git`
+#      into <empty-work-dir>/ce-stacks.git
 #   3. Sanity-checks that at least one source pattern from the redactions
 #      file is currently reachable somewhere in history.
 #   4. Runs `git filter-repo --replace-text <redactions-file>`.
@@ -64,9 +64,9 @@
 
 set -euo pipefail
 
-REMOTE_URL="git@github.com:ofayese/dockge-ots.git"
+REMOTE_URL="git@github.com:ofayese/ce-stacks.git"
 FORBIDDEN_PREFIXES=(
-	"/Volumes/docker/dockge"
+	"/Volumes/docker/ce-stacks"
 	"/volume2/docker/ce-stacks"
 )
 
@@ -101,12 +101,12 @@ rewrite-history-redact: missing arguments - pass exactly two paths.
 
   bash scripts/rewrite-history-redact.sh <absolute-redactions-file> <absolute-empty-work-dir>
 
-Both paths must be OUTSIDE this repo (not under /volume2/docker/ce-stacks or /Volumes/docker/dockge).
+Both paths must be OUTSIDE this repo (not under /volume2/docker/ce-stacks or /Volumes/docker/ce-stacks).
 
 Example on DSM / Linux (creates /tmp redactions file with one literal substring to replace):
 
-  printf '%s\n' 'YOUR_SECRET_SUBSTRING==>REDACTED_PLACEHOLDER' >/tmp/dockge-redactions.txt
-  bash scripts/rewrite-history-redact.sh /tmp/dockge-redactions.txt /tmp/dockge-history-rewrite
+  printf '%s\n' 'YOUR_SECRET_SUBSTRING==>REDACTED_PLACEHOLDER' >/tmp/ce-stacks-redactions.txt
+  bash scripts/rewrite-history-redact.sh /tmp/ce-stacks-redactions.txt /tmp/ce-stacks-history-rewrite
 
 Use your real leaked substring on the left of ==> (never commit it). Prefer running as your normal
 user so SSH keys work for git@github.com; sudo runs as root and often breaks clone auth.
@@ -146,7 +146,7 @@ command -v git-filter-repo >/dev/null || die "git-filter-repo not on PATH (insta
 
 mkdir -p "$WORK_DIR"
 
-MIRROR_DIR="$WORK_DIR/dockge-ots.git"
+MIRROR_DIR="$WORK_DIR/ce-stacks.git"
 
 printf '\n[1/5] Mirror-cloning %s into %s ...\n' "$REMOTE_URL" "$MIRROR_DIR"
 git clone --mirror "$REMOTE_URL" "$MIRROR_DIR"
@@ -212,8 +212,8 @@ NEXT STEPS - review, then execute these manually:
 
        # Local workspace (macOS):
        cd /Volumes/docker
-       mv dockge dockge.pre-rewrite.\$(date +%Y%m%d)
-       git clone $REMOTE_URL dockge
+       mv ce-stacks ce-stacks.pre-rewrite.\$(date +%Y%m%d)
+       git clone $REMOTE_URL ce-stacks
 
        # NAS (over SSH):
        ssh laolufayese@10.0.1.15 -p 28

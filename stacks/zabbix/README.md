@@ -28,7 +28,7 @@ Copy `.env.example` to `.env` and set `POSTGRES_PASSWORD` to a strong value. `ST
 
 ## Dependencies
 
-- Docker Compose (Dockge) on Synology or generic Linux host.
+- Docker Compose on Synology or generic Linux host.
 - Outbound HTTPS for image pulls.
 
 ## Startup order

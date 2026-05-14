@@ -23,9 +23,9 @@ A customizable, real-time dashboard for the olutechsys homelab infrastructure. A
 
 ### Deploy the Stack
 
-1. **Via Dockge UI:**
+1. **Via Dockhand UI:**
 
-   - Open Dockge at http://10.0.1.15:5571
+   - Open Dockhand at http://10.0.1.15:3866
    - Create a new stack named `homepage`
    - Point it to `${STACK_ROOT}/homepage/compose.yaml`
    - Click "Deploy"
@@ -344,7 +344,7 @@ tar -czf homepage-backup-$(date +%Y%m%d).tar.gz config/
 
 ### Adding New Services to the Dashboard
 
-1. Deploy the new service via compose or Dockge
+1. Deploy the new service via compose or Dockhand
 2. Get its exact container name: `docker ps | grep new-service`
 3. Add to `CONTAINER_MAPPING.md` (for documentation)
 4. Add to `config/services.yaml` using the format in that file
@@ -363,7 +363,7 @@ Homepage uses port **7575** because your existing stacks occupy:
 - 8377–8378 (Code-Server, phpMyAdmin-dev)
 - 9000–9001, 9443 (Portainer, Portainer Agent)
 - 11434 (Ollama)
-- 5571 (Dockge host port; container listens on 5001)
+- 3866 (Dockhand host port)
 - 3307 (MySQL dev)
 
 7575 is free and aligns with Homepage's upstream default.

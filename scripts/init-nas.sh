@@ -45,6 +45,10 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 REPO_ENV="${REPO_ROOT}/.env"
 STACKS_IN_REPO="${REPO_ROOT}/stacks"
 
+# Synology non-interactive SSH does not include /usr/local/bin in PATH.
+# Resolve docker binary once; caller can override via DOCKER=/path/to/docker.
+DOCKER="${DOCKER:-$(command -v docker 2>/dev/null || echo /usr/local/bin/docker)}"
+
 # Prefer stacks inside this repo (this layout). Else sibling ../stacks next to the
 # clone parent. Else STACK_ROOT_OVERRIDE or /volume2/docker/ce-stacks/stacks.
 # IMPORTANT: STACK_ROOT points to the stacks/ subdirectory, NOT the repo root.
@@ -268,11 +272,11 @@ fi
 #              ollama, and synology-api-bridge. Idempotent.
 echo ""
 echo "Creating shared Docker networks ..."
-if command -v docker &>/dev/null; then
-	if docker network inspect ce-internal &>/dev/null; then
+if [[ -x "${DOCKER}" ]]; then
+	if "${DOCKER}" network inspect ce-internal &>/dev/null; then
 		echo "  ✓ ce-internal already exists - skipping"
 	else
-		docker network create \
+		"${DOCKER}" network create \
 			--driver bridge \
 			--subnet 172.26.0.0/24 \
 			--gateway 172.26.0.1 \
@@ -280,13 +284,13 @@ if command -v docker &>/dev/null; then
 		echo "  ✓ created: ce-internal (172.26.0.0/24)"
 	fi
 else
-	echo "  WARN: docker not in PATH - create manually after Docker starts:"
-	echo "    docker network create --driver bridge --subnet 172.26.0.0/24 --gateway 172.26.0.1 ce-internal"
+	echo "  WARN: docker not found at ${DOCKER} - create manually after Docker starts:"
+	echo "    /usr/local/bin/docker network create --driver bridge --subnet 172.26.0.0/24 --gateway 172.26.0.1 ce-internal"
 fi
 
 # ── 7. Sync dockhand repo dir → /volume2/docker/dockhand ──────────────
 # Dockhand lives inside the repo (REPO_ROOT/dockhand/) but must run from
-# /volume2/docker/dockhand/ because Dockge/Container Manager uses that fixed
+# /volume2/docker/dockhand/ because Dockhand/Container Manager uses that fixed
 # path as its working directory.
 #
 # Strategy: push repo changes outward on every init-nas.sh run, but never

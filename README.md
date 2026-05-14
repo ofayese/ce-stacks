@@ -39,7 +39,6 @@ ce-stacks/
 │
 ├── scripts/                 # Operational scripts
 │   ├── portainer-start.sh   # Portainer CE RC startup script
-│   ├── dockge-start.sh      # Dockge RC startup script (fallback UI)
 │   ├── compose-validate.sh  # Validate all compose.yaml files
 │   ├── verify-repo-layout.sh # Check repo structure invariants
 │   ├── init-nas.sh          # First-boot NAS initialisation

@@ -795,7 +795,7 @@ if [ -f "$d/compose.yaml" ]; then f=compose.yaml
 elif [ -f "$d/docker-compose.yaml" ]; then f=docker-compose.yaml
 elif [ -f "$d/docker-compose.yml" ]; then f=docker-compose.yml
 else exit 0; fi
-cd "$d" && docker compose -f "$f" stop
+cd "$d" && /usr/local/bin/docker compose -f "$f" stop
 '@
                     $rstop = Invoke-PSUHostSsh -RemoteBashScript ($tstop.Replace('__SR__', $hostStacksRoot).Replace('__SN__', $sname))
                     $stopped += [ordered]@{ stack = $sname; ssh = $rstop }
@@ -836,26 +836,26 @@ cd "$d" && docker compose -f "$f" stop
 set -e
 top -b -n 1 | head -n 40
 echo '---DOCKERSTATS---'
-docker stats --no-stream --format '{{.Name}} {{.CPUPerc}}' 2>/dev/null || true
+/usr/local/bin/docker stats --no-stream --format '{{.Name}} {{.CPUPerc}}' 2>/dev/null || true
 '@
             $topR = Invoke-PSUHostSsh -RemoteBashScript $topRemote
             $obj.cpuTriage.topAndStats = $topR
             $cpuScript = @'
 set +e
-docker stats --no-stream --format '{{.Name}} {{.CPUPerc}}' 2>/dev/null | while IFS= read -r line; do
+/usr/local/bin/docker stats --no-stream --format '{{.Name}} {{.CPUPerc}}' 2>/dev/null | while IFS= read -r line; do
   [ -z "$line" ] && continue
   name="${line%% *}"
   pct="${line##* }"
   pct="${pct%%%}"
   awk -v p="$pct" -v th=__TH_INT__ 'BEGIN{exit !(p+0>=th)}' || continue
-  svc=$(docker inspect -f '{{if .Config.Labels}}{{index .Config.Labels "com.docker.compose.service"}}{{end}}' "$name" 2>/dev/null || true)
-  wd=$(docker inspect -f '{{if .Config.Labels}}{{index .Config.Labels "com.docker.compose.project.working_dir"}}{{end}}' "$name" 2>/dev/null || true)
+  svc=$(/usr/local/bin/docker inspect -f '{{if .Config.Labels}}{{index .Config.Labels "com.docker.compose.service"}}{{end}}' "$name" 2>/dev/null || true)
+  wd=$(/usr/local/bin/docker inspect -f '{{if .Config.Labels}}{{index .Config.Labels "com.docker.compose.project.working_dir"}}{{end}}' "$name" 2>/dev/null || true)
   if [ -z "$svc" ] || [ -z "$wd" ] || [ ! -d "$wd" ]; then echo "skip $name (no compose labels)"; continue; fi
   if [ -f "$wd/compose.yaml" ]; then f=compose.yaml
   elif [ -f "$wd/docker-compose.yaml" ]; then f=docker-compose.yaml
   elif [ -f "$wd/docker-compose.yml" ]; then f=docker-compose.yml
   else echo "skip $name (no compose file)"; continue; fi
-  (cd "$wd" && docker compose -f "$f" restart "$svc") && echo "restarted $name service=$svc in $wd"
+  (cd "$wd" && /usr/local/bin/docker compose -f "$f" restart "$svc") && echo "restarted $name service=$svc in $wd"
 done
 exit 0
 '@
@@ -931,7 +931,7 @@ if [ -f "$d/compose.yaml" ]; then f=compose.yaml
 elif [ -f "$d/docker-compose.yaml" ]; then f=docker-compose.yaml
 elif [ -f "$d/docker-compose.yml" ]; then f=docker-compose.yml
 else echo "no compose file in $d" >&2; exit 3; fi
-cd "$d" && docker compose -f "$f" pull && docker compose -f "$f" up -d
+cd "$d" && /usr/local/bin/docker compose -f "$f" pull && /usr/local/bin/docker compose -f "$f" up -d
 '@
                 $remote = $tplt.Replace('__SR__', $hostStacksRoot).Replace('__SN__', $sn)
                 $r = Invoke-PSUHostSsh -RemoteBashScript $remote
@@ -958,7 +958,7 @@ cd "$d" && docker compose -f "$f" pull && docker compose -f "$f" up -d
                 }
                 else {
                     try {
-                        $r = Invoke-PSUHostSsh -RemoteBashScript 'docker image prune -a -f'
+                        $r = Invoke-PSUHostSsh -RemoteBashScript '/usr/local/bin/docker image prune -a -f'
                         $obj.dockerPrune = $r
                         $obj.sshSessions += [ordered]@{ action = "docker_image_prune_a_f"; ssh = $r }
                         Add-RemediationAppendixToLatestReport -Root $reportsRoot -Prefix "nas-health" -Entry ([ordered]@{

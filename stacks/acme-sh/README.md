@@ -26,7 +26,7 @@ Installed PEMs under `${ACME_CERT_ROOT:-/volume2/certs/acme}` are consumed by ot
 
 ## Required env (`.env`, gitignored)
 
-- `STACK_ROOT` — absolute path to the Dockge stacks folder (same as repo `stacks/` on disk), e.g. `${STACK_ROOT}`
+- `STACK_ROOT` — absolute path to the stacks folder (same as repo `stacks/` on disk), e.g. `${STACK_ROOT}`
 - `CF_Token` — Cloudflare API token with `Zone.DNS Edit` on `olutechsys.com` and `olutech.systems`
 - `DISCORD_WEBHOOK_URL` — optional; renewal notifications
 
@@ -76,7 +76,7 @@ No probe (host networking + daemon mode → no meaningful liveness probe). Verif
 ## Authoritative references
 
 - [AGENTS.md](AGENTS.md) — local lessons learned (rename pattern, dockerized issue flow, validation)
-- [SETUP.md](SETUP.md) — issue/install procedure (Dockge-first; legacy `deploy-*.bash` runbooks in [`archive/`](archive/))
+- [SETUP.md](SETUP.md) — issue/install procedure; legacy `deploy-*.bash` runbooks in [`archive/`](archive/)
 - README.md — repo-wide guardrails
 
 ## Rollback

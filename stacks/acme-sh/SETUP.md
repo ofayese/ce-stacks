@@ -36,9 +36,9 @@ For 4096-bit RSA, substitute `--keylength 4096` in every `--issue` block below
 
 ## Certificate layout: host-named primary vs optional / legacy paths
 
-- **Primary (Traefik + host-named services):** under **`${ACME_CERT_ROOT}`** (default `/volume2/certs/acme`), PEM trees **`otsorundscore/`** and **`misfitsds/`** — Traefik mounts these for **`*.otsorundscore.*`** and **`*.misfitsds.*`** on both **`.olutechsys.com`** and **`.olutech.systems`**. Follow the **`--issue`** / **`--install-cert`** blocks for those dirs first when standing up TLS for the Dockge fleet.
+- **Primary (Traefik + host-named services):** under **`${ACME_CERT_ROOT}`** (default `/volume2/certs/acme`), PEM trees **`otsorundscore/`** and **`misfitsds/`** — Traefik mounts these for **`*.otsorundscore.*`** and **`*.misfitsds.*`** on both **`.olutechsys.com`** and **`.olutech.systems`**. Follow the **`--issue`** / **`--install-cert`** blocks for those dirs first when standing up TLS for the NAS fleet.
 - **Optional / broader:** **`wildcard/`**, **`otsorundscore-sub/`**, **`misfitsds-sub/`** cover apex + multi-zone + optional extra SANs for operators who keep consolidated or overlapping orders; skip creating dirs you never issue for.
-- **Legacy / lab / operator-specific:** historical **`*.ots.*`** / **`*.mft.*`** service hostnames are deprecated for **new** work (see root **`AGENTS.md`**). **`deploy-*.bash`** under **`${ACME_CERT_ROOT}`**, **`daemon-tls.json`** (TLS-only Docker), and similar assets remain documented for back-compat or laptop staging; for HAProxy bundles from Dockge stacks prefer **`stacks/acme-sh/scripts/deploy_certs.sh`** with **`ACME_PROFILE`** / **`BUNDLE_SPECS`**.
+- **Legacy / lab / operator-specific:** historical **`*.ots.*`** / **`*.mft.*`** service hostnames are deprecated for **new** work (see root **`AGENTS.md`**). **`deploy-*.bash`** under **`${ACME_CERT_ROOT}`**, **`daemon-tls.json`** (TLS-only Docker), and similar assets remain documented for back-compat or laptop staging; for HAProxy bundles from NAS stacks prefer **`stacks/acme-sh/scripts/deploy_certs.sh`** with **`ACME_PROFILE`** / **`BUNDLE_SPECS`**.
 
 ## NAS hosts & LAN IPs (reference)
 
@@ -46,7 +46,7 @@ Use these for firewall rules, HAProxy/Traefik backends, split-DNS, or `/etc/host
 
 | Role    | Hostname (examples)                             | Typical LAN IP  | Notes                                                                                           |
 | ------- | ----------------------------------------------- | --------------- | ----------------------------------------------------------------------------------------------- |
-| OTS NAS | `otsorundscore`, `otsorundscore.olutechsys.com` | **`10.0.1.15`** | Runs Dockge stacks; HAProxy examples bind backends here; Docker narrow-TCP examples use this IP |
+| OTS NAS | `otsorundscore`, `otsorundscore.olutechsys.com` | **`10.0.1.15`** | Runs NAS stacks; HAProxy examples bind backends here; Docker narrow-TCP examples use this IP |
 | MFT NAS | `misfitsds`, `misfitsds.olutechsys.com`         | **`10.0.1.24`** | Separate Synology; same DNS-01 / pem layout under `${ACME_CERT_ROOT}` after issue               |
 
 Adjust IPs if your VLAN differs. Optionally mirror them as comments in `acme-sh/.env` (see `.env.example` — compose does not consume those vars).
@@ -133,7 +133,7 @@ After new or renewed PEMs under **`${ACME_CERT_ROOT}`** (profiles such as **`ots
 
 2. **TLS edge verify:** **`stacks/acme-sh/scripts/verify_serving.sh`** — requires **`CONNECT_HOST`**; set **`CONNECT_PORT`** (default **`6443`**), **`SNI`** (defaults to **`CONNECT_HOST`**), **`MIN_VALID_DAYS`** (default **21** for **`openssl x509 -checkend`**), optional **`EXPECTED_SUBJECT`**. On TLS / subject / expiry failure, posts to **`DISCORD_WEBHOOK_URL`** when set (same variable name as **`stacks/acme-sh/.env.example`**).
 
-3. **Legacy bash deployers:** `deploy-otsorundscore.bash` / `deploy-misfitsds.bash` under `${ACME_CERT_ROOT}` remain operator-specific; prefer the repo **`deploy_certs.sh`** path above for Dockge-bound HAProxy.
+3. **Legacy bash deployers:** `deploy-otsorundscore.bash` / `deploy-misfitsds.bash` under `${ACME_CERT_ROOT}` remain operator-specific; prefer the repo **`deploy_certs.sh`** path above for HAProxy bundles.
 
 #### DSM Control Panel — manual certificate import (operator)
 
@@ -302,7 +302,7 @@ default while you also have multiple contexts.
 
 ---
 
-## Operator quick reference (Dockge path)
+## Operator quick reference
 
 Use **[Deploy acme-sh end-to-end](#deploy-acme-sh-end-to-end-checklist)** for `.env`, compose, directories, **`--issue` / `--install-cert`**, and **`scripts/deploy_certs.sh`**. Legacy **`deploy-*.bash`** staging, DSM / `daemon.json` merges, mTLS NAS apply steps, and the Mac cron example live in **[`archive/SETUP_LEGACY_2026-05-10.md`](archive/SETUP_LEGACY_2026-05-10.md)** (anchor **`#mtls-bundle-reference`** for mTLS).
 
@@ -314,7 +314,7 @@ migration, PEMs stay at the same paths under `/volume2/certs/acme/`.
 **Order:** backup → remove ECC (step 2) → issue RSA 2048 (step 3) →
 `--install-cert` (step 4) → verify (step 5).
 
-1. **Backup:** copy `/volume1/​docker/dockge​/stacks/acme-sh/data` and optionally
+1. **Backup:** copy `/volume2/docker/ce-stacks/stacks/acme-sh/data` and optionally
    `/volume2/certs/acme/`.
 2. **Remove ECDSA orders** before re-issue. Run the block; skip errors for
    names that were never ECC. Match `-d` to each ECC row’s primary domain in
@@ -543,7 +543,7 @@ sudo docker exec AcmeSh acme.sh --install-cert \
 
 ## Legacy per-device deploy (archived)
 
-For **Dockge HAProxy / Traefik**, use **`scripts/deploy_certs.sh`** and **`scripts/verify_serving.sh`** after PEMs refresh on disk (see [Deploy acme-sh end-to-end](#deploy-acme-sh-end-to-end-checklist) step 7). Older **Mac-staged `deploy-otsorundscore.bash`**, **`deploy-misfitsds.bash`**, **`deploy-otsmbpro16.bash`**, **`deploy-hpdevcore.bash`**, DSM / **`daemon.json`** merges, mTLS staging, client-context installs, and optional **Mac cron** runbooks are preserved in **[`archive/SETUP_LEGACY_2026-05-10.md`](archive/SETUP_LEGACY_2026-05-10.md)** (anchor **`#mtls-bundle-reference`** for the on-NAS mTLS merge).
+For **HAProxy / Traefik**, use **`scripts/deploy_certs.sh`** and **`scripts/verify_serving.sh`** after PEMs refresh on disk (see [Deploy acme-sh end-to-end](#deploy-acme-sh-end-to-end-checklist) step 7). Older **Mac-staged `deploy-otsorundscore.bash`**, **`deploy-misfitsds.bash`**, **`deploy-otsmbpro16.bash`**, **`deploy-hpdevcore.bash`**, DSM / **`daemon.json`** merges, mTLS staging, client-context installs, and optional **Mac cron** runbooks are preserved in **[`archive/SETUP_LEGACY_2026-05-10.md`](archive/SETUP_LEGACY_2026-05-10.md)** (anchor **`#mtls-bundle-reference`** for the on-NAS mTLS merge).
 
 ---
 

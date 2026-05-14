@@ -1,6 +1,6 @@
 # `acme-sh` documentation archive
 
-Historical or superseded excerpts from **`SETUP.md`** live here so the main runbook stays Dockge-first.
+Historical or superseded excerpts from **`SETUP.md`** live here so the main runbook stays current.
 
 | File | Contents |
 |------|----------|

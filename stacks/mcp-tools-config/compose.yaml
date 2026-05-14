@@ -1,4 +1,4 @@
-# Dockge + CI: minimal valid Compose so `scripts/compose-validate.sh` includes this folder.
+# CI: minimal valid Compose so `scripts/compose-validate.sh` includes this folder.
 # The Docker Desktop MCP catalog remains in `docker-mcp.yaml` (not a Compose file).
 services:
   # No healthcheck: one-shot service (restart: "no" # intentional).
