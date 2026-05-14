@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    REST API endpoints for Dockge / NAS automation (Phase 2).
+    REST API endpoints for NAS automation (Phase 2).
 
 .DESCRIPTION
     Registers PSU endpoints under /api/v1/*. Most routes validate
@@ -10,7 +10,7 @@
 
 .NOTES
     Copy into data/Repository/.universal/endpoints/. Requires PSU (New-PSUEndpoint).
-    Optional: dot-source ../scripts/dockge-jobs.ps1 before this file so POST routes can queue jobs.
+    Optional: dot-source ../scripts/nas-jobs.ps1 before this file so POST routes can queue jobs.
 #>
 
 $ErrorActionPreference = "Stop"
@@ -22,7 +22,7 @@ function Get-PSUReportsRoot {
 }
 
 function Get-RepoRoot {
-    $p = $env:DOCKGE_REPO_ROOT
+    $p = $env:NAS_REPO_ROOT
     if ([string]::IsNullOrWhiteSpace($p)) { $p = "/nas-repo" }
     return $p
 }
@@ -103,10 +103,10 @@ function Get-LatestReportJson {
     return (Get-Content -LiteralPath $f.FullName -Raw -Encoding UTF8)
 }
 
-function Invoke-DockgeStacksList {
-    $base = $env:DOCKGE_BASE_URL
-    $u = $env:DOCKGE_USERNAME
-    $p = $env:DOCKGE_PASSWORD
+function Invoke-StackManagerList {
+    $base = $env:STACK_MANAGER_URL
+    $u = $env:STACK_MANAGER_USERNAME
+    $p = $env:STACK_MANAGER_PASSWORD
     if ([string]::IsNullOrWhiteSpace($base) -or [string]::IsNullOrWhiteSpace($u)) { return $null }
     try {
         $pair = "{0}:{1}" -f $u, $p
@@ -119,20 +119,20 @@ function Invoke-DockgeStacksList {
 
 if ($PSScriptRoot) {
     $repoUniversal = Split-Path -Parent $PSScriptRoot
-    $jobs = Join-Path $repoUniversal "scripts/dockge-jobs.ps1"
+    $jobs = Join-Path $repoUniversal "scripts/nas-jobs.ps1"
     if (Test-Path -LiteralPath $jobs) {
         . $jobs
     }
     $galleryInit = Join-Path $repoUniversal "scripts/Import-PSUGalleryModules.ps1"
     if (-not (Test-Path -LiteralPath $galleryInit)) {
         if ($env:PSU_GALLERY_OPTIONAL -ne '1') {
-            throw "dockge-api.ps1: Import-PSUGalleryModules.ps1 not found at '$galleryInit'."
+            throw "nas-api.ps1: Import-PSUGalleryModules.ps1 not found at '$galleryInit'."
         }
     }
     else {
         . $galleryInit
         if ($env:PSU_GALLERY_OPTIONAL -eq '1') {
-            try { Import-PSUGalleryModules -Optional | Out-Null } catch { Write-Warning "dockge-api.ps1: gallery (optional): $($_.Exception.Message)" }
+            try { Import-PSUGalleryModules -Optional | Out-Null } catch { Write-Warning "nas-api.ps1: gallery (optional): $($_.Exception.Message)" }
         }
         else {
             Import-PSUGalleryModules | Out-Null
@@ -146,8 +146,8 @@ if (Get-Command New-PSUEndpoint -ErrorAction SilentlyContinue) {
         $auth = Test-PSUBearerAuth
         if ($null -ne $auth) { return $auth }
         $rows = @()
-        if ($global:DockgePSUGalleryModuleState -and $global:DockgePSUGalleryModuleState.Count -gt 0) {
-            foreach ($kv in $global:DockgePSUGalleryModuleState.GetEnumerator()) {
+        if ($global:NASGalleryModuleState -and $global:NASGalleryModuleState.Count -gt 0) {
+            foreach ($kv in $global:NASGalleryModuleState.GetEnumerator()) {
                 $rows += [ordered]@{
                     module = $kv.Key
                     ok     = [bool]$kv.Value.ok
@@ -172,13 +172,13 @@ if (Get-Command New-PSUEndpoint -ErrorAction SilentlyContinue) {
         if (Test-Path -LiteralPath $stacksRoot) {
             $dirs = @(Get-ChildItem -LiteralPath $stacksRoot -Directory | Where-Object { -not $_.Name.StartsWith("_") } | ForEach-Object { $_.Name })
         }
-        $dockge = Invoke-DockgeStacksList
+        $stackMgr = Invoke-StackManagerList
         $drift = Get-LatestReportJson -Prefix "image-drift"
         $health = Get-LatestReportJson -Prefix "nas-health"
         $obj = [ordered]@{
             generatedAtUtc = (Get-Date).ToUniversalTime().ToString("o")
             filesystemStacks = $dirs
-            dockgeApi        = $dockge
+            stackManagerApi  = $stackMgr
             latestImageDrift = if ($drift) { ($drift | ConvertFrom-Json -ErrorAction SilentlyContinue) } else { $null }
             latestNasHealth  = if ($health) { ($health | ConvertFrom-Json -ErrorAction SilentlyContinue) } else { $null }
         }
@@ -195,7 +195,7 @@ if (Get-Command New-PSUEndpoint -ErrorAction SilentlyContinue) {
             return '{"error":"PSU_ALLOW_STACK_RESTART not enabled"}'
         }
         if (Get-Command New-PSUApiResponse -ErrorAction SilentlyContinue) {
-            return (New-PSUApiResponse -StatusCode 503 -Body '{"error":"Stack restart from PSU container is not implemented (no docker.sock). Use Dockge UI or host automation."}' -ContentType "application/json")
+            return (New-PSUApiResponse -StatusCode 503 -Body '{"error":"Stack restart from PSU container is not implemented (no docker.sock). Use the stack manager UI or host automation."}' -ContentType "application/json")
         }
         return '{"error":"not_implemented"}'
     }
@@ -204,7 +204,7 @@ if (Get-Command New-PSUEndpoint -ErrorAction SilentlyContinue) {
         $auth = Test-PSUBearerAuth
         if ($null -ne $auth) { return $auth }
         if (-not (Get-Command Invoke-PSUJob_IngressValidator -ErrorAction SilentlyContinue)) {
-            return '{"error":"dockge-jobs.ps1 not loaded"}'
+            return '{"error":"nas-jobs.ps1 not loaded"}'
         }
         $q = Invoke-PSUJob_IngressValidator
         $q | ConvertTo-Json -Depth 5
@@ -323,7 +323,7 @@ if (Get-Command New-PSUEndpoint -ErrorAction SilentlyContinue) {
             return '{"error":"gitops disabled"}'
         }
         if (-not (Get-Command Invoke-PSUJob_GitOpsSync -ErrorAction SilentlyContinue)) {
-            return '{"error":"dockge-jobs.ps1 not loaded"}'
+            return '{"error":"nas-jobs.ps1 not loaded"}'
         }
         $q = Invoke-PSUJob_GitOpsSync
         $q | ConvertTo-Json -Depth 6
@@ -342,7 +342,7 @@ if (Get-Command New-PSUEndpoint -ErrorAction SilentlyContinue) {
         $auth = Test-PSUBearerAuth
         if ($null -ne $auth) { return $auth }
         if (-not (Get-Command Invoke-PSUJob_BackupSnapshot -ErrorAction SilentlyContinue)) {
-            return '{"error":"dockge-jobs.ps1 not loaded"}'
+            return '{"error":"nas-jobs.ps1 not loaded"}'
         }
         $q = Invoke-PSUJob_BackupSnapshot
         $q | ConvertTo-Json -Depth 5

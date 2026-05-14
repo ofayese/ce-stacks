@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Dockge / NAS compliance jobs for PowerShell Universal (Phase 2 — fire-and-forget).
+    NAS compliance jobs for PowerShell Universal (Phase 2 — fire-and-forget).
 
 .DESCRIPTION
     Each Invoke-PSUJob_* queues a background job that writes one timestamped JSON file
@@ -11,7 +11,7 @@
 
 .NOTES
     Copy into data/Repository/.universal/scripts/ on the NAS. Register schedules in PSU.
-    Environment: DOCKGE_REPO_ROOT, PSU_STACK_ROOT, DOCKGE_BASE_URL, DOCKGE_USERNAME, DOCKGE_PASSWORD,
+    Environment: NAS_REPO_ROOT, PSU_STACK_ROOT, STACK_MANAGER_URL, STACK_MANAGER_USERNAME, STACK_MANAGER_PASSWORD,
     NAS_HOST_IP, NAS_SSH_USER, SSH_KEY_PATH, NAS_HOST_STACKS_ROOT (see stacks/psu-ots/NAS_HOST_SSH_SETUP.md).
 #>
 
@@ -44,7 +44,7 @@ function Clear-PSUReportRetention {
 }
 
 function Get-RepoRoot {
-    $p = $env:DOCKGE_REPO_ROOT
+    $p = $env:NAS_REPO_ROOT
     if ([string]::IsNullOrWhiteSpace($p)) { $p = "/nas-repo" }
     return $p
 }
@@ -72,25 +72,25 @@ function Start-PSUJsonReportJob {
     $outPath = Join-Path $root ("{0}-{1}.json" -f $ReportBaseName, $ts)
     $repo = Get-RepoRoot
     $stacks = Get-StackRoot
-    $dockge = $env:DOCKGE_BASE_URL
-    $du = $env:DOCKGE_USERNAME
-    $dp = $env:DOCKGE_PASSWORD
+    $smUrl = $env:STACK_MANAGER_URL
+    $smUser = $env:STACK_MANAGER_USERNAME
+    $smPass = $env:STACK_MANAGER_PASSWORD
     $galleryInit = Join-Path $PSScriptRoot "Import-PSUGalleryModules.ps1"
     if (-not (Test-Path -LiteralPath $galleryInit)) {
         if ($env:PSU_GALLERY_OPTIONAL -eq '1') {
             $galleryInit = ""
         }
         else {
-            throw "dockge-jobs.ps1: Import-PSUGalleryModules.ps1 not found at '$galleryInit'. Copy universal/scripts into this folder, use PSU_GALLERY_INSTALL=1 / Dockerfile, or set PSU_GALLERY_OPTIONAL=1 only while staging."
+            throw "nas-jobs.ps1: Import-PSUGalleryModules.ps1 not found at '$galleryInit'. Copy universal/scripts into this folder, use PSU_GALLERY_INSTALL=1 / Dockerfile, or set PSU_GALLERY_OPTIONAL=1 only while staging."
         }
     }
-    $null = Start-Job -ScriptBlock $Worker -ArgumentList @($outPath, $repo, $stacks, $dockge, $du, $dp, $galleryInit)
+    $null = Start-Job -ScriptBlock $Worker -ArgumentList @($outPath, $repo, $stacks, $smUrl, $smUser, $smPass, $galleryInit)
     return @{ queued = $true; reportPath = $outPath; timestampUnix = $ts }
 }
 
 function Invoke-PSUJob_ImageDrift {
     $worker = {
-        param($OutPath, $Repo, $Stacks, $DockgeBase, $DockgeUser, $DockgePass, $GalleryInit)
+        param($OutPath, $Repo, $Stacks, $StackMgrUrl, $StackMgrUser, $StackMgrPass, $GalleryInit)
         $galLoaded = @()
         if (-not [string]::IsNullOrWhiteSpace($GalleryInit) -and (Test-Path -LiteralPath $GalleryInit)) {
             . $GalleryInit
@@ -100,14 +100,14 @@ function Invoke-PSUJob_ImageDrift {
             else {
                 $null = Import-PSUGalleryModules
             }
-            if ($null -ne $global:DockgePSUGalleryModuleState) {
-                foreach ($kv in $global:DockgePSUGalleryModuleState.GetEnumerator()) {
+            if ($null -ne $global:NASGalleryModuleState) {
+                foreach ($kv in $global:NASGalleryModuleState.GetEnumerator()) {
                     if ($kv.Value.ok) { $galLoaded += $kv.Key }
                 }
             }
         }
         elseif ($env:PSU_GALLERY_OPTIONAL -ne '1') {
-            throw "Dockge PSU job: gallery init path missing."
+            throw "PSU job: gallery init path missing."
         }
         $ErrorActionPreference = "Continue"
         $obj = [ordered]@{
@@ -115,7 +115,7 @@ function Invoke-PSUJob_ImageDrift {
             generatedAtUtc = (Get-Date).ToUniversalTime().ToString("o")
             stacks         = @()
             floatingTags   = @()
-            dockgeApi      = $null
+            stackManagerApi = $null
             notes          = @()
         }
         try {
@@ -137,16 +137,16 @@ function Invoke-PSUJob_ImageDrift {
             }
         }
         catch { $obj.notes += $_.Exception.Message }
-        if (-not [string]::IsNullOrWhiteSpace($DockgeBase) -and -not [string]::IsNullOrWhiteSpace($DockgeUser)) {
+        if (-not [string]::IsNullOrWhiteSpace($StackMgrUrl) -and -not [string]::IsNullOrWhiteSpace($StackMgrUser)) {
             try {
-                $pair = "{0}:{1}" -f $DockgeUser, $DockgePass
+                $pair = "{0}:{1}" -f $StackMgrUser, $StackMgrPass
                 $b64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($pair))
-                $uri = ($DockgeBase.TrimEnd("/") + "/api/stacks")
-                $obj.dockgeApi = Invoke-RestMethod -Uri $uri -Headers @{ Authorization = "Basic $b64" } -TimeoutSec 20 -ErrorAction Stop
+                $uri = ($StackMgrUrl.TrimEnd("/") + "/api/stacks")
+                $obj.stackManagerApi = Invoke-RestMethod -Uri $uri -Headers @{ Authorization = "Basic $b64" } -TimeoutSec 20 -ErrorAction Stop
             }
-            catch { $obj.notes += ("dockge api: " + $_.Exception.Message) }
+            catch { $obj.notes += ("stack manager api: " + $_.Exception.Message) }
         }
-        else { $obj.notes += "Dockge credentials not set; filesystem scan only." }
+        else { $obj.notes += "Stack manager credentials not set; filesystem scan only." }
         $obj.galleryModulesLoaded = @($galLoaded)
         ($obj | ConvertTo-Json -Depth 8) | Set-Content -LiteralPath $OutPath -Encoding UTF8
     }
@@ -155,7 +155,7 @@ function Invoke-PSUJob_ImageDrift {
 
 function Invoke-PSUJob_NasHealth {
     $worker = {
-        param($OutPath, $Repo, $Stacks, $DockgeBase, $DockgeUser, $DockgePass, $GalleryInit)
+        param($OutPath, $Repo, $Stacks, $StackMgrUrl, $StackMgrUser, $StackMgrPass, $GalleryInit)
         $galLoaded = @()
         if (-not [string]::IsNullOrWhiteSpace($GalleryInit) -and (Test-Path -LiteralPath $GalleryInit)) {
             . $GalleryInit
@@ -165,14 +165,14 @@ function Invoke-PSUJob_NasHealth {
             else {
                 $null = Import-PSUGalleryModules
             }
-            if ($null -ne $global:DockgePSUGalleryModuleState) {
-                foreach ($kv in $global:DockgePSUGalleryModuleState.GetEnumerator()) {
+            if ($null -ne $global:NASGalleryModuleState) {
+                foreach ($kv in $global:NASGalleryModuleState.GetEnumerator()) {
                     if ($kv.Value.ok) { $galLoaded += $kv.Key }
                 }
             }
         }
         elseif ($env:PSU_GALLERY_OPTIONAL -ne '1') {
-            throw "Dockge PSU job: gallery init path missing."
+            throw "PSU job: gallery init path missing."
         }
         $obj = [ordered]@{
             job            = "nas-health"
@@ -196,7 +196,7 @@ function Invoke-PSUJob_NasHealth {
 
 function Invoke-PSUJob_IngressValidator {
     $worker = {
-        param($OutPath, $Repo, $Stacks, $DockgeBase, $DockgeUser, $DockgePass, $GalleryInit)
+        param($OutPath, $Repo, $Stacks, $StackMgrUrl, $StackMgrUser, $StackMgrPass, $GalleryInit)
         $galLoaded = @()
         if (-not [string]::IsNullOrWhiteSpace($GalleryInit) -and (Test-Path -LiteralPath $GalleryInit)) {
             . $GalleryInit
@@ -206,14 +206,14 @@ function Invoke-PSUJob_IngressValidator {
             else {
                 $null = Import-PSUGalleryModules
             }
-            if ($null -ne $global:DockgePSUGalleryModuleState) {
-                foreach ($kv in $global:DockgePSUGalleryModuleState.GetEnumerator()) {
+            if ($null -ne $global:NASGalleryModuleState) {
+                foreach ($kv in $global:NASGalleryModuleState.GetEnumerator()) {
                     if ($kv.Value.ok) { $galLoaded += $kv.Key }
                 }
             }
         }
         elseif ($env:PSU_GALLERY_OPTIONAL -ne '1') {
-            throw "Dockge PSU job: gallery init path missing."
+            throw "PSU job: gallery init path missing."
         }
         $obj = [ordered]@{
             job            = "ingress-validator"
@@ -241,7 +241,7 @@ function Invoke-PSUJob_IngressValidator {
 
 function Invoke-PSUJob_DockerLatency {
     $worker = {
-        param($OutPath, $Repo, $Stacks, $DockgeBase, $DockgeUser, $DockgePass, $GalleryInit)
+        param($OutPath, $Repo, $Stacks, $StackMgrUrl, $StackMgrUser, $StackMgrPass, $GalleryInit)
         $galLoaded = @()
         if (-not [string]::IsNullOrWhiteSpace($GalleryInit) -and (Test-Path -LiteralPath $GalleryInit)) {
             . $GalleryInit
@@ -251,33 +251,33 @@ function Invoke-PSUJob_DockerLatency {
             else {
                 $null = Import-PSUGalleryModules
             }
-            if ($null -ne $global:DockgePSUGalleryModuleState) {
-                foreach ($kv in $global:DockgePSUGalleryModuleState.GetEnumerator()) {
+            if ($null -ne $global:NASGalleryModuleState) {
+                foreach ($kv in $global:NASGalleryModuleState.GetEnumerator()) {
                     if ($kv.Value.ok) { $galLoaded += $kv.Key }
                 }
             }
         }
         elseif ($env:PSU_GALLERY_OPTIONAL -ne '1') {
-            throw "Dockge PSU job: gallery init path missing."
+            throw "PSU job: gallery init path missing."
         }
         $obj = [ordered]@{
             job            = "docker-latency"
             generatedAtUtc = (Get-Date).ToUniversalTime().ToString("o")
-            dockgeMs       = $null
+            stackManagerMs = $null
             notes          = @()
         }
-        if (-not [string]::IsNullOrWhiteSpace($DockgeBase)) {
+        if (-not [string]::IsNullOrWhiteSpace($StackMgrUrl)) {
             try {
                 $sw = [System.Diagnostics.Stopwatch]::StartNew()
-                $pair = "{0}:{1}" -f $DockgeUser, $DockgePass
+                $pair = "{0}:{1}" -f $StackMgrUser, $StackMgrPass
                 $b64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($pair))
-                $null = Invoke-WebRequest -Uri ($DockgeBase.TrimEnd("/") + "/") -Headers @{ Authorization = "Basic $b64" } -TimeoutSec 15 -UseBasicParsing -ErrorAction Stop
+                $null = Invoke-WebRequest -Uri ($StackMgrUrl.TrimEnd("/") + "/") -Headers @{ Authorization = "Basic $b64" } -TimeoutSec 15 -UseBasicParsing -ErrorAction Stop
                 $sw.Stop()
-                $obj.dockgeMs = [int]$sw.ElapsedMilliseconds
+                $obj.stackManagerMs = [int]$sw.ElapsedMilliseconds
             }
             catch { $obj.notes += $_.Exception.Message }
         }
-        else { $obj.notes += "DOCKGE_BASE_URL unset" }
+        else { $obj.notes += "STACK_MANAGER_URL unset" }
         $obj.galleryModulesLoaded = @($galLoaded)
         ($obj | ConvertTo-Json -Depth 5) | Set-Content -LiteralPath $OutPath -Encoding UTF8
     }
@@ -286,7 +286,7 @@ function Invoke-PSUJob_DockerLatency {
 
 function Invoke-PSUJob_PSUSelfHealth {
     $worker = {
-        param($OutPath, $Repo, $Stacks, $DockgeBase, $DockgeUser, $DockgePass, $GalleryInit)
+        param($OutPath, $Repo, $Stacks, $StackMgrUrl, $StackMgrUser, $StackMgrPass, $GalleryInit)
         $galLoaded = @()
         if (-not [string]::IsNullOrWhiteSpace($GalleryInit) -and (Test-Path -LiteralPath $GalleryInit)) {
             . $GalleryInit
@@ -296,14 +296,14 @@ function Invoke-PSUJob_PSUSelfHealth {
             else {
                 $null = Import-PSUGalleryModules
             }
-            if ($null -ne $global:DockgePSUGalleryModuleState) {
-                foreach ($kv in $global:DockgePSUGalleryModuleState.GetEnumerator()) {
+            if ($null -ne $global:NASGalleryModuleState) {
+                foreach ($kv in $global:NASGalleryModuleState.GetEnumerator()) {
                     if ($kv.Value.ok) { $galLoaded += $kv.Key }
                 }
             }
         }
         elseif ($env:PSU_GALLERY_OPTIONAL -ne '1') {
-            throw "Dockge PSU job: gallery init path missing."
+            throw "PSU job: gallery init path missing."
         }
         $dataRoot = "/data"
         $obj = [ordered]@{
@@ -326,7 +326,7 @@ function Invoke-PSUJob_PSUSelfHealth {
 
 function Invoke-PSUJob_StackDependencies {
     $worker = {
-        param($OutPath, $Repo, $Stacks, $DockgeBase, $DockgeUser, $DockgePass, $GalleryInit)
+        param($OutPath, $Repo, $Stacks, $StackMgrUrl, $StackMgrUser, $StackMgrPass, $GalleryInit)
         $galLoaded = @()
         if (-not [string]::IsNullOrWhiteSpace($GalleryInit) -and (Test-Path -LiteralPath $GalleryInit)) {
             . $GalleryInit
@@ -336,14 +336,14 @@ function Invoke-PSUJob_StackDependencies {
             else {
                 $null = Import-PSUGalleryModules
             }
-            if ($null -ne $global:DockgePSUGalleryModuleState) {
-                foreach ($kv in $global:DockgePSUGalleryModuleState.GetEnumerator()) {
+            if ($null -ne $global:NASGalleryModuleState) {
+                foreach ($kv in $global:NASGalleryModuleState.GetEnumerator()) {
                     if ($kv.Value.ok) { $galLoaded += $kv.Key }
                 }
             }
         }
         elseif ($env:PSU_GALLERY_OPTIONAL -ne '1') {
-            throw "Dockge PSU job: gallery init path missing."
+            throw "PSU job: gallery init path missing."
         }
         $graph = [ordered]@{ nodes = @(); edges = @(); cycles = @(); orphans = @(); notes = @("Cycle detection: use inventory analyzer dependency graph on repo host for authoritative results.") }
         $adj = @{}
@@ -391,7 +391,7 @@ function Invoke-PSUJob_StackDependencies {
 
 function Invoke-PSUJob_SecurityScanner {
     $worker = {
-        param($OutPath, $Repo, $Stacks, $DockgeBase, $DockgeUser, $DockgePass, $GalleryInit)
+        param($OutPath, $Repo, $Stacks, $StackMgrUrl, $StackMgrUser, $StackMgrPass, $GalleryInit)
         $galLoaded = @()
         if (-not [string]::IsNullOrWhiteSpace($GalleryInit) -and (Test-Path -LiteralPath $GalleryInit)) {
             . $GalleryInit
@@ -401,14 +401,14 @@ function Invoke-PSUJob_SecurityScanner {
             else {
                 $null = Import-PSUGalleryModules
             }
-            if ($null -ne $global:DockgePSUGalleryModuleState) {
-                foreach ($kv in $global:DockgePSUGalleryModuleState.GetEnumerator()) {
+            if ($null -ne $global:NASGalleryModuleState) {
+                foreach ($kv in $global:NASGalleryModuleState.GetEnumerator()) {
                     if ($kv.Value.ok) { $galLoaded += $kv.Key }
                 }
             }
         }
         elseif ($env:PSU_GALLERY_OPTIONAL -ne '1') {
-            throw "Dockge PSU job: gallery init path missing."
+            throw "PSU job: gallery init path missing."
         }
         $obj = [ordered]@{
             job            = "security-scanner"
@@ -427,7 +427,7 @@ function Invoke-PSUJob_SecurityScanner {
 
 function Invoke-PSUJob_BackupSnapshot {
     $worker = {
-        param($OutPath, $Repo, $Stacks, $DockgeBase, $DockgeUser, $DockgePass, $GalleryInit)
+        param($OutPath, $Repo, $Stacks, $StackMgrUrl, $StackMgrUser, $StackMgrPass, $GalleryInit)
         $galLoaded = @()
         if (-not [string]::IsNullOrWhiteSpace($GalleryInit) -and (Test-Path -LiteralPath $GalleryInit)) {
             . $GalleryInit
@@ -437,14 +437,14 @@ function Invoke-PSUJob_BackupSnapshot {
             else {
                 $null = Import-PSUGalleryModules
             }
-            if ($null -ne $global:DockgePSUGalleryModuleState) {
-                foreach ($kv in $global:DockgePSUGalleryModuleState.GetEnumerator()) {
+            if ($null -ne $global:NASGalleryModuleState) {
+                foreach ($kv in $global:NASGalleryModuleState.GetEnumerator()) {
                     if ($kv.Value.ok) { $galLoaded += $kv.Key }
                 }
             }
         }
         elseif ($env:PSU_GALLERY_OPTIONAL -ne '1') {
-            throw "Dockge PSU job: gallery init path missing."
+            throw "PSU job: gallery init path missing."
         }
         $obj = [ordered]@{
             job            = "backup-snapshot"
@@ -469,7 +469,7 @@ function Invoke-PSUJob_BackupSnapshot {
 
 function Invoke-PSUJob_AutoRemediation {
     $worker = {
-        param($OutPath, $Repo, $Stacks, $DockgeBase, $DockgeUser, $DockgePass, $GalleryInit)
+        param($OutPath, $Repo, $Stacks, $StackMgrUrl, $StackMgrUser, $StackMgrPass, $GalleryInit)
         $galLoaded = @()
         if (-not [string]::IsNullOrWhiteSpace($GalleryInit) -and (Test-Path -LiteralPath $GalleryInit)) {
             . $GalleryInit
@@ -479,14 +479,14 @@ function Invoke-PSUJob_AutoRemediation {
             else {
                 $null = Import-PSUGalleryModules
             }
-            if ($null -ne $global:DockgePSUGalleryModuleState) {
-                foreach ($kv in $global:DockgePSUGalleryModuleState.GetEnumerator()) {
+            if ($null -ne $global:NASGalleryModuleState) {
+                foreach ($kv in $global:NASGalleryModuleState.GetEnumerator()) {
                     if ($kv.Value.ok) { $galLoaded += $kv.Key }
                 }
             }
         }
         elseif ($env:PSU_GALLERY_OPTIONAL -ne '1') {
-            throw "Dockge PSU job: gallery init path missing."
+            throw "PSU job: gallery init path missing."
         }
         $enabled = $env:PSU_REMEDIATION_ENABLED -eq "1"
         $obj = [ordered]@{
@@ -808,7 +808,7 @@ cd "$d" && docker compose -f "$f" stop
                 $obj.safeMode.note = "SSH or NAS_HOST_STACKS_ROOT not configured — stacks not stopped remotely."
             }
             if ($env:PSU_SAFE_MODE_QUEUE_BACKUP -ne "0" -and -not [string]::IsNullOrWhiteSpace($GalleryInit) -and (Test-Path -LiteralPath $GalleryInit)) {
-                $dj = Join-Path ([System.IO.Path]::GetDirectoryName($GalleryInit)) "dockge-jobs.ps1"
+                $dj = Join-Path ([System.IO.Path]::GetDirectoryName($GalleryInit)) "nas-jobs.ps1"
                 if (Test-Path -LiteralPath $dj) {
                     try {
                         . $dj
@@ -911,7 +911,7 @@ exit 0
                     $obj.sshStackRemediation += [ordered]@{
                         stack   = $sn
                         image   = $ft.image
-                        skipped = "NAS_HOST_STACKS_ROOT unset and PSU_STACK_ROOT is a container path (/nas-repo/...); set NAS_HOST_STACKS_ROOT to the host stacks dir (e.g. /volume1/docker/dockge/stacks)."
+                        skipped = "NAS_HOST_STACKS_ROOT unset and PSU_STACK_ROOT is a container path (/nas-repo/...); set NAS_HOST_STACKS_ROOT to the host stacks dir (e.g. /volume2/docker/ce-stacks/stacks)."
                     }
                     continue
                 }
@@ -987,7 +987,7 @@ cd "$d" && docker compose -f "$f" pull && docker compose -f "$f" up -d
 
 function Invoke-PSUJob_GitOpsSync {
     $worker = {
-        param($OutPath, $Repo, $Stacks, $DockgeBase, $DockgeUser, $DockgePass, $GalleryInit)
+        param($OutPath, $Repo, $Stacks, $StackMgrUrl, $StackMgrUser, $StackMgrPass, $GalleryInit)
         $galLoaded = @()
         if (-not [string]::IsNullOrWhiteSpace($GalleryInit) -and (Test-Path -LiteralPath $GalleryInit)) {
             . $GalleryInit
@@ -997,14 +997,14 @@ function Invoke-PSUJob_GitOpsSync {
             else {
                 $null = Import-PSUGalleryModules
             }
-            if ($null -ne $global:DockgePSUGalleryModuleState) {
-                foreach ($kv in $global:DockgePSUGalleryModuleState.GetEnumerator()) {
+            if ($null -ne $global:NASGalleryModuleState) {
+                foreach ($kv in $global:NASGalleryModuleState.GetEnumerator()) {
                     if ($kv.Value.ok) { $galLoaded += $kv.Key }
                 }
             }
         }
         elseif ($env:PSU_GALLERY_OPTIONAL -ne '1') {
-            throw "Dockge PSU job: gallery init path missing."
+            throw "PSU job: gallery init path missing."
         }
         $enabled = ($env:PSU_GITOPS_ENABLED -eq "1")
         $obj = [ordered]@{
@@ -1110,18 +1110,18 @@ function Invoke-PSUJob_GitOpsSync {
     return (Start-PSUJsonReportJob -ReportBaseName "gitops-sync" -Worker $worker)
 }
 
-$script:DockgeGalleryInitForInteractive = Join-Path $PSScriptRoot "Import-PSUGalleryModules.ps1"
-if (Test-Path -LiteralPath $script:DockgeGalleryInitForInteractive) {
-    . $script:DockgeGalleryInitForInteractive
+$script:NASGalleryInitForInteractive = Join-Path $PSScriptRoot "Import-PSUGalleryModules.ps1"
+if (Test-Path -LiteralPath $script:NASGalleryInitForInteractive) {
+    . $script:NASGalleryInitForInteractive
     if ($env:PSU_GALLERY_OPTIONAL -eq '1') {
-        try { Import-PSUGalleryModules -Optional | Out-Null } catch { Write-Warning "dockge-jobs.ps1: gallery import (optional): $($_.Exception.Message)" }
+        try { Import-PSUGalleryModules -Optional | Out-Null } catch { Write-Warning "nas-jobs.ps1: gallery import (optional): $($_.Exception.Message)" }
     }
     else {
         Import-PSUGalleryModules | Out-Null
     }
 }
 elseif ($env:PSU_GALLERY_OPTIONAL -ne '1') {
-    throw "dockge-jobs.ps1: Import-PSUGalleryModules.ps1 not found at '$script:DockgeGalleryInitForInteractive'."
+    throw "nas-jobs.ps1: Import-PSUGalleryModules.ps1 not found at '$script:NASGalleryInitForInteractive'."
 }
 
-Write-Output "dockge-jobs.ps1: loaded Phase 2 jobs. Call Invoke-PSUJob_* from PSU schedules (each queues a background JSON report)."
+Write-Output "nas-jobs.ps1: loaded Phase 2 jobs. Call Invoke-PSUJob_* from PSU schedules (each queues a background JSON report)."

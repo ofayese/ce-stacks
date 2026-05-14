@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Download and install Dockge PSU Gallery dependencies (PSGallery / PSResourceGet).
+    Download and install PSU NAS Gallery dependencies (PSGallery / PSResourceGet).
 
 .DESCRIPTION
     Used by container entrypoint (PSU_GALLERY_INSTALL=1) or Dockerfile RUN. Installs
@@ -25,7 +25,7 @@ if (-not (Test-Path -LiteralPath $import)) {
 
 $strict = ($env:PSU_GALLERY_INSTALL_STRICT -ne '0')
 $includeWin = ($env:PSU_GALLERY_INCLUDE_WINDOWS -eq '1')
-$names = Get-DockgePSUGalleryModuleNames -IncludeWindowsOnly:$includeWin
+$names = Get-NASGalleryModuleNames -IncludeWindowsOnly:$includeWin
 
 function Install-OneModule {
     param([string]$Name)

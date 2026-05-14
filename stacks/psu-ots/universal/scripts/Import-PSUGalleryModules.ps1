@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Import PowerShell Universal Gallery modules for Dockge PSU templates.
+    Import PowerShell Universal Gallery modules for PSU NAS templates.
 
 .DESCRIPTION
     Dot-source this script, then call Import-PSUGalleryModules. By default every listed
@@ -16,7 +16,7 @@
 
 $ErrorActionPreference = "Continue"
 
-function Get-DockgePSUGalleryModuleNames {
+function Get-NASGalleryModuleNames {
     [CmdletBinding()]
     param([switch]$IncludeWindowsOnly)
 
@@ -67,29 +67,29 @@ function Import-PSUGalleryModules {
     )
 
     $allowPartialFailure = $Optional -or ($env:PSU_GALLERY_OPTIONAL -eq '1')
-    $global:DockgePSUGalleryModuleState = [ordered]@{}
+    $global:NASGalleryModuleState = [ordered]@{}
 
-    $names = Get-DockgePSUGalleryModuleNames -IncludeWindowsOnly:$IncludeWindowsOnly
+    $names = Get-NASGalleryModuleNames -IncludeWindowsOnly:$IncludeWindowsOnly
 
     foreach ($name in $names) {
         try {
             Import-Module -Name $name -Scope Global -ErrorAction Stop | Out-Null
-            $global:DockgePSUGalleryModuleState[$name] = @{ ok = $true; error = $null }
+            $global:NASGalleryModuleState[$name] = @{ ok = $true; error = $null }
         }
         catch {
-            $global:DockgePSUGalleryModuleState[$name] = @{ ok = $false; error = $_.Exception.Message }
+            $global:NASGalleryModuleState[$name] = @{ ok = $false; error = $_.Exception.Message }
         }
     }
 
     $loaded = [System.Collections.ArrayList]::new()
     $failed = [System.Collections.ArrayList]::new()
-    foreach ($kv in $global:DockgePSUGalleryModuleState.GetEnumerator()) {
+    foreach ($kv in $global:NASGalleryModuleState.GetEnumerator()) {
         if ($kv.Value.ok) { [void]$loaded.Add($kv.Key) }
         else { [void]$failed.Add($kv.Key) }
     }
 
     if (-not $allowPartialFailure -and $failed.Count -gt 0) {
-        $detail = ($failed | ForEach-Object { "$_ → $($global:DockgePSUGalleryModuleState[$_].error)" }) -join '; '
+        $detail = ($failed | ForEach-Object { "$_ → $($global:NASGalleryModuleState[$_].error)" }) -join '; '
         throw "Import-PSUGalleryModules: required module(s) failed: $detail. Install modules (PSU Admin, Dockerfile, or PSU_GALLERY_INSTALL=1), or set PSU_GALLERY_OPTIONAL=1 only while staging."
     }
 
@@ -103,12 +103,12 @@ function Import-PSUGalleryModules {
 
 function Test-PSUGalleryModuleLoaded {
     param([Parameter(Mandatory = $true)][string]$Name)
-    if (-not $global:DockgePSUGalleryModuleState.ContainsKey($Name)) { return $false }
-    return [bool]$global:DockgePSUGalleryModuleState[$Name].ok
+    if (-not $global:NASGalleryModuleState.ContainsKey($Name)) { return $false }
+    return [bool]$global:NASGalleryModuleState[$Name].ok
 }
 
 function Get-PSUGalleryModuleSummary {
     return @{
-        state = $global:DockgePSUGalleryModuleState
+        state = $global:NASGalleryModuleState
     }
 }

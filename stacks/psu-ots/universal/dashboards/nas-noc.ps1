@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Dockge NOC dashboard — JSON from /data/reports; requires PSU Gallery modules by default.
+    NAS NOC dashboard — JSON from /data/reports; requires PSU Gallery modules by default.
 
 .DESCRIPTION
     Dot-sources Import-PSUGalleryModules.ps1 and calls Import-PSUGalleryModules (strict)
@@ -9,34 +9,34 @@
     those modules are present after import.
 
 .NOTES
-    Copy into data/Repository/.universal/dashboards/. Requires reports from dockge-jobs.ps1.
+    Copy into data/Repository/.universal/dashboards/. Requires reports from nas-jobs.ps1.
 #>
 
 $ErrorActionPreference = "Stop"
 
-$script:DockgeGalleryInitPath = $null
+$script:NASGalleryInitPath = $null
 foreach ($cand in @(
         (Join-Path $PSScriptRoot "..\scripts\Import-PSUGalleryModules.ps1"),
         (Join-Path (Split-Path -Parent $PSScriptRoot) "scripts\Import-PSUGalleryModules.ps1")
     )) {
     if (Test-Path -LiteralPath $cand) {
-        $script:DockgeGalleryInitPath = $cand
+        $script:NASGalleryInitPath = $cand
         break
     }
 }
 
-if (-not $script:DockgeGalleryInitPath) {
+if (-not $script:NASGalleryInitPath) {
     if ($env:PSU_GALLERY_OPTIONAL -eq '1') {
-        Write-Warning "dockge-compliance.ps1: Import-PSUGalleryModules.ps1 not found — gallery panels will be limited."
+        Write-Warning "nas-noc.ps1: Import-PSUGalleryModules.ps1 not found — gallery panels will be limited."
     }
     else {
-        throw "dockge-compliance.ps1: Import-PSUGalleryModules.ps1 not found next to dashboards/scripts. Copy universal/ into data/Repository/.universal/."
+        throw "nas-noc.ps1: Import-PSUGalleryModules.ps1 not found next to dashboards/scripts. Copy universal/ into data/Repository/.universal/."
     }
 }
-elseif ($script:DockgeGalleryInitPath) {
-    . $script:DockgeGalleryInitPath
+elseif ($script:NASGalleryInitPath) {
+    . $script:NASGalleryInitPath
     if ($env:PSU_GALLERY_OPTIONAL -eq '1') {
-        try { Import-PSUGalleryModules -Optional | Out-Null } catch { Write-Warning "dockge-compliance.ps1: gallery import (optional): $($_.Exception.Message)" }
+        try { Import-PSUGalleryModules -Optional | Out-Null } catch { Write-Warning "nas-noc.ps1: gallery import (optional): $($_.Exception.Message)" }
     }
     else {
         Import-PSUGalleryModules | Out-Null
@@ -49,7 +49,7 @@ function Get-PSUReportsRoot {
     return $r
 }
 
-function Get-DockgeLatestReportObject {
+function Get-NASLatestReportObject {
     param([Parameter(Mandatory = $true)][string]$Prefix)
     $root = Get-PSUReportsRoot
     if (-not (Test-Path -LiteralPath $root)) { return $null }
@@ -61,7 +61,7 @@ function Get-DockgeLatestReportObject {
     catch { return @{ parseError = $_.Exception.Message; file = $f.Name } }
 }
 
-function New-DockgeReportTable {
+function New-NASReportTable {
     param($Object)
     if ($null -eq $Object) { return @([ordered]@{ info = "no report yet" }) }
     if ($Object -is [System.Management.Automation.PSCustomObject]) {
@@ -75,16 +75,16 @@ function New-DockgeReportTable {
     return @($Object)
 }
 
-function New-DockgeGalleryStatusRows {
-    if (-not $global:DockgePSUGalleryModuleState -or $global:DockgePSUGalleryModuleState.Count -eq 0) {
+function New-NASGalleryStatusRows {
+    if (-not $global:NASGalleryModuleState -or $global:NASGalleryModuleState.Count -eq 0) {
         return @([ordered]@{ module = "(none)"; ok = $false; error = "Gallery initializer not loaded or no import attempted." })
     }
-    return @($global:DockgePSUGalleryModuleState.GetEnumerator() | ForEach-Object {
+    return @($global:NASGalleryModuleState.GetEnumerator() | ForEach-Object {
             [ordered]@{ module = $_.Key; ok = $_.Value.ok; error = $_.Value.error }
         })
 }
 
-function New-DockgeOptionalChartForReport {
+function New-NASOptionalChartForReport {
     param(
         [string]$Prefix,
         $ReportObject
@@ -114,7 +114,7 @@ function New-DockgeOptionalChartForReport {
     }
 }
 
-function New-DockgeCompliancePanel {
+function New-NASCompliancePanel {
     param(
         [string]$Title,
         [string]$Prefix,
@@ -127,9 +127,9 @@ function New-DockgeCompliancePanel {
             if (Get-Command New-UDLoader -ErrorAction SilentlyContinue) {
                 $loaderElt = New-UDLoader -Pulse -SpeedMultiplier 1.2
             }
-            $d = Get-DockgeLatestReportObject -Prefix $Prefix
-            $chart = New-DockgeOptionalChartForReport -Prefix $Prefix -ReportObject $d
-            $table = New-UDTable -Data (New-DockgeReportTable -Object $d) -Dense
+            $d = Get-NASLatestReportObject -Prefix $Prefix
+            $chart = New-NASOptionalChartForReport -Prefix $Prefix -ReportObject $d
+            $table = New-UDTable -Data (New-NASReportTable -Object $d) -Dense
             $extras = @()
             if (Get-Command Show-UDObject -ErrorAction SilentlyContinue) {
                 $extras += New-UDButton -Text "Modal inspector (Show-UDObject)" -OnClick {
@@ -156,38 +156,38 @@ function New-DockgeCompliancePanel {
 
 if (Get-Command New-PSUDashboard -ErrorAction SilentlyContinue) {
     try {
-        New-PSUDashboard -Name "DockgeCompliance" -BaseUrl "/dockge-compliance" -Framework "Universal" -Content {
+        New-PSUDashboard -Name "NASCompliance" -BaseUrl "/nas-noc" -Framework "Universal" -Content {
             New-UDRow -Columns {
                 New-UDColumn -LargeSize 12 -Content {
                     New-UDHeading -Text "PSU Gallery modules (best-effort import)"
                     New-UDDynamic -Content {
-                        New-UDTable -Data (New-DockgeGalleryStatusRows) -Dense
+                        New-UDTable -Data (New-NASGalleryStatusRows) -Dense
                     } -AutoRefresh -AutoRefreshInterval 600
                 }
             }
             New-UDRow -Columns {
-                New-DockgeCompliancePanel -Title "Panel A — Image drift" -Prefix "image-drift" -RefreshSec 60
-                New-DockgeCompliancePanel -Title "Panel B — NAS health" -Prefix "nas-health" -RefreshSec 60
+                New-NASCompliancePanel -Title "Panel A — Image drift" -Prefix "image-drift" -RefreshSec 60
+                New-NASCompliancePanel -Title "Panel B — NAS health" -Prefix "nas-health" -RefreshSec 60
             }
             New-UDRow -Columns {
-                New-DockgeCompliancePanel -Title "Panel C — Ingress" -Prefix "ingress-validator" -RefreshSec 120
-                New-DockgeCompliancePanel -Title "Panel D — Docker / Dockge latency" -Prefix "docker-latency" -RefreshSec 120
+                New-NASCompliancePanel -Title "Panel C — Ingress" -Prefix "ingress-validator" -RefreshSec 120
+                New-NASCompliancePanel -Title "Panel D — Docker / Stack Manager latency" -Prefix "docker-latency" -RefreshSec 120
             }
             New-UDRow -Columns {
-                New-DockgeCompliancePanel -Title "Panel E — PSU self-health" -Prefix "psu-self-health" -RefreshSec 120
-                New-DockgeCompliancePanel -Title "Panel F — Stack dependencies" -Prefix "stack-dependencies" -RefreshSec 300
+                New-NASCompliancePanel -Title "Panel E — PSU self-health" -Prefix "psu-self-health" -RefreshSec 120
+                New-NASCompliancePanel -Title "Panel F — Stack dependencies" -Prefix "stack-dependencies" -RefreshSec 300
             }
             New-UDRow -Columns {
                 New-UDColumn -LargeSize 12 -Content {
-                    New-DockgeCompliancePanel -Title "Panel G — Security (trivy)" -Prefix "security-scanner" -RefreshSec 3600
+                    New-NASCompliancePanel -Title "Panel G — Security (trivy)" -Prefix "security-scanner" -RefreshSec 3600
                 }
             }
         }
     }
     catch {
-        Write-Warning "dockge-compliance.ps1: dashboard registration failed: $($_.Exception.Message)"
+        Write-Warning "nas-noc.ps1: dashboard registration failed: $($_.Exception.Message)"
     }
 }
 else {
-    Write-Output "dockge-compliance.ps1: Universal Dashboard cmdlets not present — use Get-DockgeLatestReportObject in custom PSU pages."
+    Write-Output "nas-noc.ps1: Universal Dashboard cmdlets not present — use Get-NASLatestReportObject in custom PSU pages."
 }

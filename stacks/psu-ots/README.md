@@ -1,23 +1,23 @@
 # psu-ots — PowerShell Universal (NAS command center)
 
-PowerShell Universal provides **scheduled jobs**, **API endpoints**, and a **NOC dashboard** over the Dockge monorepo bind (`/nas-repo`) and ACME PEMs (`/certs/acme`).
+PowerShell Universal provides **scheduled jobs**, **API endpoints**, and a **NOC dashboard** over the NAS monorepo bind (`/nas-repo`) and ACME PEMs (`/certs/acme`).
 
 ## Prerequisites
 
-- **TLS:** Host-named wildcard PEMs under `${ACME_CERT_ROOT}/otsorundscore/` (OTS NAS). Traefik rule in compose: `psu.otsorundscore.olutechsys.com`.
-- **Network:** `traefik-ots` stack must exist (external Docker network `traefik-ots`).
+- **TLS:** Host-named wildcard PEMs under `${ACME_CERT_ROOT}/otsorundscore/` (OTS NAS). TLS termination handled by DSM Reverse Proxy.
 - **DNS:** Public + split-horizon records for `psu.otsorundscore.olutechsys.com` (and `.olutech.systems` if used).
+- **Port:** Container exposed directly on `10.0.1.15:5570` → DSM Reverse Proxy → HTTPS.
 
 ## First deploy
 
 ```bash
 cd "${STACK_ROOT}/psu-ots"
 cp .env.example .env
-# set DOCKGE_USERNAME / DOCKGE_PASSWORD for API checks; optional NAS_PULL_APP_TOKEN for future webhook
+# set STACK_MANAGER_USERNAME / STACK_MANAGER_PASSWORD for API checks; optional NAS_PULL_APP_TOKEN for future webhook
 docker compose up -d
 ```
 
-Admin UI: `https://psu.otsorundscore.olutechsys.com` (via Traefik) or publish host port temporarily for bootstrap.
+Admin UI: `https://psu.otsorundscore.olutechsys.com` (via DSM Reverse Proxy) or connect to `http://10.0.1.15:5570` directly for bootstrap.
 
 ## Repository layout
 
@@ -29,22 +29,22 @@ Versioned PSU config lives under **`data/Repository/`** on the NAS (`.universal/
 
 Interactive PSU Admin login uses **PowerShell Universal defaults** from the image unless you configure auth inside PSU (e.g. OpenID in Admin) per [PowerShell Universal — OpenID Connect](https://docs.powershelluniversal.com/config/security/openid-connect). This repo’s tracked **`compose.yaml`** does **not** inject OIDC env. **Google Workspace → DSM** (NAS login portal only) is separate.
 
-**APIs:** **`PSU_AUTH_TOKEN`**, **`DOCKGE_USERNAME`** / **`DOCKGE_PASSWORD`**, and **`NAS_PULL_APP_TOKEN`** power jobs, Dockge API, and webhooks — see **`universal/endpoints/dockge-api.ps1`**.
+**APIs:** **`PSU_AUTH_TOKEN`**, **`STACK_MANAGER_USERNAME`** / **`STACK_MANAGER_PASSWORD`**, and **`NAS_PULL_APP_TOKEN`** power jobs, stack manager API, and webhooks — see **`universal/endpoints/nas-api.ps1`**.
 
 ## Security notes
 
 - **`/nas-repo` is `:ro` in compose** — change to `:rw` only if you implement `git pull` from PSU and accept NAS git hygiene rules ([`AGENTS.md`](../../AGENTS.md)).
-- **`POST /api/v1/nas/pull`:** Ship as a follow-up in Admin (App Token + role). **`GET /api/v1/nas/health`** (Phase 2) is registered in `universal/endpoints/dockge-api.ps1` and returns the latest NAS + latency JSON reports (**Bearer `PSU_AUTH_TOKEN`** required).
+- **`POST /api/v1/nas/pull`:** Ship as a follow-up in Admin (App Token + role). **`GET /api/v1/nas/health`** (Phase 2) is registered in `universal/endpoints/nas-api.ps1` and returns the latest NAS + latency JSON reports (**Bearer `PSU_AUTH_TOKEN`** required).
 
 ## Automation
 
 | Script                      | Purpose                                            |
 | --------------------------- | -------------------------------------------------- |
 | `NAS-Fix-Permissions`       | Runs `fix-permissions.sh` against `PSU_STACK_ROOT` |
-| `NAS-Check-Dockge-Status`   | Runs `check-dockge-http.sh`                        |
-| `NAS-Detect-Config-Drift`   | `git status` drift hints                           |
-| `NAS-Validate-SSL-Certs`    | OpenSSL notAfter on `fullchain.pem`                |
-| `NAS-Monitor-Dockge-Stacks` | Dockge API inventory (needs credentials)           |
+| `NAS-Check-StackManager-Status` | Runs `check-dockge-http.sh`                        |
+| `NAS-Detect-Config-Drift`       | `git status` drift hints                           |
+| `NAS-Validate-SSL-Certs`        | OpenSSL notAfter on `fullchain.pem`                |
+| `NAS-Monitor-Stacks`            | Stack manager API inventory (needs credentials)    |
 
 ### Phase 2 — templates under `universal/`
 
@@ -52,10 +52,10 @@ Git-tracked PowerShell templates (copy into `data/Repository/.universal/` on the
 
 | Path | Role |
 |------|------|
-| `universal/scripts/dockge-jobs.ps1` | Background jobs **A–G** + backup + **`Invoke-PSUJob_AutoRemediation`** / **`Invoke-PSUJob_GitOpsSync`**. Each `Invoke-PSUJob_*` queues `Start-Job` and writes timestamped JSON under `PSU_REPORTS_ROOT` (default `/data/reports`) with **48h** retention. |
-| `universal/endpoints/dockge-api.ps1` | Registers `/api/v1/*` routes; enforces **`Authorization: Bearer`** vs **`PSU_AUTH_TOKEN`**. Optional: `PSU_ALLOW_STACK_RESTART`, `PSU_REMEDIATION_ENABLED`, `PSU_GITOPS_ENABLED`. |
-| `universal/endpoints/dockge-endpoints.ps1` | Dot-sources `dockge-api.ps1` (single entry for the `endpoints/` folder). |
-| `universal/dashboards/dockge-compliance.ps1` | NOC panels **A–G** (UD auto-refresh) backed by the JSON reports above. |
+| `universal/scripts/nas-jobs.ps1` | Background jobs **A–G** + backup + **`Invoke-PSUJob_AutoRemediation`** / **`Invoke-PSUJob_GitOpsSync`**. Each `Invoke-PSUJob_*` queues `Start-Job` and writes timestamped JSON under `PSU_REPORTS_ROOT` (default `/data/reports`) with **48h** retention. |
+| `universal/endpoints/nas-api.ps1` | Registers `/api/v1/*` routes; enforces **`Authorization: Bearer`** vs **`PSU_AUTH_TOKEN`**. Optional: `PSU_ALLOW_STACK_RESTART`, `PSU_REMEDIATION_ENABLED`, `PSU_GITOPS_ENABLED`. |
+| `universal/endpoints/nas-endpoints.ps1` | Dot-sources `nas-api.ps1` (single entry for the `endpoints/` folder). |
+| `universal/dashboards/nas-noc.ps1` | NOC panels **A–G** (UD auto-refresh) backed by the JSON reports above. |
 | `universal/scripts/Import-PSUGalleryModules.ps1` | **Required** gallery import (throws unless `PSU_GALLERY_OPTIONAL=1`). |
 | `universal/scripts/Install-PSUGalleryModules.ps1` | Downloads modules from PSGallery (`Install-PSResource` / `Install-Module`); used by **`PSU_GALLERY_INSTALL=1`** and **`Dockerfile`**. |
 | `scripts/docker-gallery-entrypoint.sh` | Compose **entrypoint** wrapper: optional install, then `exec ./Universal/Universal.Server` (matches upstream image). |
@@ -66,7 +66,7 @@ Git-tracked PowerShell templates (copy into `data/Repository/.universal/` on the
 
 ### PSU Gallery modules (required by default)
 
-`Import-PSUGalleryModules` loads every module in **`Get-DockgePSUGalleryModuleNames`**. Unless **`PSU_GALLERY_OPTIONAL=1`**, a failed import **throws** (dashboard/endpoints/jobs fail fast). Use optional mode only while staging; do not leave it on in production if you rely on gallery behavior.
+`Import-PSUGalleryModules` loads every module in **`Get-NASGalleryModuleNames`**. Unless **`PSU_GALLERY_OPTIONAL=1`**, a failed import **throws** (dashboard/endpoints/jobs fail fast). Use optional mode only while staging; do not leave it on in production if you rely on gallery behavior.
 
 | Area | Modules (Linux set) |
 |------|----------------------|

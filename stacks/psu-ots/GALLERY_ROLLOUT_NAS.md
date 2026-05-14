@@ -17,7 +17,7 @@ Edit `stacks/psu-ots/.env` (create from `.env.example` if needed):
 - `PSU_GALLERY_INSTALL_STRICT=1`
 - `PSU_GALLERY_OPTIONAL=0`
 
-Point compose at the custom image: in `stacks/psu-ots/compose.yaml` (or Dockge YAML override), set `image: psu-ots:gallery` instead of the default digest-pinned Universal image when you are ready to run from this tag.
+Point compose at the custom image: in `stacks/psu-ots/compose.yaml` (or stack manager YAML override), set `image: psu-ots:gallery` instead of the default digest-pinned Universal image when you are ready to run from this tag.
 
 ## 3. Deploy
 

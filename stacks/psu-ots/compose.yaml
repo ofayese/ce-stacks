@@ -1,5 +1,5 @@
 # Stack: psu-ots - PowerShell Universal (NAS automation / NOC dashboard)
-# Exposed directly on 10.0.1.15:5570 (Traefik removed; DSM reverse proxy handles TLS termination)
+# Exposed on 10.0.1.15:5570; DSM reverse proxy handles TLS termination.
 services:
   universal:
     container_name: psu-ots
@@ -20,11 +20,11 @@ services:
       - PGID=${PGID:-0}
       - TZ=${TZ:-America/New_York}
       # Paths inside container for NAS scripts + compose bind roots
-      - DOCKGE_REPO_ROOT=${DOCKGE_REPO_ROOT:-/nas-repo}
+      - NAS_REPO_ROOT=${NAS_REPO_ROOT:-/nas-repo}
       - PSU_STACK_ROOT=${PSU_STACK_ROOT:-/nas-repo/stacks}
-      - DOCKGE_BASE_URL=${DOCKGE_BASE_URL:-http://10.0.1.15:5571}
-      - DOCKGE_USERNAME=${DOCKGE_USERNAME:-}
-      - DOCKGE_PASSWORD=${DOCKGE_PASSWORD:-}
+      - STACK_MANAGER_URL=${STACK_MANAGER_URL:-http://10.0.1.15:3866}
+      - STACK_MANAGER_USERNAME=${STACK_MANAGER_USERNAME:-}
+      - STACK_MANAGER_PASSWORD=${STACK_MANAGER_PASSWORD:-}
       - NAS_PULL_APP_TOKEN=${NAS_PULL_APP_TOKEN:-}
       # Phase 2 PSU API + jobs (see stacks/psu-ots/.env.example)
       - PSU_AUTH_TOKEN=${PSU_AUTH_TOKEN:-}
@@ -63,16 +63,16 @@ services:
       - PSU_GALLERY_INCLUDE_WINDOWS=${PSU_GALLERY_INCLUDE_WINDOWS:-0}
     entrypoint:
       - /bin/sh
-      - /dockge-gallery-entrypoint.sh
+      - /nas-gallery-entrypoint.sh
     volumes:
-      - ${STACK_ROOT}/psu-ots/scripts/docker-gallery-entrypoint.sh:/dockge-gallery-entrypoint.sh:ro
+      - ${STACK_ROOT}/psu-ots/scripts/docker-gallery-entrypoint.sh:/nas-gallery-entrypoint.sh:ro
       - ${STACK_ROOT}/psu-ots/universal/scripts/Install-PSUGalleryModules.ps1:/install/Install-PSUGalleryModules.ps1:ro
       - ${STACK_ROOT}/psu-ots/universal/scripts/Import-PSUGalleryModules.ps1:/install/Import-PSUGalleryModules.ps1:ro
       - ${STACK_ROOT}/psu-ots/data:/data:rw
       # Optional: mount read-only private key for host SSH remediation (chmod 600 on host; never commit keys)
       - ${STACK_ROOT}/psu-ots/keys:/ssh-keys:ro
-      # Repo root (parent of stacks/) for git status + scripts — same as ${DOCKGE_REPO_ROOT} when set in .env
-      - ${DOCKGE_REPO_ROOT:-${STACK_ROOT}/..}:/nas-repo:ro
+      # Repo root (parent of stacks/) for git status + scripts — same as ${NAS_REPO_ROOT} when set in .env
+      - ${NAS_REPO_ROOT:-${STACK_ROOT}/..}:/nas-repo:ro
       - ${ACME_CERT_ROOT:-/volume2/certs/acme}:/certs/acme:ro
     healthcheck:
       test:

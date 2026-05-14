@@ -24,4 +24,4 @@ Use PSU’s **Ad-Hoc Terminals** so operators can open an in-browser shell from 
 ## Related
 
 - Host SSH for jobs: `stacks/psu-ots/NAS_HOST_SSH_SETUP.md`
-- Emergency webhook: `POST /api/v1/webhooks/nas-alert` (see `universal/endpoints/dockge-api.ps1`)
+- Emergency webhook: `POST /api/v1/webhooks/nas-alert` (see `universal/endpoints/nas-api.ps1`)
