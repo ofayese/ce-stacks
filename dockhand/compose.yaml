@@ -23,7 +23,7 @@ services:
       - SKIP_DF_COLLECTION=true
       - TZ=America/New_York
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/', r => process.exit(r.statusCode < 400 ? 0 : 1)).on('error', () => process.exit(1))"]
+      test: ["CMD", "bun", "-e", "fetch('http://localhost:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 30s
       timeout: 5s
       retries: 5

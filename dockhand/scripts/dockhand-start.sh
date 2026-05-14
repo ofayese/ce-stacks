@@ -134,7 +134,7 @@ create_container() {
         --log-opt max-size=10m \
         --log-opt max-file=3 \
         --label com.centurylinklabs.watchtower.enable=true \
-        --health-cmd='/bin/sh -c "exec 3<>/dev/tcp/127.0.0.1/3000 && exec 3>&-" || exit 1' \
+        --health-cmd='bun -e "fetch(\"http://localhost:3000/\").then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"' \
         --health-interval=30s \
         --health-timeout=5s \
         --health-retries=5 \
