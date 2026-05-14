@@ -9,7 +9,7 @@
 ## 📋 Quick Reference
 
 | Document | Purpose | Read Time |
-|----------|---------|-----------|
+| --- | --- | --- |
 | **AUDIT_REPORT.md** | Detailed findings with evidence | 10 min |
 | **QUICK_FIX_CHECKLIST.md** | Actionable steps to fix | 15 min |
 | **This File** | Executive summary | 5 min |
@@ -83,12 +83,12 @@ OVERALL:            7.7/10 → 9.5/10
 ## 🚀 Fix Timeline
 
 | Phase | Items | Time | Can Skip? |
-|-------|-------|------|-----------|
+| --- | --- | --- | --- |
 | **CRITICAL** | Network + .env files | 20 min | NO |
 | **HIGH** | Security options + PUID/PGID | 20 min | NO |
 | **MEDIUM** | Documentation updates | 15 min | Optional |
 | **LOW** | Polish + comments | 10 min | Yes |
-| **TOTAL** | All fixes | ~1.5 hrs | — |
+| **TOTAL** | All fixes | ~1.5 hrs | - |
 
 ---
 

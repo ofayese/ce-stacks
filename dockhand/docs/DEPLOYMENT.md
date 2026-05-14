@@ -76,7 +76,7 @@ Once Dockhand is running on your NAS:
 ## File Mapping
 
 | File | Location | Purpose |
-|---|---|---|
+| --- | --- | --- |
 | `scripts/dockhand-start.sh` | `/usr/local/etc/rc.d/dockhand.sh` | DSM startup script |
 | `docs/MIGRATION.md` | `/volume2/docker/dockhand/docs/MIGRATION.md` | Step-by-step guide |
 | `scripts/dockhand-validate.sh` | `/volume2/docker/dockhand/scripts/dockhand-validate.sh` | Validation checks |
