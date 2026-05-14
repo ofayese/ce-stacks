@@ -289,9 +289,9 @@ volumes:
 | 6 | Health checks | ✓ PASS | - | - |
 | 7 | Network subnet registry | MEDIUM | All | 15 min |
 | 8 | HAProxy documentation | MEDIUM | 1 | 5 min |
-| 9 | Dockhand docs missing network setup | LOW | — | 5 min |
+| 9 | Dockhand docs missing network setup | LOW | - | 5 min |
 | 10 | Volume path comments | LOW | 5 | 5 min |
-| 11 | Solution architect link | LOW | — | 2 min |
+| 11 | Solution architect link | LOW | - | 2 min |
 
 **Total Fix Time**: ~1.5 hours
 
@@ -342,7 +342,7 @@ Status: **CLEAN** - No exposed secrets.
 ## Repo Health Score
 
 | Category | Score | Notes |
-|----------|-------|-------|
+| -------- | ----- | ----- |
 | Structure | 9/10 | Well-organized, clear patterns |
 | Security | 7/10 | Good practices, 2 missing no-new-privileges |
 | Documentation | 7/10 | Good, but missing .env setup guide |

@@ -6,14 +6,14 @@ This directory is designed to be copied to `/volume2/docker/dockhand/` on your S
 
 **dockhand/** is a **reference directory** at the root of your ce-stacks git repository. It contains:
 
-- `dockhand-start.sh` — RC startup script for DSM
-- `MIGRATION.md` — Complete migration guide
-- `dockhand-validate.sh` — Validation script
-- `dockhand-migration.sh` — Migration preparation script
-- `compose.yaml` — Docker Compose definition (reference)
-- `README.md` — Dockhand setup guide
-- `.env.example` — Environment variable template
-- `CHECKLIST.sh` — Migration tracker
+- `dockhand-start.sh` - RC startup script for DSM
+- `MIGRATION.md` - Complete migration guide
+- `dockhand-validate.sh` - Validation script
+- `dockhand-migration.sh` - Migration preparation script
+- `compose.yaml` - Docker Compose definition (reference)
+- `README.md` - Dockhand setup guide
+- `.env.example` - Environment variable template
+- `CHECKLIST.sh` - Migration tracker
 
 ## Deployment Flow
 

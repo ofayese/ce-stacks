@@ -7,11 +7,12 @@ This document describes the full migration from **Portainer CE** to **Dockhand**
 - **Current**: Portainer CE 2.41.0 manages all stacks via RC script + Portainer Agent
 - **Target**: Dockhand (latest) manages stacks via RC script with git-backed deployments
 - **Timeline**: 2-4 hours initial setup + validation, then ongoing management
-- **Risk Level**: High (full orchestrator replacement) — with rollback options
+- **Risk Level**: High (full orchestrator replacement) - with rollback options
 
 ## Why Migrate to Dockhand?
 
 ✅ **Advantages over Portainer CE**:
+
 - Native git integration with webhooks (auto-sync on repo push)
 - Modern UI (SvelteKit 5 + Svelte, vs Portainer's Angular)
 - Lighter resource footprint (Bun runtime vs Go)
@@ -20,6 +21,7 @@ This document describes the full migration from **Portainer CE** to **Dockhand**
 - Better Compose visual editor
 
 ⚠️ **Trade-offs**:
+
 - Smaller ecosystem (newer product, less battle-tested)
 - No Agent layer (single monolith, no remote environment support for this setup)
 - RBAC only in Enterprise version (not a concern for single-host)
@@ -158,6 +160,7 @@ Dockhand can auto-deploy stacks when you push changes to your ce-stacks repo. Th
 ### 5c. Test webhook (Optional)
 
 1. Make a minor edit to a compose file and push:
+
    ```bash
    cd /volume2/docker/ce-stacks
    echo "# test" >> stacks/it-tools/compose.yaml
@@ -165,9 +168,10 @@ Dockhand can auto-deploy stacks when you push changes to your ce-stacks repo. Th
    git commit -m "test webhook trigger"
    git push origin main
    ```
+
 2. Check GitHub webhook delivery status:
    - Repo > **Settings** > **Webhooks** > select webhook
-   - View **Recent Deliveries** — should show successful (200 OK)
+   - View **Recent Deliveries** - should show successful (200 OK)
 
 ## Step 6: Import Stacks into Dockhand
 
@@ -192,19 +196,22 @@ For each stack in `/volume2/docker/ce-stacks/stacks/`, repeat:
 7. Click **Deploy** to start the stack
 8. Wait for container health check to pass
 9. Verify container properties:
+
    ```bash
    sudo docker inspect <container-name> | jq .Config.Labels
    ```
+
    - Should show `com.centurylinklabs.watchtower.enable` label if present in compose.yaml
 
 **Recommended import order** (low-risk to high-risk):
-1. `it-tools` — simple, no state
-2. `homepage` — simple UI
-3. `dozzle` — log viewer, read-only
-4. `watchtower` — auto-update manager
-5. `databases` — stateful, important
-6. `ollama` — large, stateful (models take time to pull)
-7. `code-server` — high memory
+
+1. `it-tools` - simple, no state
+2. `homepage` - simple UI
+3. `dozzle` - log viewer, read-only
+4. `watchtower` - auto-update manager
+5. `databases` - stateful, important
+6. `ollama` - large, stateful (models take time to pull)
+7. `code-server` - high memory
 8. All others
 
 ### Approach B: Import via Git Webhook (Automated, Optional)
@@ -451,9 +458,9 @@ A: Edit the compose.yaml in `/volume2/docker/ce-stacks/stacks/<stack>/`, commit,
 
 ## Support
 
-- **Dockhand Docs**: https://dockhand.pro/manual
+- **Dockhand Docs**: <https://dockhand.pro/manual>
 - **Your Repo Docs**: `/volume2/docker/dockhand/docs/` on NAS or `dockhand/docs/` in ce-stacks repo
-- **Dockhand GitHub**: https://github.com/fnsys/dockhand
+- **Dockhand GitHub**: <https://github.com/fnsys/dockhand>
 
 ---
 
