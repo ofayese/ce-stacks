@@ -304,7 +304,7 @@ DOCKHAND_SRC="${REPO_ROOT}/dockhand"
 DOCKHAND_DST="/volume2/docker/dockhand"
 
 if [[ ! -d "${DOCKHAND_SRC}" ]]; then
-	echo "  WARN: ${DOCKHAND_SRC} not found — skipping dockhand sync" >&2
+	echo "  WARN: ${DOCKHAND_SRC} not found - skipping dockhand sync" >&2
 else
 	mkdir -p "${DOCKHAND_DST}"
 
