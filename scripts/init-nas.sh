@@ -1,18 +1,25 @@
 #!/usr/bin/env bash
 # init-nas.sh
-# Post-clone bootstrap for the Dockge stack repo.
+# Single-command bootstrap for the ce-stacks repo after git clone or git pull.
+#
+# What it does (in order):
+#   1. Resolve STACK_ROOT and write it into the repo-root .env
+#   2. Write STACK_ROOT into the repo-root .env
+#   3. Create bind-mount volume directories for all stacks
+#   4. Seed per-stack .env files from .env.example (via bootstrap-env.sh --apply)
+#   5. Fix bind-mount ownership (fix-permissions.sh, root only)
+#   6. Create the ce-internal Docker backbone network (idempotent)
+#   7. Sync REPO_ROOT/dockhand/ → /volume2/docker/dockhand/ (merge, never overwrites .env/data/secrets)
 #
 # PREFERRED - run as your admin user (no sudo):
 #   bash scripts/init-nas.sh
-#   docker network create ... (if prompted)
 #
-# Only use sudo if you need fix-permissions.sh to chown volume dirs,
-# or if your user lacks write access to /volume2/docker/:
+# Use sudo only if fix-permissions.sh needs to chown volume dirs, or if your
+# user lacks write access to /volume2/docker/:
 #   sudo bash scripts/init-nas.sh
-#   (files in the dockhand sync will be re-owned back to $SUDO_USER automatically)
+#   (dockhand sync files are re-owned back to $SUDO_USER automatically)
 #
-# Re-run after git pull to sync new stacks and the dockhand directory.
-# Idempotent - safe to run multiple times.
+# Re-run after every git pull — fully idempotent.
 #
 # Manifest exhaustiveness (BSD-safe; no grep -oP):
 #   diff <(grep -E '^\s*"[^"]+:' scripts/init-nas.sh | sed -E 's/^[[:space:]]*"([^"]+):.*/\1/' | sort -u) \
@@ -234,7 +241,20 @@ for entry in "${STACK_MANIFEST[@]}"; do
 	done
 done
 
-# ── 4. Run fix-permissions.sh ─────────────────────────────────────────
+# ── 4. Seed per-stack .env files from .env.example ───────────────────
+# Delegates to bootstrap-env.sh so the logic stays in one place.
+# --apply skips any stack that already has a .env (idempotent / safe to re-run).
+# Operators must still edit each .env with real credentials before deploying.
+echo ""
+echo "Seeding per-stack .env files ..."
+BOOTSTRAP_SCRIPT="${SCRIPT_DIR}/bootstrap-env.sh"
+if [[ -f "${BOOTSTRAP_SCRIPT}" ]]; then
+	bash "${BOOTSTRAP_SCRIPT}" --apply
+else
+	echo "  WARN: ${BOOTSTRAP_SCRIPT} not found — skipping .env seeding" >&2
+fi
+
+# ── 5. Run fix-permissions.sh ─────────────────────────────────────────
 echo ""
 echo "Fixing permissions ..."
 if [[ "$(id -u)" -eq 0 ]]; then
@@ -243,7 +263,7 @@ else
 	echo "WARN: not root; run: sudo bash ${SCRIPT_DIR}/fix-permissions.sh ${STACK_ROOT}" >&2
 fi
 
-# ── 5. Create shared Docker networks ──────────────────────────────────
+# ── 6. Create shared Docker networks ──────────────────────────────────
 # ce-internal: cross-stack backbone used by grafana-prom, databases,
 #              ollama, and synology-api-bridge. Idempotent.
 echo ""
@@ -264,7 +284,7 @@ else
 	echo "    docker network create --driver bridge --subnet 172.26.0.0/24 --gateway 172.26.0.1 ce-internal"
 fi
 
-# ── 6. Sync dockhand repo dir → /volume2/docker/dockhand ──────────────
+# ── 7. Sync dockhand repo dir → /volume2/docker/dockhand ──────────────
 # Dockhand lives inside the repo (REPO_ROOT/dockhand/) but must run from
 # /volume2/docker/dockhand/ because Dockge/Container Manager uses that fixed
 # path as its working directory.
