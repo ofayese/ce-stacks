@@ -26,7 +26,7 @@ services:
       - PGID=${PGID:-0}
       - TZ=America/New_York
       # Allow access from the Synology LAN IP and your domain
-      - HOMEPAGE_ALLOWED_HOSTS=10.0.1.15:7575,otsorundscore.olutechsys.com:7575,otsorundscore.olutech.systems:7575,localhost:7575
+      - HOMEPAGE_ALLOWED_HOSTS=10.0.1.15:7575,otsorundscore.olutechsys.com:7575,otsorundscore.olutech.systems:7575
     # Healthcheck type B: own binary probe (image ships CLI tool for this)
     healthcheck:
       test:

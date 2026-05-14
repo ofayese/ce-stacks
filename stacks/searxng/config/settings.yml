@@ -44,7 +44,7 @@ search:
   # "yandex", "mwmbl", "naver", "seznam", "sogou", "startpage", "swisscows", "quark", "qwant", "wikipedia" -
   # leave blank to turn it off by default.
   autocomplete: ""
-  # minimun characters to type before autocompleter starts
+  # minium characters to type before autocompleter starts
   autocomplete_min: 4
   # backend for the favicon near URL in search results.
   # Available resolvers: "allesedv", "duckduckgo", "google", "yandex" - leave blank to turn it off by default.
@@ -87,8 +87,10 @@ search:
 
 server:
   # Is overwritten by ${SEARXNG_PORT} and ${SEARXNG_BIND_ADDRESS}
-  port: 8888
-  bind_address: "127.0.0.1"
+  # port must match the container-side of the compose ports mapping (10.0.1.15:8888:8080).
+  # bind_address must be 0.0.0.0 inside a container - 127.0.0.1 would block Docker bridge traffic.
+  port: 8080
+  bind_address: "0.0.0.0"
   # public URL of the instance, to ensure correct inbound links. Is overwritten
   # by ${SEARXNG_BASE_URL}.
   base_url: false  # "http://example.com/location"
@@ -97,7 +99,7 @@ server:
   limiter: false
   # enable features designed only for public instances.
   # Is overwritten by ${SEARXNG_PUBLIC_INSTANCE}
-  public_instance: false
+  public_instance: true
 
   # If your instance owns a /etc/searxng/settings.yml file, then set the following
   # values there.
@@ -451,7 +453,7 @@ engines:
     shortcut: nixw
     base_url: https://wiki.nixos.org/
     search_type: text
-    disabled: true
+    disabled: false
     categories: [it, software wikis]
 
   - name: artic
@@ -472,7 +474,7 @@ engines:
   - name: ask
     engine: ask
     shortcut: ask
-    disabled: true
+    disabled: false
 
   - name: azure
     engine: azure
@@ -642,7 +644,7 @@ engines:
     engine: cloudflareai
     shortcut: cfai
     # get api token and accont id from https://developers.cloudflare.com/workers-ai/get-started/rest-api/
-    cf_account_id: 'your_cf_accout_id'
+    cf_account_id: '10e0d1be9cec788cbab29232df7267c1'
     cf_ai_api: 'your_cf_api'
     # create your ai gateway by https://developers.cloudflare.com/ai-gateway/get-started/creating-gateway/
     cf_ai_gateway: 'your_cf_ai_gateway_name'
@@ -1072,7 +1074,7 @@ engines:
     categories: [files, apps]
     shortcut: gpa
     play_categ: apps
-    disabled: true
+    disabled: false
 
   - name: google play movies
     engine: google_play
