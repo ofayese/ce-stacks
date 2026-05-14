@@ -19,14 +19,14 @@ services:
       - ${STACK_ROOT}/homepage/data:/app/public/icons:rw
 
       # /var/run socket context
-      # docker.sock :ro — Homepage reads container metadata only.
+      # docker.sock :ro - Homepage reads container metadata only.
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
       - TZ=America/New_York
       # Allow access from the Synology LAN IP and your domain
-      - HOMEPAGE_ALLOWED_HOSTS=10.0.1.15:7575,otsorundscore.olutechsys.com:7575,otsorundscore.olutech.systems:7575
+      - HOMEPAGE_ALLOWED_HOSTS=10.0.1.15:7575,otsorundscore.olutechsys.com,otsorundscore.olutech.systems
     # Healthcheck type B: own binary probe (image ships CLI tool for this)
     healthcheck:
       test:
