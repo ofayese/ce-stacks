@@ -14,7 +14,7 @@ Keep **`psu_remediation_key`** private; distribute only **`psu_remediation_key.p
 
 ## 2. Authorize the key on the NAS
 
-Append the **public** key to the target user’s `authorized_keys` (example user `laolufayese`):
+Append the **public** key to the target user's `authorized_keys` (example user `laolufayese`):
 
 ```bash
 mkdir -p ~/.ssh
@@ -31,7 +31,7 @@ ssh -i psu_remediation_key YOUR_USER@NAS_IP 'docker info >/dev/null && echo ok'
 
 ## 3. Provide the private key to PSU
 
-### Option A — File mount (repo template)
+### Option A - File mount (repo template)
 
 1. Copy the private key onto the NAS (not into Git), e.g.  
    `/volume2/docker/ce-stacks/stacks/psu-ots/keys/psu_remediation_key`
@@ -41,13 +41,13 @@ ssh -i psu_remediation_key YOUR_USER@NAS_IP 'docker info >/dev/null && echo ok'
 chmod 600 /volume2/docker/ce-stacks/stacks/psu-ots/keys/psu_remediation_key
 ```
 
-3. Compose mounts **`${STACK_ROOT}/psu-ots/keys` → `/ssh-keys:ro`**. Set in **`stacks/psu-ots/.env`**:
+1. Compose mounts **`${STACK_ROOT}/psu-ots/keys` → `/ssh-keys:ro`**. Set in **`stacks/psu-ots/.env`**:
 
 - `SSH_KEY_PATH=/ssh-keys/psu_remediation_key`
 
-The **`keys/`** directory is gitignored except for **`keys/.gitignore`** — **never** commit private material.
+The **`keys/`** directory is gitignored except for **`keys/.gitignore`** - **never** commit private material.
 
-### Option B — PSU secret / variable
+### Option B - PSU secret / variable
 
 Store the private key material as a **Secret** in PSU (Platform → Variables), copy it into a file from a one-shot automation, and point **`SSH_KEY_PATH`** at that path. Prefer **0600** permissions and a RAM-backed path if your threat model requires it.
 
@@ -66,7 +66,7 @@ If **`PSU_STACK_ROOT`** inside the container is **`/nas-repo/stacks`**, **`NAS_H
 
 Optional:
 
-- **`NAS_SSH_KNOWN_HOSTS_FILE`** — override the default known_hosts file (default: `/data/reports/_psu_ssh_known_hosts`).
+- **`NAS_SSH_KNOWN_HOSTS_FILE`** - override the default known_hosts file (default: `/data/reports/_psu_ssh_known_hosts`).
 
 ## 5. Enable remediation flags
 
