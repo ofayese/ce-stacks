@@ -35,8 +35,12 @@ services:
       - TZ=America/New_York
     labels:
       - com.centurylinklabs.watchtower.enable=true
+    # GAP-02 fix: add ce-internal so mcp-gateway can resolve ollama:11434 by DNS.
+    # Without ce-internal, agentic flows that invoke local LLM tools fail silently
+    # because agents-gateway-net has no route to ollama-net or ce-internal.
     networks:
       - agents-gateway-net
+      - ce-internal
 networks:
   agents-gateway-net:
     name: agents-gateway-net
@@ -45,3 +49,5 @@ networks:
       config:
         - subnet: 172.31.7.0/24
           gateway: 172.31.7.1
+  ce-internal:
+    external: true

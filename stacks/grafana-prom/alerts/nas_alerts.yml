@@ -1,0 +1,174 @@
+# NAS alert rules — ce-stacks Synology DS723+
+# Loaded by Prometheus via rule_files in prom.yml.
+# Alerts fire → Alertmanager → Discord (see alertmanager.yml).
+#
+# Hardware baseline:
+#   CPU:  AMD Ryzen R1600 — 2 cores / 4 threads
+#   RAM:  32 GB
+#   Role: CPU-only Ollama inference + all Docker stacks
+
+groups:
+  # ─── Memory ───────────────────────────────────────────────────────────────
+  - name: nas.memory
+    interval: 30s
+    rules:
+      - alert: NASMemoryWarning
+        expr: (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) < 0.15
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "NAS available memory below 15%"
+          description: >-
+            Available RAM is {{ $value | humanizePercentage }} of total.
+            Ollama model loading + code-server may cause OOM kills.
+
+      - alert: NASMemoryCritical
+        expr: (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) < 0.07
+        for: 3m
+        labels:
+          severity: critical
+        annotations:
+          summary: "NAS available memory below 7% — OOM imminent"
+          description: >-
+            Only {{ $value | humanizePercentage }} RAM available.
+            Check `docker stats` for the highest consumers.
+
+  # ─── Disk ─────────────────────────────────────────────────────────────────
+  - name: nas.disk
+    interval: 60s
+    rules:
+      - alert: NASDiskSpaceWarning
+        expr: >-
+          (
+            node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs|fuse.portal"}
+            / node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs|fuse.portal"}
+          ) < 0.20
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Filesystem {{ $labels.mountpoint }} below 20% free"
+          description: >-
+            {{ $value | humanizePercentage }} free on {{ $labels.device }}.
+            Ollama model downloads and log accumulation are common causes.
+
+      - alert: NASDiskSpaceCritical
+        expr: >-
+          (
+            node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs|fuse.portal"}
+            / node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs|fuse.portal"}
+          ) < 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Filesystem {{ $labels.mountpoint }} below 5% — writes may fail"
+          description: >-
+            {{ $value | humanizePercentage }} free on {{ $labels.device }}.
+            Docker compose operations and DB writes will fail at 0%.
+
+  # ─── Prometheus Targets ────────────────────────────────────────────────────
+  - name: nas.targets
+    interval: 30s
+    rules:
+      - alert: PrometheusTargetDown
+        expr: up == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Prometheus target {{ $labels.job }} / {{ $labels.instance }} is down"
+          description: >-
+            Scrape has been failing for 2+ minutes.
+            Check container health: `docker ps --filter name={{ $labels.job }}`.
+
+      - alert: SNMPTargetUnreachable
+        expr: up{job="nas"} == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "NAS SNMP target {{ $labels.instance }} unreachable"
+          description: >-
+            SNMP v3 collection for {{ $labels.instance }} failing for 5+ minutes.
+            Verify snmpd is running on the NAS and credentials in .env match.
+
+  # ─── Container Resources ───────────────────────────────────────────────────
+  - name: nas.containers
+    interval: 30s
+    rules:
+      - alert: ContainerHighMemoryUsage
+        # Fires when a container uses >85% of its mem_limit
+        expr: >-
+          (
+            container_memory_usage_bytes{name!="",name!~".*POD.*"}
+            / container_spec_memory_limit_bytes{name!="",name!~".*POD.*"}
+          ) > 0.85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container {{ $labels.name }} using >85% of its memory limit"
+          description: >-
+            Current usage: {{ $value | humanizePercentage }} of limit.
+            The container will be OOM-killed at 100%.
+
+      - alert: ContainerHighCPUThrottle
+        # Fires when CPU throttling (cgroup enforcement) is >50% over 5m
+        expr: >-
+          rate(container_cpu_cfs_throttled_seconds_total{name!="",name!~".*POD.*"}[5m])
+            / rate(container_cpu_cfs_periods_total{name!="",name!~".*POD.*"}[5m])
+          > 0.50
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container {{ $labels.name }} is heavily CPU-throttled (>50%)"
+          description: >-
+            {{ $value | humanizePercentage }} of CPU time is being throttled.
+            Consider raising cpu_shares in compose.yaml.
+
+  # ─── System Load ───────────────────────────────────────────────────────────
+  - name: nas.load
+    interval: 30s
+    rules:
+      - alert: NASHighLoad1m
+        # R1600 has 4 threads — sustained load > 4.0 means queue is growing
+        expr: node_load1 > 4.0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "NAS 1-minute load average above 4.0 (4-thread R1600)"
+          description: >-
+            Load: {{ $value }}. Sustained above thread count suggests
+            CPU-bound work (Ollama inference, compile) or I/O wait.
+
+      - alert: NASHighLoad15m
+        # 15-minute sustained load > 3.5 is meaningful on a 4-thread box
+        expr: node_load15 > 3.5
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "NAS 15-minute load average above 3.5 — sustained overload"
+          description: >-
+            Load: {{ $value }}. The NAS has been overloaded for >10 minutes.
+            Consider stopping Ollama inference or heavy cron jobs.
+
+  # ─── Watchtower ────────────────────────────────────────────────────────────
+  - name: nas.watchtower
+    interval: 5m
+    rules:
+      - alert: WatchtowerUpdateFailed
+        # watchtower_containers_updated_total drops when updates fail;
+        # watchtower_containers_failed_total increments on error.
+        expr: increase(watchtower_containers_failed_total[1h]) > 0
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Watchtower failed to update {{ $value }} container(s) in the last hour"
+          description: >-
+            Check Watchtower logs: `docker logs watchtower --tail 100`.

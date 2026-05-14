@@ -83,6 +83,8 @@ services:
     volumes:
       - ${STACK_ROOT}/grafana-prom/data/prometheus:/prometheus:rw
       - ${STACK_ROOT}/grafana-prom/prom.yml:/etc/prometheus/prometheus.yml:ro
+      # GAP-04: mount alert rules directory (prom.yml rule_files points here)
+      - ${STACK_ROOT}/grafana-prom/alerts:/etc/prometheus/alerts:ro
       # Same token file Watchtower uses (see ../watchtower/compose.yaml + secrets/README.md).
       - ${STACK_ROOT}/grafana-prom/secrets/watchtower_bearer_token.txt:/etc/prometheus/watchtower_bearer_token:ro
     restart: unless-stopped
@@ -92,6 +94,8 @@ services:
       snmp-exporter:
         condition: service_healthy
       cadvisor:
+        condition: service_healthy
+      alertmanager:
         condition: service_healthy
 
   node-exporter:
@@ -236,6 +240,61 @@ services:
       retries: 3
       start_period: 30s
     restart: unless-stopped
+    # GAP-01 fix: cAdvisor must be on prometheus-net so Prometheus can resolve
+    # prometheus-cadvisor:8080. Without this, the service joins grafana-prom_default
+    # (auto-created bridge) and is unreachable by Prometheus — all container panels
+    # in Grafana silently return no data.
+    networks:
+      - prometheus-net
+
+  alertmanager:
+    # GAP-04 fix: Alertmanager routes Prometheus alerts to Discord (and other receivers).
+    # Config: stacks/grafana-prom/alertmanager.yml
+    # Alert rules: stacks/grafana-prom/alerts/nas_alerts.yml
+    # SETUP: Set webhook_url in alertmanager.yml before starting.
+    image: prom/alertmanager:v0.28.1
+    container_name: Alertmanager
+    hostname: alertmanager
+    mem_limit: 128m
+    cpu_shares: 256
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+      - "--storage.path=/alertmanager"
+      - "--web.listen-address=0.0.0.0:9093"
+    ports:
+      - "10.0.1.15:9093:9093"
+    volumes:
+      - ${STACK_ROOT}/grafana-prom/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - ${STACK_ROOT}/grafana-prom/data/alertmanager:/alertmanager:rw
+    healthcheck:
+      test:
+        - CMD
+        - wget
+        - "--no-verbose"
+        - "--tries=1"
+        - "--spider"
+        - "http://localhost:9093/-/healthy"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    environment:
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - TZ=${TIMEZONE}
+    # Alertmanager on grafana-net so Prometheus (also on grafana-net) can reach it.
+    networks:
+      - grafana-net
+    restart: unless-stopped
+    labels:
+      - com.centurylinklabs.watchtower.enable=true
 
 networks:
   grafana-net:

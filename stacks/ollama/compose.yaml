@@ -4,9 +4,13 @@ services:
     # DS723+: AMD Ryzen R1600 (2 cores / 4 threads), 32 GB RAM, CPU-only.
     # Check https://hub.docker.com/r/ollama/ollama/tags for latest stable.
     image: ollama/ollama@sha256:d00473cb58f0082c07cd6ed0d326a8a86f443ab69c51f8fc2b1a41687d45c661
-    # 16g: allows 14B Q4_K_M models (8.5 GB) with KV cache headroom.
-    # Never exceed 24g — DSM + other stacks need the remaining RAM.
-    mem_limit: 16g
+    # GAP-05 fix: reduced from 16g → 14g. 14B Q4_K_M models need ~8.5 GB; 14g gives
+    # 5.5 GB KV cache headroom while recovering 2 GB for DSM + other stacks.
+    # Total explicit mem_limits summed to ~30.4 GB on a 32 GB machine before this fix.
+    # mem_reservation (soft limit): kernel starts reclaiming memory before hitting the hard cap,
+    # preventing surprise OOM kills when other stacks ramp up concurrently.
+    mem_limit: 14g
+    mem_reservation: 8g
     cpu_shares: 1024
     security_opt:
       - no-new-privileges:true

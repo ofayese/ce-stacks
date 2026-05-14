@@ -10,16 +10,23 @@ services:
     # No healthcheck: acme-sh is a cron-style renewal daemon.
     # It does not expose HTTP or TCP endpoints.
     # Certificate renewal success is verified via Synology cert store.
+    #
+    # GAP-08: CF_Token and DISCORD_WEBHOOK_URL are now loaded from Docker secrets
+    # via scripts/docker-entrypoint.sh. They no longer appear in `docker inspect`.
+    # Populate: echo "YOUR_TOKEN" > secrets/cf_token.txt && chmod 600 secrets/*.txt
+    entrypoint: ["/bin/sh", "/acme-sh-entrypoint.sh"]
     environment:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
       - TZ=America/New_York
-      - CF_Token=${CF_Token}
-      - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
+      # CF_Token and DISCORD_WEBHOOK_URL intentionally removed from env block.
+      # They are injected by the entrypoint wrapper from /run/secrets/*.
     network_mode: host
     volumes:
       - ${STACK_ROOT}/acme-sh/data:/acme.sh
       - ${ACME_CERT_ROOT:-/volume2/certs/acme}:/volume2/certs/acme
+      # Entrypoint wrapper that sources Docker secrets
+      - ${STACK_ROOT}/acme-sh/scripts/docker-entrypoint.sh:/acme-sh-entrypoint.sh:ro
     command: daemon
     logging:
       driver: json-file
@@ -28,3 +35,12 @@ services:
         max-file: "3"
     labels:
       - com.centurylinklabs.watchtower.enable=true
+    secrets:
+      - cf_token
+      - discord_webhook_url
+
+secrets:
+  cf_token:
+    file: ${STACK_ROOT}/acme-sh/secrets/cf_token.txt
+  discord_webhook_url:
+    file: ${STACK_ROOT}/acme-sh/secrets/discord_webhook_url.txt

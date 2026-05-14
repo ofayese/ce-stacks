@@ -4,9 +4,15 @@
 services:
   # Note: warpdotdev/warp is the Docker Desktop *extension* image (not a Warp app server).
   # If you need a real server on :9090, replace this image with the one from Warp’s Docker agent docs.
+  # GAP-07: CLAUDE_HOST/CLAUDE_API_HOST point to host.docker.internal:3000, which assumes Claude Code
+  # is running as a local process on the NAS host. Verify the correct image + backend config.
   warp:
     image: warpdotdev/warp:0.0.32
     container_name: warp-main
+    # GAP-05 fix: add mem_limit to prevent unbounded memory growth. These were the only containers
+    # in the repo with no mem_limit set (besides Watchtower and Dockhand).
+    mem_limit: 512m
+    cpu_shares: 256
     ports:
       - "10.0.1.15:9090:9090"
     environment:
@@ -31,12 +37,17 @@ services:
   warp-agent:
     image: warpdotdev/warp-agent@sha256:c43ffad621d5a399c65bbd770131b06b1742571e96f17854b5e1b2fbe1ca2419
     container_name: warp-agent-service
+    mem_limit: 512m
+    cpu_shares: 256
     user: "${PUID:-0}:${PGID:-0}"
+    # GAP-08: WARP_API_KEY loaded from Docker secret via entrypoint wrapper.
+    # Populate: echo "wk-..." > stacks/warp-main/secrets/warp_api_key.txt && chmod 600 secrets/*.txt
+    entrypoint: ["/bin/sh", "/warp-agent-entrypoint.sh"]
     depends_on:
       warp:
         condition: service_healthy
     environment:
-      - WARP_API_KEY=${WARP_API_KEY:?Set WARP_API_KEY in a .env file or the environment}
+      # WARP_API_KEY intentionally absent — injected by entrypoint from /run/secrets/warp_api_key
       - WARP_APP_HOST=warp
       - WARP_APP_PORT=9090
       - CLAUDE_HOST=host.docker.internal
@@ -44,11 +55,15 @@ services:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
       - TZ=America/New_York
+    volumes:
+      - ${STACK_ROOT}/warp-main/scripts/warp-agent-entrypoint.sh:/warp-agent-entrypoint.sh:ro
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
       - warp-network
     restart: unless-stopped
+    secrets:
+      - warp_api_key
     # Healthcheck type: B — HTTP probe (curl; image has curl — verified 2026-05-07)
     healthcheck:
       test: ["CMD", "curl", "-fs", "http://127.0.0.1:8080/"]
@@ -60,6 +75,8 @@ services:
   warp-claude-cli-sidecar:
     image: warpdotdev/warp-claude-cli-sidecar@sha256:6974d8dc6224bbf1aa1ab984dbd15d1553adfb15ae385a16449071aa39b7e4a1
     container_name: warp-claude-sidecar
+    mem_limit: 256m
+    cpu_shares: 128
     depends_on:
       warp-agent:
         condition: service_healthy

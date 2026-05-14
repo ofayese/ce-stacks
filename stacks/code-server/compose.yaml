@@ -99,7 +99,9 @@ services:
       retries: 10
       start_period: 30s
     labels:
-      - com.centurylinklabs.watchtower.enable=true
+      # GAP-03 fix: NEVER auto-upgrade databases. MySQL major version bumps (8.3→8.4+)
+      # require explicit in-place upgrade. A cold image swap can corrupt InnoDB data files.
+      - com.centurylinklabs.watchtower.enable=false
     networks:
       - code-server-net
   phpmyadmin:

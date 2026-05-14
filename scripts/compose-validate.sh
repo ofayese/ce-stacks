@@ -54,7 +54,9 @@ if [[ ! -f "${STACKS}/codex-docs/.env" ]]; then
 	created_env_files+=("${STACKS}/codex-docs/.env")
 fi
 
-if [[ ! -f "${STACKS}/holyclaude/.env" ]]; then
+# holyclaude stack was removed from the repo — skip .env creation if the directory
+# does not exist (avoids "No such file or directory" error from cat redirect on set -e).
+if [[ -d "${STACKS}/holyclaude" && ! -f "${STACKS}/holyclaude/.env" ]]; then
 	cat >"${STACKS}/holyclaude/.env" <<EOF
 PUID=0
 PGID=0
@@ -74,7 +76,8 @@ EOF
 	created_env_files+=("${STACKS}/code-server/.env")
 fi
 
-if [[ ! -f "${STACKS}/portainer/.env" ]]; then
+# portainer stack was removed from the repo — skip if directory no longer exists.
+if [[ -d "${STACKS}/portainer" && ! -f "${STACKS}/portainer/.env" ]]; then
 	cat >"${STACKS}/portainer/.env" <<EOF
 STACK_ROOT=${STACKS}
 PORTAINER_DATA_ROOT=/volume2/docker/portainer

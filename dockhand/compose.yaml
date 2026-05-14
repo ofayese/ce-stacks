@@ -23,7 +23,7 @@ services:
       - SKIP_DF_COLLECTION=true
       - TZ=America/New_York
     healthcheck:
-      test: ["CMD", "bun", "-e", "fetch('http://localhost:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      test: ["CMD-SHELL", "grep -q ':0BB8' /proc/net/tcp /proc/net/tcp6 2>/dev/null"]
       interval: 30s
       timeout: 5s
       retries: 5
