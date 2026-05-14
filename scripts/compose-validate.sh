@@ -15,7 +15,7 @@ STACKS="${ROOT}/stacks"
 cd "$ROOT"
 
 export COMPOSE_ENV_FILE="${ROOT}/.github/compose-ci.env"
-# Host bind mounts use ${STACK_ROOT}/<stack>/… — CI resolves to the real stacks/ path.
+# Host bind mounts use ${STACK_ROOT}/<stack>/… - CI resolves to the real stacks/ path.
 export STACK_ROOT="${STACK_ROOT:-${STACKS}}"
 # Validation-only: satisfy compose interpolation for stacks that reference these vars without
 # requiring real secrets in the invoking environment (docker compose config -q).
@@ -54,7 +54,7 @@ if [[ ! -f "${STACKS}/codex-docs/.env" ]]; then
 	created_env_files+=("${STACKS}/codex-docs/.env")
 fi
 
-# holyclaude stack was removed from the repo — skip .env creation if the directory
+# holyclaude stack was removed from the repo - skip .env creation if the directory
 # does not exist (avoids "No such file or directory" error from cat redirect on set -e).
 if [[ -d "${STACKS}/holyclaude" && ! -f "${STACKS}/holyclaude/.env" ]]; then
 	cat >"${STACKS}/holyclaude/.env" <<EOF
@@ -74,18 +74,6 @@ CODE_SERVER_HOST_DOCKER_BIND=${STACKS}/code-server/host-docker-bind
 CODE_SERVER_HOST_HOME_BIND=${STACKS}/code-server/host-home-bind
 EOF
 	created_env_files+=("${STACKS}/code-server/.env")
-fi
-
-# portainer stack was removed from the repo — skip if directory no longer exists.
-if [[ -d "${STACKS}/portainer" && ! -f "${STACKS}/portainer/.env" ]]; then
-	cat >"${STACKS}/portainer/.env" <<EOF
-STACK_ROOT=${STACKS}
-PORTAINER_DATA_ROOT=/volume2/docker/portainer
-PORTAINER_CERT_ROOT=/volume2/docker/portainer/certs
-EDGE_ID=
-EDGE_KEY=
-EOF
-	created_env_files+=("${STACKS}/portainer/.env")
 fi
 
 if [[ ! -f "${STACKS}/synology-api-bridge/.env" ]]; then
@@ -113,7 +101,7 @@ while IFS= read -r f; do
 		echo "ERROR: docker compose config failed for ${rel}" >&2
 		exit 1
 	}
-	# docker-mcp.yaml is Docker Desktop MCP catalog YAML only — never validate as Compose.
+	# docker-mcp.yaml is Docker Desktop MCP catalog YAML only - never validate as Compose.
 	# Prune runtime bind-mount trees so NAS validate does not spam "Permission denied"
 	# when Docker-owned dirs are unreadable to the invoking user (db/, data/, GUI config).
 done < <(

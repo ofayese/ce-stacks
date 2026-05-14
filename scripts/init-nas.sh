@@ -1,14 +1,22 @@
 #!/usr/bin/env bash
 # init-nas.sh
 # Post-clone bootstrap for the Dockge stack repo.
-# Run once after git clone on the NAS:
+#
+# PREFERRED - run as your admin user (no sudo):
+#   bash scripts/init-nas.sh
+#   docker network create ... (if prompted)
+#
+# Only use sudo if you need fix-permissions.sh to chown volume dirs,
+# or if your user lacks write access to /volume2/docker/:
 #   sudo bash scripts/init-nas.sh
-# Re-run after git pull only if new stacks have been added.
+#   (files in the dockhand sync will be re-owned back to $SUDO_USER automatically)
+#
+# Re-run after git pull to sync new stacks and the dockhand directory.
 # Idempotent - safe to run multiple times.
 #
 # Manifest exhaustiveness (BSD-safe; no grep -oP):
 #   diff <(grep -E '^\s*"[^"]+:' scripts/init-nas.sh | sed -E 's/^[[:space:]]*"([^"]+):.*/\1/' | sort -u) \
-#        <(ls stacks/ | grep -vE '^portainer$|^agents_gateway_data$|^it-tools$|^mcp-tools-config$|^openresume$|^warp-main$|^watchtower$|^docker-model-runner$' | sort)
+#        <(ls stacks/ | grep -vE '^portainer$|^agents_gateway_data$|^it-tools$|^mcp-tools-config$|^openresume$|^watchtower$|^docker-model-runner$' | sort)
 # Left: unique stack names from STACK_MANIFEST (sort -u: traefik-ots / traefik-mft each listed twice for config+data).
 # Right: stack dirs excluding MANIFEST_EXEMPT (same as grep -vE list). _haproxy stays on both sides.
 
@@ -16,6 +24,12 @@ set -euo pipefail
 
 LIST_ONLY=0
 IF_CHANGED_MODE=0
+
+# Detect the real (non-root) user when the script is invoked via sudo.
+# Used to restore ownership on files created by root so the operator can
+# still edit them without sudo.
+REAL_USER="${SUDO_USER:-${USER:-$(id -un)}}"
+REAL_GROUP="$(id -gn "${REAL_USER}" 2>/dev/null || echo "${REAL_USER}")"
 [[ "${1:-}" == "--list-expected-dirs" ]] && LIST_ONLY=1
 
 # ── 1. Resolve repo root and STACK_ROOT ──────────────────────────────
@@ -37,7 +51,7 @@ else
 		STACK_ROOT="${CANDIDATE_STACKS}"
 		[[ "${LIST_ONLY}" -eq 0 ]] && echo "Auto-detected STACK_ROOT (sibling stacks/): ${STACK_ROOT}"
 	else
-		# Default includes /stacks suffix — STACK_ROOT is the stacks/ dir, not repo root.
+		# Default includes /stacks suffix - STACK_ROOT is the stacks/ dir, not repo root.
 		STACK_ROOT="${STACK_ROOT_OVERRIDE:-/volume2/docker/ce-stacks/stacks}"
 		if [[ "${LIST_ONLY}" -eq 0 ]]; then
 			echo "Using default STACK_ROOT: ${STACK_ROOT}"
@@ -61,13 +75,11 @@ STACK_MANIFEST=(
 	"dozzle:data"
 	# ollama: data/ollama (model storage) and data/open-webui must exist as subdirs.
 	"ollama:data/ollama,data/open-webui"
-	# rag-stack: qdrant vector storage + anythingllm workspaces + pipelines pipeline definitions
-	"rag-stack:data,config"
 	# remotely: SQLite DB + generated agent installers/download payloads
 	"remotely:data"
 
 	# ── data,config ───────────────────────────────────────────────────
-	"code-server:data,config,host-docker-bind,host-home-bind"
+	"code-server:data,config"
 	"github-desktop:config" # KasmVNC GUI - /config only, no data dir
 	"homepage:data,config"
 	"searxng:data,config"
@@ -84,33 +96,25 @@ STACK_MANIFEST=(
 	# "Bind mount failed: '<path>' does not exist". mkdir -p handles slashes here.
 	"databases:db/mariadb,db/postgres"
 	"zabbix:data,db"
-	"holyclaude:data"
-
 	# ── Omit (no ${STACK_ROOT} dirs in manifest) - audit trail only ───
 	# agents_gateway_data: docker.sock only - no ${STACK_ROOT} dirs needed.
 	# docker-model-runner: no host volume binds.
 	# it-tools: no volumes.
 	# mcp-tools-config: catalog only - no runtime dirs.
 	# openresume: no volumes.
-	# warp-main: no volumes.
 	# watchtower: docker.sock only - no ${STACK_ROOT} dirs needed.
 	#   Absent from manifest intentionally. Listed here for audit trail.
 
 	# ── New stacks: add entry here before first deploy ─────────────────
 	"psu-ots:data"
-	"traefik-ots:config" # Traefik config (tls.yaml)
-	"traefik-ots:data"   # Traefik built-in ACME state (acme.json) - separate from acme-sh PEMs
-	"traefik-mft:config"
-	"traefik-mft:data"
-
-	# HAProxy bind-mount assets (certs + host map); not a Dockge compose stack - see stacks/_haproxy/README.txt
+	# HAProxy bind-mount assets (certs + host map); not a Docker compose stack - see stacks/_haproxy/README.txt
 	"_haproxy:certs,maps"
 )
 
 # Stacks intentionally absent from STACK_MANIFEST.
 # These have no persistent host bind mounts under ${STACK_ROOT}.
 # Listed here so the manifest exhaustiveness check can account
-# for them without requiring a dummy entry. (Not read by this script —
+# for them without requiring a dummy entry. (Not read by this script -
 # see scripts/verify-stack-manifest.sh for the exhaustiveness check.)
 # shellcheck disable=SC2034
 MANIFEST_EXEMPT=(
@@ -118,9 +122,7 @@ MANIFEST_EXEMPT=(
 	"it-tools"            # no volumes
 	"mcp-tools-config"    # catalog only
 	"openresume"          # no volumes
-	"warp-main"           # no volumes
 	"watchtower"          # docker.sock only
-	"portainer"           # operator exception - path outside STACK_ROOT
 	"docker-model-runner" # no host volume binds
 )
 
@@ -248,7 +250,7 @@ echo ""
 echo "Creating shared Docker networks ..."
 if command -v docker &>/dev/null; then
 	if docker network inspect ce-internal &>/dev/null; then
-		echo "  ✓ ce-internal already exists — skipping"
+		echo "  ✓ ce-internal already exists - skipping"
 	else
 		docker network create \
 			--driver bridge \
@@ -258,15 +260,96 @@ if command -v docker &>/dev/null; then
 		echo "  ✓ created: ce-internal (172.26.0.0/24)"
 	fi
 else
-	echo "  WARN: docker not in PATH — create manually after Docker starts:"
+	echo "  WARN: docker not in PATH - create manually after Docker starts:"
 	echo "    docker network create --driver bridge --subnet 172.26.0.0/24 --gateway 172.26.0.1 ce-internal"
+fi
+
+# ── 6. Sync dockhand repo dir → /volume2/docker/dockhand ──────────────
+# Dockhand lives inside the repo (REPO_ROOT/dockhand/) but must run from
+# /volume2/docker/dockhand/ because Dockge/Container Manager uses that fixed
+# path as its working directory.
+#
+# Strategy: push repo changes outward on every init-nas.sh run, but never
+# overwrite live runtime state.  rsync is preferred; falls back to a manual
+# loop when rsync is absent (busybox DSM builds).
+#
+# Protected (never touched):
+#   .env          - operator credentials
+#   data/         - runtime state (job history, DB, etc.)
+#   secrets/      - Docker secret files
+echo ""
+echo "Syncing dockhand repo → /volume2/docker/dockhand ..."
+
+DOCKHAND_SRC="${REPO_ROOT}/dockhand"
+DOCKHAND_DST="/volume2/docker/dockhand"
+
+if [[ ! -d "${DOCKHAND_SRC}" ]]; then
+	echo "  WARN: ${DOCKHAND_SRC} not found — skipping dockhand sync" >&2
+else
+	mkdir -p "${DOCKHAND_DST}"
+
+	if command -v rsync &>/dev/null; then
+		rsync \
+			--archive \
+			--exclude='.env' \
+			--exclude='data/' \
+			--exclude='secrets/' \
+			"${DOCKHAND_SRC}/" \
+			"${DOCKHAND_DST}/"
+		echo "  ✓ rsync complete (protected: .env, data/, secrets/)"
+	else
+		# rsync not available - manual merge with cp -n (no-clobber) for protected files
+		# and forced copy for everything else.
+		echo "  rsync not found - using cp fallback"
+		find "${DOCKHAND_SRC}" -maxdepth 1 -mindepth 1 | while IFS= read -r item; do
+			name="$(basename "${item}")"
+			case "${name}" in
+				.env|data|secrets)
+					# Protected - copy only if destination doesn't yet exist
+					if [[ ! -e "${DOCKHAND_DST}/${name}" ]]; then
+						cp -r "${item}" "${DOCKHAND_DST}/${name}"
+						echo "  ✓ seeded (new):  ${DOCKHAND_DST}/${name}"
+					else
+						echo "  skip (protected): ${DOCKHAND_DST}/${name}"
+					fi
+					;;
+				*)
+					# Repo-owned file - always sync
+					cp -r "${item}" "${DOCKHAND_DST}/${name}"
+					echo "  ✓ updated: ${DOCKHAND_DST}/${name}"
+					;;
+			esac
+		done
+	fi
+
+	# Ensure .env exists at destination (seed from .env.example if not yet present)
+	if [[ ! -f "${DOCKHAND_DST}/.env" && -f "${DOCKHAND_SRC}/.env.example" ]]; then
+		cp "${DOCKHAND_SRC}/.env.example" "${DOCKHAND_DST}/.env"
+		echo "  ✓ seeded .env from .env.example - edit ${DOCKHAND_DST}/.env before starting"
+	fi
+
+	# When run via sudo, the files above were written as root. Re-own them back to
+	# the invoking user (SUDO_USER) so they can be edited without sudo.
+	# Protected dirs (.env, data/, secrets/) are intentionally excluded - they
+	# keep whatever ownership was set when they were first created.
+	if [[ "$(id -u)" -eq 0 && "${REAL_USER}" != "root" ]]; then
+		find "${DOCKHAND_DST}" -maxdepth 1 -mindepth 1 \
+			! -name '.env' \
+			! -name 'data' \
+			! -name 'secrets' \
+			-exec chown -R "${REAL_USER}:${REAL_GROUP}" {} +
+		echo "  ✓ ownership restored to ${REAL_USER}:${REAL_GROUP} (repo-owned files only)"
+	fi
+
+	echo "  src: ${DOCKHAND_SRC}"
+	echo "  dst: ${DOCKHAND_DST}"
 fi
 
 echo ""
 echo "────────────────────────────────────────"
 echo "Init complete."
 echo "STACK_ROOT = ${STACK_ROOT}"
-echo "Now open Portainer and deploy your stacks."
+echo "Now open Dockhand/Container Manager and deploy your stacks."
 echo "────────────────────────────────────────"
 
 # ── Write hash after successful full init (--if-changed runs only) ───

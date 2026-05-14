@@ -13,9 +13,9 @@
 #   1. Pre-flight checks (dirs, git, SSH key)
 #   2. Backs up /volume2/docker/ce-stacks → /volume2/docker/archive/ce-stacks-backup-<ts>
 #   3. Clones fresh repo into /volume2/docker/ce-stacks
-#   4. Calls scripts/restore-env.sh  — validates + restores .env files from backup
-#   5. Calls scripts/init-nas.sh     — creates STACK_ROOT directories
-#   6. Calls scripts/fix-permissions.sh — normalises stack data dir ownership
+#   4. Calls scripts/restore-env.sh  - validates + restores .env files from backup
+#   5. Calls scripts/init-nas.sh     - creates STACK_ROOT directories
+#   6. Calls scripts/fix-permissions.sh - normalises stack data dir ownership
 #   7. Fixes repo-level ownership
 #   8. Prints next steps
 # =============================================================================
@@ -67,27 +67,27 @@ warn() { echo "  WARN $*"; }
 # ── Pre-flight ────────────────────────────────────────────────────────────────
 info "Pre-flight checks"
 
-command -v git >/dev/null 2>&1 || fail "git not found — install via SynoCommunity"
+command -v git >/dev/null 2>&1 || fail "git not found - install via SynoCommunity"
 ok "git: $(git --version)"
 
-command -v bash >/dev/null 2>&1 || fail "bash not found — required for fix-permissions.sh"
+command -v bash >/dev/null 2>&1 || fail "bash not found - required for fix-permissions.sh"
 ok "bash: $(bash --version | head -1)"
 
-[ -d "${CE_STACKS_DIR}" ] || fail "${CE_STACKS_DIR} does not exist — nothing to back up"
+[ -d "${CE_STACKS_DIR}" ] || fail "${CE_STACKS_DIR} does not exist - nothing to back up"
 ok "${CE_STACKS_DIR} exists"
 
-[ -d "${BACKUP_ROOT}" ] || warn "${BACKUP_ROOT} does not exist — will create it"
+[ -d "${BACKUP_ROOT}" ] || warn "${BACKUP_ROOT} does not exist - will create it"
 
 SSH_TEST=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 -T git@github.com 2>&1 || true)
 if echo "${SSH_TEST}" | grep -qi "successfully authenticated"; then
 	ok "GitHub SSH auth confirmed"
 else
-	warn "GitHub SSH auth not confirmed — output: ${SSH_TEST}"
+	warn "GitHub SSH auth not confirmed - output: ${SSH_TEST}"
 fi
 
 if [ "${DRY_RUN}" -eq 1 ]; then
 	echo ""
-	echo "==> Dry run complete — no changes made"
+	echo "==> Dry run complete - no changes made"
 	echo "    Run without --dry-run to proceed"
 	exit 0
 fi
@@ -122,14 +122,14 @@ fi
 
 # ── Backup ────────────────────────────────────────────────────────────────────
 info "Backing up ${CE_STACKS_DIR} → ${BACKUP_DIR}"
-mv "${CE_STACKS_DIR}" "${BACKUP_DIR}" || fail "mv failed — aborting before clone"
+mv "${CE_STACKS_DIR}" "${BACKUP_DIR}" || fail "mv failed - aborting before clone"
 ok "Backup complete: ${BACKUP_DIR}"
 
 # ── Clone (with rollback on failure) ─────────────────────────────────────────
 info "Cloning ${REPO_URL} → ${CE_STACKS_DIR}"
 git clone "${REPO_URL}" "${CE_STACKS_DIR}" || {
 	echo ""
-	echo "ERROR: git clone failed — rolling back"
+	echo "ERROR: git clone failed - rolling back"
 	mv "${BACKUP_DIR}" "${CE_STACKS_DIR}"
 	fail "Clone failed. Backup restored to ${CE_STACKS_DIR}"
 }
@@ -139,12 +139,12 @@ ok "Clone complete"
 git config --global --add safe.directory "${CE_STACKS_DIR}" 2>/dev/null || true
 
 # ── restore-env.sh ───────────────────────────────────────────────────────────
-# Auto-detects most recent backup under BACKUP_ROOT — picks up ${BACKUP_DIR} correctly.
+# Auto-detects most recent backup under BACKUP_ROOT - picks up ${BACKUP_DIR} correctly.
 RESTORE_SCRIPT="${CE_STACKS_DIR}/scripts/restore-env.sh"
 info "Restoring .env files (scripts/restore-env.sh)"
 
 if [ ! -f "${RESTORE_SCRIPT}" ]; then
-	warn "${RESTORE_SCRIPT} not found — skipping .env restore"
+	warn "${RESTORE_SCRIPT} not found - skipping .env restore"
 	warn "Copy .env files manually from: ${BACKUP_DIR}"
 else
 	if [ "${FIX_ENV}" -eq 1 ]; then
@@ -157,13 +157,13 @@ else
 		if sh "${RESTORE_SCRIPT}" "${RESTORE_ARGS}"; then
 			ok "restore-env.sh complete"
 		else
-			warn "restore-env.sh exited non-zero — check output above"
+			warn "restore-env.sh exited non-zero - check output above"
 		fi
 	else
 		if sh "${RESTORE_SCRIPT}"; then
 			ok "restore-env.sh complete"
 		else
-			warn "restore-env.sh exited non-zero — check output above"
+			warn "restore-env.sh exited non-zero - check output above"
 		fi
 	fi
 fi
@@ -176,10 +176,10 @@ if [ -f "${INIT_SCRIPT}" ]; then
 	if bash "${INIT_SCRIPT}"; then
 		ok "init-nas.sh complete"
 	else
-		warn "init-nas.sh exited non-zero — check output above"
+		warn "init-nas.sh exited non-zero - check output above"
 	fi
 else
-	warn "${INIT_SCRIPT} not found — run manually after this script"
+	warn "${INIT_SCRIPT} not found - run manually after this script"
 fi
 
 # ── fix-permissions.sh ────────────────────────────────────────────────────────
@@ -191,10 +191,10 @@ if [ -f "${FIX_PERMS_SCRIPT}" ]; then
 	if bash "${FIX_PERMS_SCRIPT}"; then
 		ok "fix-permissions.sh complete"
 	else
-		warn "fix-permissions.sh exited non-zero — check output above"
+		warn "fix-permissions.sh exited non-zero - check output above"
 	fi
 else
-	warn "${FIX_PERMS_SCRIPT} not found — skipping"
+	warn "${FIX_PERMS_SCRIPT} not found - skipping"
 fi
 
 # ── Repo-level ownership ──────────────────────────────────────────────────────
@@ -202,7 +202,7 @@ fi
 # This covers the repo root so the operator can run git pull without sudo.
 info "Fixing repo ownership: ${OWNER}:${GROUP}"
 chown -R "${OWNER}:${GROUP}" "${CE_STACKS_DIR}" ||
-	warn "chown failed — run: sudo chown -R ${OWNER}:${GROUP} ${CE_STACKS_DIR}"
+	warn "chown failed - run: sudo chown -R ${OWNER}:${GROUP} ${CE_STACKS_DIR}"
 chmod -R u+rwX "${CE_STACKS_DIR}"
 ok "Repo ownership set to ${OWNER}:${GROUP}"
 

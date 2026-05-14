@@ -1,6 +1,6 @@
 #!/bin/sh
 # =============================================================================
-# restore-env.sh — validate AND fix .env files from a backup, then restore
+# restore-env.sh - validate AND fix .env files from a backup, then restore
 # =============================================================================
 # Usage:
 #   bash scripts/restore-env.sh              # auto-detect latest backup
@@ -13,7 +13,7 @@
 #   - Whitespace around =:    KEY = value    → KEY=value
 #   - Trailing whitespace:    KEY=value   \n → KEY=value\n
 #   - Windows line endings:   KEY=value\r\n  → KEY=value\n
-#   - YAML booleans:          KEY=true       → KEY=true  (kept — valid)
+#   - YAML booleans:          KEY=true       → KEY=true  (kept - valid)
 #   - YAML braces:            KEY={obj}      → flagged, not auto-fixed
 #   - Empty values:           KEY=           → kept (valid)
 # =============================================================================
@@ -207,19 +207,19 @@ done <"$ENV_LIST"
 
 # ── Abort if unfixable errors ─────────────────────────────────────────────────
 if [ "$TOTAL_ERRORS" -gt 0 ]; then
-	echo "==> Validation FAILED — $TOTAL_ERRORS file(s) have unfixable errors"
+	echo "==> Validation FAILED - $TOTAL_ERRORS file(s) have unfixable errors"
 	echo "==> Aborting restore. Fix the errors above and re-run."
 	exit 1
 fi
 
 # ── Dry run stops here ────────────────────────────────────────────────────────
 if [ "$DRY_RUN" -eq 1 ]; then
-	echo "==> Dry run complete — no files written"
+	echo "==> Dry run complete - no files written"
 	exit 0
 fi
 
 # ── Restore fixed files ───────────────────────────────────────────────────────
-echo "==> All .env files valid — restoring to $NEW_REPO"
+echo "==> All .env files valid - restoring to $NEW_REPO"
 echo ""
 
 while IFS= read -r src; do

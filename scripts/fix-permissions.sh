@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # fix-permissions.sh
 # Resets ownership and permissions for all Dockge stack data directories.
-# Idempotent — safe to run multiple times.
+# Idempotent - safe to run multiple times.
 # Usage: sudo bash scripts/fix-permissions.sh [stacks-root]
 # With no argument: reads STACK_ROOT from repo-root .env if present, else /volume2/docker/ce-stacks.
 # Called automatically by init-nas.sh.

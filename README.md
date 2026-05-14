@@ -33,7 +33,6 @@ ce-stacks/
 │   ├── remotely/            # Remote desktop / support
 │   ├── searxng/             # Privacy-respecting metasearch
 │   ├── synology-api-bridge/ # Internal DSM HTTP shim (FastAPI)
-│   ├── warp-main/           # Cloudflare WARP proxy
 │   ├── watchtower/          # Automated image update management
 │   ├── zabbix/              # Infrastructure monitoring
 │   └── archives/            # Retired stacks (kept for reference)
@@ -87,7 +86,7 @@ Verify: `docker network inspect ce-internal`
 for stack in acme-sh agents_gateway_data code-server databases dozzle \
              github-desktop grafana-prom homepage it-tools mcp-tools-config \
              ollama openresume psu-ots remotely searxng synology-api-bridge \
-             warp-main watchtower zabbix; do
+             watchtower zabbix; do
   [ -f "stacks/$stack/.env" ] || cp "stacks/$stack/.env.example" "stacks/$stack/.env"
 done
 ```
@@ -157,13 +156,12 @@ All bridge networks use explicit `/24` subnets to prevent Docker's auto-assigned
 | Stack | Network name | Subnet | Notes |
 |---|---|---|---|
 | *(backbone)* | ce-internal | 172.26.0.0/24 | External; created by `init-nas.sh` |
-| warp-main | warp-network | 172.25.0.0/24 | Moved from .23 (it-tools /16 collision) |
 | ollama | ollama-net | 172.27.0.0/24 | |
 | databases | db-net | 172.28.0.0/24 | |
 | code-server | code-server-net | 172.28.2.0/24 | |
 | grafana-prom | grafana-net | 172.29.0.0/24 | |
 | grafana-prom | prometheus-net | 172.29.1.0/24 | |
-| psu-ots | psu-ots-net | 172.32.0.0/24 | Moved from 172.25 (warp collision); 172.30 taken by zabbix |
+| psu-ots | psu-ots-net | 172.32.0.0/24 | Moved from 172.25; 172.30 taken by zabbix |
 | dozzle | dozzle-net | 172.31.0.0/24 | |
 | watchtower | watchtower-net | 172.31.1.0/24 | |
 | agents_gateway_data | agents-gateway-net | 172.31.7.0/24 | |

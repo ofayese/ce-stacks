@@ -54,7 +54,7 @@ networks:
           gateway: 172.31.1.1
 secrets:
   watchtower_bearer:
-    # Absolute path via STACK_ROOT — relative paths break under Portainer
+    # Absolute path via STACK_ROOT - relative paths break under Portainer
     # (Portainer runs compose from /data/compose/<id>/, not the stack dir).
     # Set STACK_ROOT=/volume2/docker/ce-stacks/stacks in the Portainer stack env.
     file: ${STACK_ROOT}/grafana-prom/secrets/watchtower_bearer_token.txt

@@ -34,17 +34,16 @@
 
 **Impact**: Can't import into Dockhand  
 **Fix**: Create .env files (above)  
-**Evidence**: github-desktop, code-server, warp-main, synology-api-bridge
+**Evidence**: github-desktop, code-server, synology-api-bridge
 
 ---
 
 ## 🔐 Security Issues (High Priority)
 
-### 4. Missing no-new-privileges (2 stacks)
+### 4. Missing no-new-privileges (1 stack)
 
-- github-desktop
-- warp-main  
-**Fix**: 2 lines each
+- github-desktop  
+**Fix**: 2 lines
 
 ### 5. Missing PUID/PGID (2 stacks)
 
@@ -141,7 +140,7 @@ done
 
 ### #3 (Security)
 
-Add to github-desktop & warp-main compose files:
+Add to github-desktop compose file:
 
 ```yaml
 security_opt:

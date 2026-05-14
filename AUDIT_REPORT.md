@@ -15,14 +15,13 @@ The ce-stacks repository is **well-structured** with solid patterns, but has **1
 
 ### 🔴 CRITICAL (Blocks Dockhand Deployment)
 
-#### Issue #1: Invalid Compose Files (4 stacks)
+#### Issue #1: Invalid Compose Files (3 stacks)
 
 **Severity**: CRITICAL  
 **Stacks Affected**:
 
 - `github-desktop` - Missing required env var `GITHUB_DESKTOP_USER`
 - `code-server` - Missing `CODE_SERVER_HOST_DOCKER_BIND` and `CODE_SERVER_HOST_HOME_BIND` env vars
-- `warp-main` - Missing required env var `WARP_API_KEY`
 - `synology-api-bridge` - Missing `.env` file (references it in compose)
 
 **Impact**: Cannot import these stacks into Dockhand without `.env` files populated.
@@ -31,7 +30,7 @@ The ce-stacks repository is **well-structured** with solid patterns, but has **1
 
 ```bash
 # Create missing .env files from examples
-for stack in github-desktop code-server warp-main synology-api-bridge; do
+for stack in github-desktop code-server synology-api-bridge; do
   cp ./stacks/$stack/.env.example ./stacks/$stack/.env
   # Edit each .env with actual values
 done
@@ -45,9 +44,6 @@ github-desktop: error while interpolating services.github-desktop.environment.[]
 
 code-server: error while interpolating services.code-server.volumes.[]: 
   required variable CODE_SERVER_HOST_DOCKER_BIND is missing a value
-
-warp-main: error while interpolating services.warp-agent.environment.[]: 
-  required variable WARP_API_KEY is missing a value
 
 synology-api-bridge: env file .env not found
 ```
@@ -80,7 +76,7 @@ done
 - acme-sh, agents_gateway_data, code-server, databases, dozzle
 - github-desktop, grafana-prom, homepage, it-tools, mcp-tools-config
 - ollama, openresume, psu-ots, remotely, searxng
-- synology-api-bridge, warp-main, watchtower, zabbix
+- synology-api-bridge, watchtower, zabbix
 
 ---
 
@@ -121,7 +117,6 @@ docker network create \
 **Affected Stacks**:
 
 - `github-desktop` - Has `seccomp:unconfined` (relaxed!) but NO `no-new-privileges`
-- `warp-main` - No security_opt at all
 
 **Impact**: Reduces container isolation, security posture degraded.
 
@@ -131,10 +126,6 @@ docker network create \
 # Add to github-desktop
 security_opt:
   - seccomp:unconfined
-  - no-new-privileges:true
-
-# Add to warp-main
-security_opt:
   - no-new-privileges:true
 ```
 
@@ -178,7 +169,6 @@ Wait, re-check: Actually ALL 20 stacks HAVE health checks. ✓ **NO ISSUE HERE**
 
 ```text
 172.20.0.0/24    - codex-docs
-172.25.0.0/24    - warp-main
 172.27.0.0/24    - ollama
 172.28.0.0/24    - databases
 172.28.2.0/24    - code-server
@@ -281,7 +271,7 @@ volumes:
 
 | # | Issue | Severity | Stacks | Fix Time |
 |---|-------|----------|--------|----------|
-| 1 | Invalid compose files | CRITICAL | 4 | 15 min |
+| 1 | Invalid compose files | CRITICAL | 3 | 15 min |
 | 2 | Missing .env files | CRITICAL | 19 | 10 min |
 | 3 | ce-internal network not created | CRITICAL | 4+ | 5 min |
 | 4 | Missing security options | HIGH | 2 | 10 min |
@@ -308,7 +298,7 @@ volumes:
 
 ### Phase 2: High (Before Production)
 
-1. Add `no-new-privileges` to github-desktop and warp-main
+1. Add `no-new-privileges` to github-desktop
 2. Add `PUID`/`PGID` to synology-api-bridge and psu-ots
 
 ### Phase 3: Medium (During Dockhand Setup)

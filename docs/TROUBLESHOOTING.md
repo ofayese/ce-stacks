@@ -67,7 +67,6 @@ docker network inspect ce-internal
 
 - `code-server`: CODE_SERVER_HOST_DOCKER_BIND, CODE_SERVER_HOST_HOME_BIND
 - `github-desktop`: GITHUB_DESKTOP_USER
-- `warp-main`: WARP_API_KEY
 - `databases`: MARIADB_ROOT_PASSWORD, POSTGRES_PASSWORD
 - `acme-sh`: CF_Token (Cloudflare API token)
 

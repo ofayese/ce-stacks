@@ -1,11 +1,11 @@
 services:
   code-server:
-    # CLAUDE.md §8 — code-server must use the linuxserver image.
+    # CLAUDE.md §8 - code-server must use the linuxserver image.
     # Migrated from codercom/code-server:4.117.0-39 (2026-05-13).
     # linuxserver image differences vs codercom:
     #   - Internal port: 8443 (HTTPS with self-signed cert); was 8080
     #   - Config layout: /config (unified); was /home/coder/{.config,.local/share}
-    #   - user: directive removed — linuxserver s6-overlay handles PUID/PGID internally
+    #   - user: directive removed - linuxserver s6-overlay handles PUID/PGID internally
     #   - Added: SUDO_PASSWORD, DEFAULT_WORKSPACE env vars
     #   - Removed: HOME, DOCKER_USER (codercom-specific vars)
     # DSM Reverse Proxy must have WebSocket Custom Headers set (Upgrade + Connection)
@@ -25,7 +25,7 @@ services:
     ports:
       - 10.0.1.15:8377:8443
     volumes:
-      # linuxserver unified config dir — replaces separate .config + .local/share mounts
+      # linuxserver unified config dir - replaces separate .config + .local/share mounts
       - ${STACK_ROOT}/code-server/config:/config:rw
       - ${CODE_SERVER_HOST_DOCKER_BIND:?set CODE_SERVER_HOST_DOCKER_BIND in
         .env}:/config/workspace/docker:rw # EXEMPT operator wide bind (see stack README)
@@ -33,7 +33,7 @@ services:
         .env}:/config/workspace/home:rw # EXEMPT operator home bind
 
       # /var/run socket context
-      # SECURITY: docker.sock :rw — In-IDE Docker needs full API access for build, run, and compose operations.
+      # SECURITY: docker.sock :rw - In-IDE Docker needs full API access for build, run, and compose operations.
       - /var/run/docker.sock:/var/run/docker.sock:rw
       # GAP-08: inject PASSWORD + SUDO_PASSWORD via Docker secrets.
       # init-secrets.sh runs as an s6-overlay custom-cont-init hook and writes
@@ -43,7 +43,7 @@ services:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
       - TZ=${TZ:-America/New_York}
-      # PASSWORD and SUDO_PASSWORD intentionally absent — injected by init-secrets.sh
+      # PASSWORD and SUDO_PASSWORD intentionally absent - injected by init-secrets.sh
       # from /run/secrets/code_server_password and /run/secrets/sudo_password.
       - PROXY_DOMAIN=${PROXY_DOMAIN:-}
       - DEFAULT_WORKSPACE=/config/workspace

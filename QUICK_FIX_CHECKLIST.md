@@ -44,7 +44,7 @@ cd /volume2/docker/ce-stacks
 for stack in acme-sh agents_gateway_data code-server databases dozzle \
              github-desktop grafana-prom homepage it-tools mcp-tools-config \
              ollama openresume psu-ots remotely searxng synology-api-bridge \
-             warp-main watchtower zabbix; do
+             watchtower zabbix; do
   
   if [ -f "stacks/$stack/.env.example" ] && [ ! -f "stacks/$stack/.env" ]; then
     cp "stacks/$stack/.env.example" "stacks/$stack/.env"
@@ -84,7 +84,6 @@ done
 - remotely
 - searxng
 - synology-api-bridge (needs BRIDGE_SHARED_SECRET)
-- warp-main (needs WARP_API_KEY)
 - watchtower
 - zabbix
 
@@ -142,20 +141,6 @@ security_opt:
   - no-new-privileges:true
 ```
 
-#### warp-main/compose.yaml
-
-Add entire security_opt section:
-
-```yaml
-services:
-  warp-agent:
-    # ... existing config ...
-    security_opt:
-      - no-new-privileges:true
-```
-
----
-
 #### Time: 10 minutesing PUID/PGID Environment Variables
 
 **Time: 10 minutes**
@@ -198,7 +183,6 @@ All bridge networks use explicit /24 subnets to prevent Docker's auto-assigned /
 | Stack | Network name | Subnet | Status |
 |---|---|---|---|
 | (backbone) | ce-internal | 172.26.0.0/24 | External; created at setup |
-| warp-main | warp-network | 172.25.0.0/24 | ✓ |
 | ollama | ollama-net | 172.27.0.0/24 | ✓ |
 | databases | db-net | 172.28.0.0/24 | ✓ |
 | code-server | code-server-net | 172.28.2.0/24 | ✓ |

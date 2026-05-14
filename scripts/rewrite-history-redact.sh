@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# rewrite-history-redact.sh — one-shot git history scrubber for leaked secrets.
+# rewrite-history-redact.sh - one-shot git history scrubber for leaked secrets.
 #
 # Designed for the case where a credential was committed and pushed to
 # `origin/main`, then deleted in a follow-up commit. The deletion does NOT
@@ -32,7 +32,7 @@
 #       Linux:   pipx install git-filter-repo  (or distro package)
 #   - The leaked credential has ALREADY BEEN ROTATED at every place that
 #     trusted it. History rewrite alone cannot un-leak a value that was
-#     ever pushed to a public remote — assume scrapers and forks already
+#     ever pushed to a public remote - assume scrapers and forks already
 #     have it.
 #   - You are running this from a machine that has a clean workspace
 #     OUTSIDE both `/Volumes/docker/dockge` and `/volume2/docker/ce-stacks`.
@@ -97,7 +97,7 @@ require_outside_repo_clones() {
 
 brief_usage() {
 	cat <<'BRIEF' >&2
-rewrite-history-redact: missing arguments — pass exactly two paths.
+rewrite-history-redact: missing arguments - pass exactly two paths.
 
   bash scripts/rewrite-history-redact.sh <absolute-redactions-file> <absolute-empty-work-dir>
 
@@ -169,7 +169,7 @@ for pat in "${PATTERNS[@]}"; do
 done
 
 if [[ "$found_any" -eq 0 ]]; then
-	printf '\nNo redactions to apply — every pattern is already absent from history. Nothing to do.\n'
+	printf '\nNo redactions to apply - every pattern is already absent from history. Nothing to do.\n'
 	exit 0
 fi
 
@@ -181,7 +181,7 @@ remaining=0
 for pat in "${PATTERNS[@]}"; do
 	hit_count=$(git grep -I --all -F -l "$pat" -- "$(git rev-list --all)" 2>/dev/null | wc -l | tr -d ' ' || true)
 	if [[ "${hit_count:-0}" -gt 0 ]]; then
-		printf '  - STILL PRESENT in %s blob(s) — pattern starts with: %s\n' "$hit_count" "${pat:0:8}…"
+		printf '  - STILL PRESENT in %s blob(s) - pattern starts with: %s\n' "$hit_count" "${pat:0:8}…"
 		remaining=$((remaining + 1))
 	fi
 done
@@ -191,7 +191,7 @@ printf '\n[5/5] Rewrite complete. Mirror is ready for force-push.\n'
 
 cat <<EOF
 
-NEXT STEPS — review, then execute these manually:
+NEXT STEPS - review, then execute these manually:
 
   1. Inspect the rewritten history (optional but recommended):
        cd $MIRROR_DIR
@@ -225,7 +225,7 @@ NEXT STEPS — review, then execute these manually:
   4. Open PRs / branches that contained the rewritten commits will need
      to be rebased onto the new history (or closed and re-opened).
      GitHub may also keep the old commits visible via direct SHA URLs
-     for some time — they are unreachable from refs but cached.
+     for some time - they are unreachable from refs but cached.
 
   5. Securely delete your local redactions file:
        macOS:  rm -P $REDACTIONS_FILE
