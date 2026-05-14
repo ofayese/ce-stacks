@@ -134,9 +134,9 @@ create_container() {
         --log-opt max-size=10m \
         --log-opt max-file=3 \
         --label com.centurylinklabs.watchtower.enable=true \
-        --health-cmd='wget --quiet --tries=1 --spider http://127.0.0.1:3000/health || exit 1' \
+        --health-cmd='/bin/sh -c "exec 3<>/dev/tcp/127.0.0.1/3000 && exec 3>&-" || exit 1' \
         --health-interval=30s \
-        --health-timeout=20s \
+        --health-timeout=5s \
         --health-retries=5 \
         --health-start-period=120s \
         -v /var/run/docker.sock:/var/run/docker.sock \

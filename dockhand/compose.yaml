@@ -23,11 +23,11 @@ services:
       - SKIP_DF_COLLECTION=true
       - TZ=America/New_York
     healthcheck:
-      test: ["CMD", "curl", "-fs", "http://127.0.0.1:3000/health"]
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/3000 && exec 3>&-"]
       interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
+      timeout: 5s
+      retries: 5
+      start_period: 120s
     labels:
       - com.centurylinklabs.watchtower.enable=true
     networks:
