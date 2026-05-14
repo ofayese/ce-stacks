@@ -36,10 +36,10 @@ hideVersion: true
 layout:
   Infrastructure:
     style: row
-    columns: 4 # Portainer, Dockge, Watchtower, Dozzle fit in 4 columns
+    columns: 4 # Portainer, Portainer Agent, Dockhand, Watchtower, GitHub Desktop
   Management:
     style: row
-    columns: 4 # Adminer, phpMyAdmin, DSM, etc.
+    columns: 4 # Adminer, phpMyAdmin, DSM, Grafana, Alertmanager, Zabbix, Remotely, PSU, API Bridge
   Development:
     style: row
     columns: 4 # Code-Server, databases, MySQL, PostgreSQL

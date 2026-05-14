@@ -28,7 +28,8 @@
 
 - Infrastructure:
     - Portainer:
-        # Container name from: portainer/compose.yaml (service: portainer)
+        # Portainer runs as a system container outside ce-stacks (no compose.yaml in repo).
+        # Container name verified at runtime: docker ps --filter name=portainer
         icon: portainer.png
         href: https://10.0.1.15:9443/
         description: Docker management UI & remote agent orchestration
@@ -44,7 +45,7 @@
           key: ${PORTAINER_API_KEY}
 
     - Portainer Agent:
-        # Container name from: portainer/compose.yaml (service: portainer_agent)
+        # Portainer Agent runs as a system container outside ce-stacks (no compose.yaml in repo).
         icon: portainer.png
         href: https://10.0.1.15:9001/
         description: Edge agent for remote orchestration
@@ -53,23 +54,15 @@
         # siteMonitor omitted: agent uses mTLS — HTTP probe returns
         # HTTP/1.0 400 → HPE_CLOSED_CONNECTION in Homepage logs.
 
-    - Dockge:
-        # Container name: "Dockge" — set by Synology startup script (docker run --name="Dockge")
-        # Host port: 5571 → container port 5001. NOT the same as Synology DSM (port 5001).
-        icon: dockge.png
-        href: http://10.0.1.15:5571/
-        description: Lightweight Docker Compose stack manager UI
+    - Dockhand:
+        # Container name from: dockhand/compose.yaml (service: dockhand)
+        # Replaced Dockge as the stack management UI.
+        icon: docker.png
+        href: http://10.0.1.15:3866/
+        description: Git-backed Docker Compose stack manager (replaced Dockge)
         server: my-docker
-        container: Dockge
-        siteMonitor: http://10.0.1.15:5571/
-        widget:
-          type: dockge
-          url: http://10.0.1.15:5571
-          # Credentials required for widget API. Store in homepage/.env (gitignored):
-          #   DOCKGE_USERNAME=<your-dockge-login>
-          #   DOCKGE_PASSWORD=<your-dockge-password>
-          username: ${DOCKGE_USERNAME}
-          password: ${DOCKGE_PASSWORD}
+        container: Dockhand
+        siteMonitor: http://10.0.1.15:3866/
 
     - Watchtower:
         # Container name from: watchtower/compose.yaml (service: watchtower)
@@ -77,6 +70,15 @@
         description: Automatic container updates (daily 4 AM EST)
         server: my-docker
         container: Watchtower
+
+    - GitHub Desktop:
+        # Container name from: github-desktop/compose.yaml (service: github-desktop)
+        icon: github.png
+        href: http://10.0.1.15:3405/
+        description: GitHub Desktop GUI via KasmVNC browser session
+        server: my-docker
+        container: github-desktop
+        siteMonitor: http://10.0.1.15:3405/
 
 - Management:
     - Dozzle:
@@ -111,6 +113,64 @@
         href: https://10.0.1.15:5001/
         description: DS723+ control panel
         siteMonitor: https://10.0.1.15:5001/
+
+    - Grafana:
+        # Container name from: grafana-prom/compose.yaml (service: grafana)
+        icon: grafana.png
+        href: http://10.0.1.15:3340/
+        description: Metrics dashboards (Prometheus, SNMP, cAdvisor)
+        server: my-docker
+        container: Grafana
+        siteMonitor: http://10.0.1.15:3340/
+        widget:
+          type: grafana
+          url: http://10.0.1.15:3340
+          username: ${GRAFANA_USERNAME}
+          password: ${GRAFANA_PASSWORD}
+
+    - Alertmanager:
+        # Container name from: grafana-prom/compose.yaml (service: alertmanager)
+        icon: prometheus.png
+        href: http://10.0.1.15:9093/
+        description: Prometheus alert routing → Discord
+        server: my-docker
+        container: Alertmanager
+        siteMonitor: http://10.0.1.15:9093/
+
+    - Zabbix:
+        # Container name from: zabbix/compose.yaml (service: zabbix-web)
+        icon: zabbix.png
+        href: http://10.0.1.15:8532/
+        description: Infrastructure monitoring (SNMP, ICMP, agent)
+        server: my-docker
+        container: Zabbix-Web
+        siteMonitor: http://10.0.1.15:8532/
+
+    - Remotely:
+        # Container name from: remotely/compose.yaml (service: remotely)
+        icon: rdp.png
+        href: http://10.0.1.15:5371/
+        description: Remote support — screen share & scripting
+        server: my-docker
+        container: remotely
+        siteMonitor: http://10.0.1.15:5371/
+
+    - PSU (PowerShell Universal):
+        # Container name from: psu-ots/compose.yaml (service: universal)
+        icon: powershell.png
+        href: http://10.0.1.15:5570/
+        description: NAS automation & NOC dashboard
+        server: my-docker
+        container: psu-ots
+        siteMonitor: http://10.0.1.15:5570/
+
+    - Synology API Bridge:
+        # Container name from: synology-api-bridge/compose.yaml (service: synology-api-bridge)
+        # Internal FastAPI shim — no user-facing UI; status indicator only.
+        icon: api.png
+        description: Internal DSM HTTP shim (FastAPI) for stack automation
+        server: my-docker
+        container: SynologyApiBridge
 
 - Development:
     - Code-Server:
