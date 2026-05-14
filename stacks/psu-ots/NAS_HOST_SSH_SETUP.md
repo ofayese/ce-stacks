@@ -26,7 +26,7 @@ chmod 600 ~/.ssh/authorized_keys
 **Docker group:** the same user must be able to run `docker` / `docker compose` **without sudo** (e.g. member of the `docker` group on DSM where that applies, or your documented NAS layout). Test:
 
 ```bash
-ssh -i psu_remediation_key YOUR_USER@NAS_IP 'docker info >/dev/null && echo ok'
+ssh -i psu_remediation_key -p 28 username@nasip '/usr/local/bin/docker info >/dev/null && echo ok'
 ```
 
 ## 3. Provide the private key to PSU
