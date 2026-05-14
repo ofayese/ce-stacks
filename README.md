@@ -63,6 +63,45 @@ git clone https://github.com/ofayese/ce-stacks.git
 
 ### 2. Install Dockhand via RC script
 
+
+### 0. Pre-Deployment Setup (One-Time)
+
+Before deploying stacks for the first time, perform these one-time setup steps on the NAS:
+
+1. Create the backbone network (required by several stacks):
+
+```bash
+docker network create \
+  --driver bridge \
+  --subnet 172.26.0.0/24 \
+  --gateway 172.26.0.1 \
+  ce-internal
+```
+
+Verify: `docker network inspect ce-internal`
+
+2. Populate all `.env` files from `.env.example` (templates are intentionally provided but `.env` files are git-ignored):
+
+```bash
+# Create missing .env files from .env.example
+for stack in acme-sh agents_gateway_data code-server databases dozzle \
+             github-desktop grafana-prom homepage it-tools mcp-tools-config \
+             ollama openresume psu-ots remotely searxng synology-api-bridge \
+             warp-main watchtower zabbix; do
+  [ -f "stacks/$stack/.env" ] || cp "stacks/$stack/.env.example" "stacks/$stack/.env"
+done
+```
+
+Edit each `.env` with actual values (passwords, API keys) — do not commit `.env` files to git.
+
+3. Validate all compose files prior to import:
+
+```bash
+bash /volume2/docker/ce-stacks/scripts/compose-validate.sh
+```
+
+(Then continue with Dockhand installation steps below.)
+
 ```bash
 sudo cp /volume2/docker/ce-stacks/dockhand/dockhand-start.sh /usr/local/etc/rc.d/dockhand.sh
 sudo chmod +x /usr/local/etc/rc.d/dockhand.sh
@@ -133,6 +172,16 @@ All bridge networks use explicit `/24` subnets to prevent Docker's auto-assigned
 
 The Docker default bridge `172.17.0.0/16` is reserved and must not be re-used.
 
+## External vs Internal Networks
+
+**Important**: `ce-internal` is the only external (pre-created) network and must be created manually before importing stacks.
+
+- `ce-internal` (172.26.0.0/24) — External backbone network shared by: agents_gateway_data, databases, grafana-prom, ollama, synology-api-bridge. Create it once on the NAS using `docker network create` (see Pre-Deployment Setup).
+
+- All other networks listed above are created by their respective stacks at `docker compose up` time (internal to the stack) and do not require manual creation.
+
+Refer to the "Pre-Deployment Setup" section for commands and validation steps.
+
 ## Dockhand Details
 
 Dockhand lifecycle is managed exclusively by the RC script — not by a compose stack.
@@ -156,7 +205,7 @@ Dockhand lifecycle is managed exclusively by the RC script — not by a compose 
 ## Security Notes
 
 - All `.env` files are excluded from git (see `.gitignore`)
-- The `stacks/acme-sh/data/`, `stacks/ollama/data/`, and `stacks/github-desktop/config/ssl/` directories are gitignored — they contain runtime certificates, private keys, and SSH identity material
+- The `stacks/acme-sh/data/`, `stacks/ollama/data/`, and `stacks/github-desktop/config/ssl/` directories are gitignored - they contain runtime certificates, private keys, and SSH identity material
 - Database Watchtower exemptions prevent accidental major-version upgrades that would corrupt data directories
 
 ## License

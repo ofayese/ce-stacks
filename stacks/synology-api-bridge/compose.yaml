@@ -6,6 +6,9 @@ services:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
+    environment:
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}  
     logging:
       driver: json-file
       options:

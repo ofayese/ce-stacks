@@ -8,6 +8,7 @@ services:
     cpu_shares: 512
     security_opt:
       - seccomp:unconfined
+      - no-new-privileges:true
     cap_add:
       - IPC_LOCK
     healthcheck:

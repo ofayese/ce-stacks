@@ -1,4 +1,4 @@
-# Stack: psu-ots — PowerShell Universal (NAS automation / NOC dashboard)
+# Stack: psu-ots - PowerShell Universal (NAS automation / NOC dashboard)
 # Exposed directly on 10.0.1.15:5570 (Traefik removed; DSM reverse proxy handles TLS termination)
 services:
   universal:
@@ -16,6 +16,8 @@ services:
         max-size: 10m
         max-file: "3"
     environment:
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
       - TZ=${TZ:-America/New_York}
       # Paths inside container for NAS scripts + compose bind roots
       - DOCKGE_REPO_ROOT=${DOCKGE_REPO_ROOT:-/nas-repo}
