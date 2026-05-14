@@ -12,12 +12,14 @@ services:
     cap_add:
       - IPC_LOCK
     healthcheck:
+      # linuxserver/github-desktop KasmVNC listens on port 3001 (not 3000).
+      # Confirmed via port forward: target: 3001, published: 3405.
       test:
         - CMD
         - nc
         - -z
         - 127.0.0.1
-        - "3000"
+        - "3001"
       interval: 30s
       timeout: 10s
       retries: 3

@@ -63,7 +63,9 @@ services:
         max-size: 10m
         max-file: "3"
     labels:
-      - com.centurylinklabs.watchtower.enable=true
+      # SQLite-backed service — Watchtower restart mid-write risks WAL corruption.
+      # Update manually: docker pull immybot/remotely:latest && docker compose up -d (or refresh digest pin)
+      - com.centurylinklabs.watchtower.enable=false
     networks:
       - remotely-net
 networks:

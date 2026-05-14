@@ -87,7 +87,10 @@ services:
     ports:
       - "10.0.1.15:5570:5000"
     labels:
-      - com.centurylinklabs.watchtower.enable=true
+      # PSU stores session state + job history in LiteDB (/data). A mid-write Watchtower
+      # restart risks database file corruption. Update manually after verifying a clean
+      # job-queue state and noting the new digest tag for rollback.
+      - com.centurylinklabs.watchtower.enable=false
     networks:
       - psu-ots-net
 

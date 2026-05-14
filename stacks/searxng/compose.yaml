@@ -59,6 +59,13 @@ services:
       - UWSGI_WORKERS=4
       - UWSGI_THREADS=4
       - TZ=America/New_York
+    healthcheck:
+      # searxng uWSGI listens on 8080; /healthz is not available — probe root path.
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     depends_on:
       redis:
         condition: service_healthy

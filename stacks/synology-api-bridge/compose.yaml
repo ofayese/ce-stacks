@@ -4,6 +4,8 @@ services:
     image: synology-api-bridge:local
     container_name: SynologyApiBridge
     restart: unless-stopped
+    mem_limit: 256m
+    cpu_shares: 256
     security_opt:
       - no-new-privileges:true
     environment:

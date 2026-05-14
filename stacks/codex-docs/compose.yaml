@@ -49,9 +49,15 @@ services:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
       - MONGODB_URI=mongodb://mongodb:27017/codexdocs
-      - APP_SECRET=${APP_SECRET}
+      - APP_SECRET=${APP_SECRET:?set APP_SECRET in .env — generate with: openssl rand -hex 32}
       - PORT=3000
       - TZ=America/New_York
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     depends_on:
       mongodb:
         condition: service_healthy

@@ -118,3 +118,9 @@ networks:
         # Moved from 172.23.0.0/24 — blocked by it-tools_default /16 auto-network.
         - subnet: 172.25.0.0/24
           gateway: 172.25.0.1
+
+# GAP-08: Docker file-based secret so WARP_API_KEY never appears in `docker inspect`.
+# Populate: echo "wk-YOUR_KEY" > stacks/warp-main/secrets/warp_api_key.txt && chmod 600 secrets/*.txt
+secrets:
+  warp_api_key:
+    file: ${STACK_ROOT}/warp-main/secrets/warp_api_key.txt
