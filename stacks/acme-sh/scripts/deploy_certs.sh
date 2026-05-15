@@ -9,22 +9,22 @@ usage() {
 Usage: deploy_certs.sh [--no-traefik] [--no-haproxy-check]
 
 Environment:
-  STACK_ROOT              Required — stacks root (e.g. /volume2/docker/ce-stacks/stacks)
-  ACME_CERT_ROOT          Default /volume2/certs/acme — acme.sh PEM trees per profile
-  HAPROXY_CERT_STAGE_DIR  Default /volume2/certs/acme/haproxy — HAProxy bundle output (created if missing)
-  LIVE_HAPROXY_CERT_DIR   Default ${STACK_ROOT}/_haproxy/certs — if HAPROXY_CERT_STAGE_DIR equals this,
+  STACK_ROOT              Required - stacks root (e.g. /volume2/docker/ce-stacks/stacks)
+  ACME_CERT_ROOT          Default /volume2/certs/acme - acme.sh PEM trees per profile
+  HAPROXY_CERT_STAGE_DIR  Default /volume2/certs/acme/haproxy - HAProxy bundle output (created if missing)
+  LIVE_HAPROXY_CERT_DIR   Default ${STACK_ROOT}/_haproxy/certs - if HAPROXY_CERT_STAGE_DIR equals this,
                             haproxy -c may run (see DO_HAPROXY_CHECK); otherwise -c is skipped (wrong paths in cfg)
   BUNDLE_SPECS            Optional "profile:out.pem" space-separated list. Default:
                             otsorundscore:otsorundscore.olutechsys.com.pem misfitsds:misfitsds.olutechsys.com.pem
-  ACME_PROFILE            Optional — when set and BUNDLE_SPECS is empty, builds one bundle:
+  ACME_PROFILE            Optional - when set and BUNDLE_SPECS is empty, builds one bundle:
                             otsorundscore → otsorundscore.olutechsys.com.pem
                             misfitsds     → misfitsds.olutechsys.com.pem
-  TRAEFIK_PROFILE         ots | mft — selects traefik-ots or traefik-mft for restart (unless TRAEFIK_STACK set)
-  TRAEFIK_STACK           e.g. traefik-ots — overrides profile mapping; restart only this compose project name
+  TRAEFIK_PROFILE         ots | mft - selects traefik-ots or traefik-mft for restart (unless TRAEFIK_STACK set)
+  TRAEFIK_STACK           e.g. traefik-ots - overrides profile mapping; restart only this compose project name
   SKIP_TRAEFIK            If 1, never restart Traefik
   HAPROXY_BIN             Default /volume1/@appstore/haproxy/sbin/haproxy (Synology package); must exist for -c
   HAPROXY_CFG             Config for haproxy -c; default ${STACK_ROOT}/_haproxy/haproxy.cfg
-  DISCORD_WEBHOOK_URL     Optional — notify on hard failures (same var name as acme-sh compose)
+  DISCORD_WEBHOOK_URL     Optional - notify on hard failures (same var name as acme-sh compose)
 
 Flags:
   --no-traefik       Skip Traefik docker compose restart
@@ -97,7 +97,7 @@ stage_one() {
 	# Concat fullchain + key (HAProxy bundle order)
 	cat "${fc}" "${pk}" >"${staged}"
 	openssl x509 -in "${staged}" -noout -subject -dates >/dev/null
-	# pkey must read privkey.pem — combined bundle is cert-first; OpenSSL 3 decodes first PEM only.
+	# pkey must read privkey.pem - combined bundle is cert-first; OpenSSL 3 decodes first PEM only.
 	openssl pkey -in "${pk}" -noout -check >/dev/null
 	local final="${CERT_DIR}/${out_name}"
 	if [[ -f "${final}" ]]; then
@@ -124,7 +124,7 @@ if [[ "${DO_HAPROXY_CHECK}" -eq 1 ]]; then
 		echo "INFO: haproxy -c skipped (staged to ${CERT_DIR}; live cfg typically uses ${LIVE_HAPROXY_CERT_DIR}). Copy bundles to the path in haproxy.cfg then run haproxy -c, or set HAPROXY_CERT_STAGE_DIR=\${STACK_ROOT}/_haproxy/certs for in-place validate." >&2
 	elif [[ -x "${HAPROXY_BIN}" ]]; then
 		if ! "${HAPROXY_BIN}" -c -f "${HAPROXY_CFG}"; then
-			echo "haproxy -c failed — restoring .lkg bundles where present" >&2
+			echo "haproxy -c failed - restoring .lkg bundles where present" >&2
 			shopt -s nullglob
 			for f in "${CERT_DIR}"/*.pem; do
 				[[ -e "${f}" ]] || continue
@@ -140,7 +140,7 @@ if [[ "${DO_HAPROXY_CHECK}" -eq 1 ]]; then
 		fi
 		echo "haproxy -c OK (${HAPROXY_CFG})"
 	else
-		echo "WARN: HAPROXY_BIN not executable (${HAPROXY_BIN}) — skipping haproxy -c (operator must validate on NAS)" >&2
+		echo "WARN: HAPROXY_BIN not executable (${HAPROXY_BIN}) - skipping haproxy -c (operator must validate on NAS)" >&2
 	fi
 fi
 
