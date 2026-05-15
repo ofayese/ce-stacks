@@ -13,12 +13,12 @@
 set -e
 
 if [ -f /run/secrets/cf_token ]; then
-    # Strip trailing whitespace/newlines — common editor artifact
+    # Strip trailing whitespace/newlines - common editor artifact
     CF_Token="$(cat /run/secrets/cf_token | tr -d '[:space:]')"
     export CF_Token
     echo "[entrypoint] CF_Token loaded from Docker secret (${#CF_Token} chars)"
 else
-    echo "[entrypoint] WARNING: /run/secrets/cf_token not found — CF_Token not set" >&2
+    echo "[entrypoint] WARNING: /run/secrets/cf_token not found - CF_Token not set" >&2
 fi
 
 if [ -f /run/secrets/discord_webhook_url ]; then
@@ -26,8 +26,8 @@ if [ -f /run/secrets/discord_webhook_url ]; then
     export DISCORD_WEBHOOK_URL
     echo "[entrypoint] DISCORD_WEBHOOK_URL loaded from Docker secret"
 else
-    echo "[entrypoint] INFO: /run/secrets/discord_webhook_url not found — notifications disabled"
+    echo "[entrypoint] INFO: /run/secrets/discord_webhook_url not found - notifications disabled"
 fi
 
-# Execute the real acme.sh entrypoint with all original arguments ($@ = "daemon")
-exec acme.sh "$@"
+# Execute the official Docker entrypoint with all original arguments ($@ = "daemon")
+exec /entrypoint.sh "$@"

@@ -11,16 +11,16 @@ MIN_VALID_DAYS="${MIN_VALID_DAYS:-21}"
 
 usage() {
 	cat <<'USAGE'
-verify_serving.sh — OpenSSL client TLS probe
+verify_serving.sh - OpenSSL client TLS probe
 
 Required env:
   CONNECT_HOST   e.g. 10.0.1.15
 
 Optional env:
-  CONNECT_PORT   default 6443 (Traefik HTTPS edge — use 443 if HAProxy terminates TLS)
+  CONNECT_PORT   default 6443 (Traefik HTTPS edge - use 443 if HAProxy terminates TLS)
   SNI            -servername value (default: CONNECT_HOST if set, else none)
   EXPECTED_SUBJECT  substring required in openssl x509 -subject output
-  MIN_VALID_DAYS   default 21 — openssl x509 -checkend threshold (fail if not valid that long)
+  MIN_VALID_DAYS   default 21 - openssl x509 -checkend threshold (fail if not valid that long)
   DISCORD_WEBHOOK_URL  POST JSON alert on failure (same name as acme-sh)
 USAGE
 }
