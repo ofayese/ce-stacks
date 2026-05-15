@@ -50,9 +50,11 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
+    # Synology: Docker's embedded DNS (127.0.0.11) cannot resolve external hosts
+    # and outbound UDP/53 to 8.8.8.8/1.1.1.1 is blocked from container networks.
+    # Use the NAS host's own resolver which is always reachable from bridge nets.
     dns:
-      - 8.8.8.8
-      - 8.8.4.4
+      - 10.0.1.15
     extra_hosts:
       - otsorundscore.olutechsys.com:10.0.1.15
     networks:
@@ -84,8 +86,7 @@ services:
       ollama:
         condition: service_healthy
     dns:
-      - 8.8.8.8
-      - 8.8.4.4
+      - 10.0.1.15
     volumes:
       - ${STACK_ROOT}/ollama/data/ollama:/root/.ollama:rw
     environment:
