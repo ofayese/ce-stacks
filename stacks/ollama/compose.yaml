@@ -6,9 +6,6 @@ services:
     image: ollama/ollama@sha256:d00473cb58f0082c07cd6ed0d326a8a86f443ab69c51f8fc2b1a41687d45c661
     # GAP-05 fix: reduced from 16g → 14g. 14B Q4_K_M models need ~8.5 GB; 14g gives
     # 5.5 GB KV cache headroom while recovering 2 GB for DSM + other stacks.
-    # Total explicit mem_limits summed to ~30.4 GB on a 32 GB machine before this fix.
-    # mem_reservation (soft limit): kernel starts reclaiming memory before hitting the hard cap,
-    # preventing surprise OOM kills when other stacks ramp up concurrently.
     mem_limit: 14g
     mem_reservation: 8g
     cpu_shares: 1024
@@ -20,27 +17,35 @@ services:
         max-size: 10m
         max-file: "3"
     restart: unless-stopped
-    ports:
-      - 10.0.1.15:11434:11434
+    # network_mode: host — shares host network stack so ollama can reach
+    # registry.ollama.ai for model pulls. Synology Docker bridge DNS is broken:
+    # 127.0.0.11 unreachable, and outbound UDP/53 is firewalled from container nets.
+    # Port 11434 is exposed directly on the NAS host; no ports: mapping needed.
+    network_mode: "host"
+    # entrypoint.sh pattern from mariushosting.com: starts ollama serve then pulls
+    # models in one container — no separate init container needed.
+    entrypoint: ["/bin/bash", "/entrypoint.sh"]
     volumes:
       - ${STACK_ROOT}/ollama/data/ollama:/root/.ollama:rw
+      - ${STACK_ROOT}/ollama/scripts/entrypoint.sh:/entrypoint.sh:ro
     environment:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
-      - OLLAMA_HOST=0.0.0.0
-      # CPU: keep at 1 - parallelism halves per-request throughput on R1600
+      # Model list is hardcoded in scripts/entrypoint.sh.
+      # Override here only if you need a non-default set:
+      # - MODELS=phi4:mini,nomic-embed-text
+      # CPU: keep at 1 — parallelism halves per-request throughput on R1600
       - OLLAMA_NUM_PARALLEL=${OLLAMA_NUM_PARALLEL:-1}
       # CPU: only one model in memory at a time
       - OLLAMA_MAX_LOADED_MODELS=${OLLAMA_MAX_LOADED_MODELS:-1}
       # Keep model loaded 30 min after last request (CPU reload takes 15-60s)
       - OLLAMA_KEEP_ALIVE=${OLLAMA_KEEP_ALIVE:-30m}
-      # Flash attention reduces KV cache memory for long contexts - always enable on CPU
+      # Flash attention reduces KV cache memory — always enable on CPU
       - OLLAMA_FLASH_ATTENTION=1
       - TZ=America/New_York
     labels:
       - com.centurylinklabs.watchtower.enable=true
-    # Healthcheck type E: ollama binary self-probe via CMD (not CMD-SHELL).
-    # curl is not in the ollama image. CMD-SHELL loses the binary PATH on CPU.
+    # Healthcheck: ollama binary self-probe via CMD (curl not in image).
     healthcheck:
       test:
         - CMD
@@ -49,123 +54,8 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 30s
-    # Synology: Docker's embedded DNS (127.0.0.11) cannot resolve external hosts
-    # and outbound UDP/53 to 8.8.8.8/1.1.1.1 is blocked from container networks.
-    # Use the NAS host's own resolver which is always reachable from bridge nets.
-    dns:
-      - 10.0.1.15
-    extra_hosts:
-      - otsorundscore.olutechsys.com:10.0.1.15
-    networks:
-      - ollama-net
-      - ce-internal
-  ollama-model-init:
-    # One-shot service: pulls all required models after Ollama comes online.
-    # Uses same image as otsai-server - no additional pull needed.
-    # Docker / DSM UI may show this container as Exited - that is SUCCESS (exit 0), not a fault.
-    # Do not set restart: unless-stopped here; a long-running init would fight the main ollama service.
-    # restart: "no" - intentional: runs once when explicitly invoked.
-    # Re-runs on: docker compose --profile init up --force-recreate ollama-model-init
-    # Models persist in STACK_ROOT/ollama/data/ollama - skips already-pulled models.
-    image: ollama/ollama@sha256:d00473cb58f0082c07cd6ed0d326a8a86f443ab69c51f8fc2b1a41687d45c661
-    container_name: ollama-model-init
-    profiles:
-      - init
-    restart: no # intentional: one-shot init - not a long-running service
-    mem_limit: 256m
-    cpu_shares: 128
-    security_opt:
-      - no-new-privileges:true
-    logging:
-      driver: json-file
-      options:
-        max-size: 2m
-        max-file: "2"
-    depends_on:
-      ollama:
-        condition: service_healthy
-    dns:
-      - 10.0.1.15
-    volumes:
-      - ${STACK_ROOT}/ollama/data/ollama:/root/.ollama:rw
-    environment:
-      - OLLAMA_HOST=http://ollama:11434
-      # Tier 1 - Baseline models (always pull, small/fast)
-      # nomic-embed-text: REQUIRED for AnythingLLM RAG embeddings
-      - TIER1_MODELS=${OLLAMA_TIER1_MODELS:-phi4:mini nomic-embed-text
-        llama3.2:3b}
-      # Tier 2 - Primary models (pull on first boot, ~15-25 min total)
-      - TIER2_MODELS=${OLLAMA_TIER2_MODELS:-qwen2.5-coder:7b llama3.1:8b}
-      # Tier 3 - Secondary models (optional; set to "" to skip)
-      - TIER3_MODELS=${OLLAMA_TIER3_MODELS:-deepseek-r1:7b mistral:7b qwen2.5:7b}
-      - TZ=America/New_York
-    entrypoint:
-      - /bin/sh
-      - -c
-    command:
-      - >
-        set -e
+      start_period: 60s
 
-        echo "[model-init] Waiting for Ollama to accept connections..."
-
-        ATTEMPTS=0
-
-        until /usr/bin/ollama list >/dev/null 2>&1; do
-          ATTEMPTS=$$((ATTEMPTS + 1))
-          if [ "$$ATTEMPTS" -gt 60 ]; then
-            echo "[model-init] ERROR: Ollama did not start within 5 minutes. Exiting."
-            exit 1
-          fi
-          sleep 5
-        done
-
-        echo "[model-init] Ollama is ready. Starting model pulls..."
-
-
-        pull_if_missing() {
-          MODEL="$$1"
-          # Strip tag for display; check list for base name
-          BASE="$${MODEL%%:*}"
-          if /usr/bin/ollama list 2>/dev/null | grep -q "^$${BASE}"; then
-            echo "[model-init] SKIP  $${MODEL} (already present)"
-          else
-            echo "[model-init] PULL  $${MODEL} ..."
-            /usr/bin/ollama pull "$${MODEL}" && \
-              echo "[model-init] OK    $${MODEL}" || \
-              echo "[model-init] FAIL  $${MODEL} (network or registry error - will retry on next restart)"
-          fi
-        }
-
-
-        echo "[model-init] === Tier 1: baseline models ==="
-
-        for MODEL in $$TIER1_MODELS; do
-          pull_if_missing "$$MODEL"
-        done
-
-
-        echo "[model-init] === Tier 2: primary models ==="
-
-        for MODEL in $$TIER2_MODELS; do
-          pull_if_missing "$$MODEL"
-        done
-
-
-        echo "[model-init] === Tier 3: secondary models ==="
-
-        for MODEL in $$TIER3_MODELS; do
-          pull_if_missing "$$MODEL"
-        done
-
-
-        echo "[model-init] === Complete ==="
-
-        /usr/bin/ollama list
-
-        echo "[model-init] Done. Container will exit (restart: no)."
-    networks:
-      - ollama-net
   open-webui:
     container_name: otsai-webui
     image: ghcr.io/open-webui/open-webui:v0.9.2
@@ -186,14 +76,14 @@ services:
     environment:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
-      # Use Docker DNS (same ollama-net) - avoids host round-trip
-      - OLLAMA_BASE_URL=http://ollama:11434
+      # otsai-server uses network_mode: host — reach via NAS LAN IP (not Docker DNS)
+      - OLLAMA_BASE_URL=http://10.0.1.15:11434
       - BRIDGE_SHARED_SECRET=${BRIDGE_SHARED_SECRET}
       - WEBUI_AUTH=1
       - WEBUI_NAME=olutechsys AI
       - WEBUI_URL=${WEBUI_URL:-https://oai.otsorundscore.olutechsys.com}
       # Comma-separated model names shown in dropdown (does NOT auto-pull).
-      # ollama-model-init handles auto-pull when the stack starts.
+      # entrypoint.sh handles auto-pull when otsai-server starts.
       - DEFAULT_MODELS=${DEFAULT_MODELS:-phi4:mini,qwen2.5-coder:7b,nomic-embed-text}
       - TZ=America/New_York
     depends_on:
@@ -213,17 +103,14 @@ services:
       - otsorundscore.olutechsys.com:10.0.1.15
     networks:
       - ollama-net
+
 networks:
   ollama-net:
-    # name: override prevents Docker double-name artefact.
+    # Used by open-webui only. otsai-server uses network_mode: host.
     name: ollama-net
     driver: bridge
     ipam:
       config:
-        # Subnet registry: 172.27.0.0/24 allocated to ollama-net (see README.md → Network Subnets)
+        # Subnet registry: 172.27.0.0/24 allocated to ollama-net (see README.md)
         - subnet: 172.27.0.0/24
           gateway: 172.27.0.1
-  ce-internal:
-    # Cross-stack backbone: ollama joins so other stacks (RAG, agents)
-    # can call the LLM API by DNS name (http://ollama:11434).
-    external: true
