@@ -17,13 +17,13 @@ services:
         max-size: 10m
         max-file: "3"
     restart: unless-stopped
-    # network_mode: host — shares host network stack so ollama can reach
+    # network_mode: host - shares host network stack so ollama can reach
     # registry.ollama.ai for model pulls. Synology Docker bridge DNS is broken:
     # 127.0.0.11 unreachable, and outbound UDP/53 is firewalled from container nets.
     # Port 11434 is exposed directly on the NAS host; no ports: mapping needed.
     network_mode: "host"
     # entrypoint.sh pattern from mariushosting.com: starts ollama serve then pulls
-    # models in one container — no separate init container needed.
+    # models in one container - no separate init container needed.
     entrypoint: ["/bin/bash", "/entrypoint.sh"]
     volumes:
       - ${STACK_ROOT}/ollama/data/ollama:/root/.ollama:rw
@@ -34,13 +34,13 @@ services:
       # Model list is hardcoded in scripts/entrypoint.sh.
       # Override here only if you need a non-default set:
       # - MODELS=phi4:mini,nomic-embed-text
-      # CPU: keep at 1 — parallelism halves per-request throughput on R1600
+      # CPU: keep at 1 - parallelism halves per-request throughput on R1600
       - OLLAMA_NUM_PARALLEL=${OLLAMA_NUM_PARALLEL:-1}
       # CPU: only one model in memory at a time
       - OLLAMA_MAX_LOADED_MODELS=${OLLAMA_MAX_LOADED_MODELS:-1}
       # Keep model loaded 30 min after last request (CPU reload takes 15-60s)
       - OLLAMA_KEEP_ALIVE=${OLLAMA_KEEP_ALIVE:-30m}
-      # Flash attention reduces KV cache memory — always enable on CPU
+      # Flash attention reduces KV cache memory - always enable on CPU
       - OLLAMA_FLASH_ATTENTION=1
       - TZ=America/New_York
     labels:
@@ -58,7 +58,7 @@ services:
 
   open-webui:
     container_name: otsai-webui
-    image: ghcr.io/open-webui/open-webui:v0.9.2
+    image: ghcr.io/open-webui/open-webui:v0.9.5
     mem_limit: 2g
     cpu_shares: 768
     security_opt:
@@ -76,12 +76,12 @@ services:
     environment:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
-      # otsai-server uses network_mode: host — reach via NAS LAN IP (not Docker DNS)
+      # otsai-server uses network_mode: host - reach via NAS LAN IP (not Docker DNS)
       - OLLAMA_BASE_URL=http://10.0.1.15:11434
       - BRIDGE_SHARED_SECRET=${BRIDGE_SHARED_SECRET}
       - WEBUI_AUTH=1
       - WEBUI_NAME=olutechsys AI
-      - WEBUI_URL=${WEBUI_URL:-https://oai.otsorundscore.olutechsys.com}
+      - WEBUI_URL=${WEBUI_URL:-https://10.0.1.15:8893}
       # Comma-separated model names shown in dropdown (does NOT auto-pull).
       # entrypoint.sh handles auto-pull when otsai-server starts.
       - DEFAULT_MODELS=${DEFAULT_MODELS:-phi4:mini,qwen2.5-coder:7b,nomic-embed-text}
