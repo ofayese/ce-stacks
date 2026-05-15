@@ -29,5 +29,11 @@ else
     echo "[entrypoint] INFO: /run/secrets/discord_webhook_url not found - notifications disabled"
 fi
 
-# Execute the official Docker entrypoint with all original arguments ($@ = "daemon")
-exec /entrypoint.sh "$@"
+# Intercept the 'daemon' command to run the Alpine cron daemon in the foreground.
+# This replicates the official image behavior so renewals happen automatically.
+if [ "$1" = "daemon" ]; then
+    echo "[entrypoint] Starting crond in foreground for automatic renewals..."
+    exec crond -f
+else
+    exec acme.sh "$@"
+fi
