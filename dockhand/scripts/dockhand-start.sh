@@ -141,6 +141,7 @@ create_container() {
         --health-start-period=120s \
         -v /var/run/docker.sock:/var/run/docker.sock \
         -v "${DOCKHAND_DATA}:/app/data" \
+        -v /volume2/docker/ce-stacks/stacks:/app/stacks:rw \
         -e PUID="$PUID" \
         -e PGID="$PGID" \
         -e SKIP_DF_COLLECTION=true \
