@@ -5,6 +5,25 @@
 
 ---
 
+## Resolution Status (2026-05-15)
+
+Several findings from this audit have been addressed by the dockhand-drift
+reconciliation pass tracked in [`implementation_plan.md`](./implementation_plan.md):
+
+| Issue | Status | Notes |
+|---|---|---|
+| #1 Invalid Compose Files | ✅ Process fix in place | `scripts/init-nas.sh` (Section 7) materializes missing `.env` files from `.env.example` before any `docker compose` run. Operators must still populate real values. |
+| #2 Missing .env Files (19/20) | ✅ Process fix in place | Same as above — `scripts/bootstrap-env.sh --apply` (invoked from `init-nas.sh`) creates the .env files; values remain operator-supplied. |
+| #3 ce-internal Network Missing | ✅ Self-healing | `dockhand/scripts/dockhand-start.sh` now calls `ensure_ce_internal()` at boot; `scripts/init-nas.sh` also creates it. |
+| #9 Stale Dockhand path references | ✅ Closed | All `stacks/dockhand/*`, `dockhand/dockhand-start.sh`, and `dockhand/health-check-fix.sh` references corrected; Watchtower label aligned to `enable=false`. |
+| #10 Solution-Architect link in README | ✅ Closed | Added "Architecture & Design" section to `README.md`. |
+
+Remaining audit items (security_opt additions, PUID/PGID env additions, the
+HAProxy doc section, subnet-registry table, etc.) are unrelated to the
+Dockhand reconciliation and are tracked separately in this report.
+
+---
+
 ## Executive Summary
 
 The ce-stacks repository is **well-structured** with solid patterns, but has **11 actionable issues** ranging from **critical** (broken compose files) to **low-priority** (documentation). The repository is **ready for Dockhand deployment** with minor remediation.

@@ -10,7 +10,7 @@
 ```
 ce-stacks/dockhand/           ← Git-tracked reference (ce-stacks root)
 ├── README.md                 ← Overview of Dockhand
-├── DEPLOYMENT.md             ← Deployment instructions (root)
+├── STRUCTURE.md              ← This file: directory layout & path map
 ├── APPLY_HEALTH_CHECK_FIX.sh ← Automated health check fix script
 ├── CHECKLIST.sh              ← Interactive migration checklist
 ├── compose.yaml              ← Docker Compose definition
@@ -39,7 +39,7 @@ After copying from the repo, the NAS will have the same structure:
 ```
 /volume2/docker/dockhand/     ← Runtime deployment on NAS
 ├── README.md
-├── DEPLOYMENT.md
+├── STRUCTURE.md
 ├── APPLY_HEALTH_CHECK_FIX.sh
 ├── CHECKLIST.sh
 ├── compose.yaml

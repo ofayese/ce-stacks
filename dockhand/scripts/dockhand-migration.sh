@@ -1,11 +1,27 @@
 #!/bin/sh
 # =============================================================================
-# Dockhand Migration Script - Export Portainer Stacks & Validate Dockhand Import
+# [HISTORICAL] Dockhand Migration Script - Portainer → Dockhand helper
 # =============================================================================
+# Retained for reference only. Portainer is no longer part of this topology
+# and this script is NOT part of the current deploy flow. The canonical
+# deployment path is:
+#
+#   1. git clone … /volume2/docker/ce-stacks
+#   2. bash /volume2/docker/ce-stacks/scripts/init-nas.sh
+#      (or, for Dockhand-only updates) bash scripts/dockhand-sync.sh
+#   3. sudo cp /volume2/docker/dockhand/scripts/dockhand-start.sh \
+#        /usr/local/etc/rc.d/dockhand.sh && sudo chmod +x …
+#   4. sudo /usr/local/etc/rc.d/dockhand.sh
+#
+# Do not run this script on a fresh install. It assumes a live Portainer
+# deployment exists at $PORTAINER_DATA. See dockhand/docs/MIGRATION.md and
+# DOCKHAND_MIGRATION.md (repo root) for the current workflow.
+#
+# Original purpose (preserved verbatim below):
 # This script prepares your ce-stacks for migration from Portainer to Dockhand.
 #
-# Usage: bash /volume2/docker/dockhand/dockhand-migration.sh [--export-only] [--test-import]
-# Or from ce-stacks repo: bash stacks/dockhand/dockhand-migration.sh
+# Usage: bash /volume2/docker/dockhand/scripts/dockhand-migration.sh [--export-only] [--test-import]
+# Or from ce-stacks repo: bash dockhand/scripts/dockhand-migration.sh
 #   1. Backup Portainer data (optional safeguard)
 #   2. Verify all compose.yaml files are valid (docker compose config)
 #   3. List stacks ready for import into Dockhand

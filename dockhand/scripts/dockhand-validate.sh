@@ -7,7 +7,7 @@
 #
 # Usage: bash /volume2/docker/dockhand/dockhand-validate.sh
 #
-# Or from ce-stacks repo: bash stacks/dockhand/dockhand-validate.sh
+# Or from ce-stacks repo: bash dockhand/scripts/dockhand-validate.sh
 #   1. Watchtower label compliance (com.centurylinklabs.watchtower.enable)
 #   2. Security options (no-new-privileges, cap-drop, cap-add)
 #   3. Health check definitions

@@ -110,6 +110,25 @@ socket_accessible() {
     return 0
 }
 
+# Idempotently ensure the ce-internal backbone network exists. Several stacks
+# (and this container) attach to it, so create it on first run if init-nas.sh
+# has not been executed yet.
+ensure_ce_internal() {
+    if $DOCKER network inspect ce-internal >/dev/null 2>&1; then
+        return 0
+    fi
+    echo "dockhand-start: creating ce-internal network (172.26.0.0/24)"
+    $DOCKER network create \
+        --driver bridge \
+        --subnet 172.26.0.0/24 \
+        --gateway 172.26.0.1 \
+        ce-internal >/dev/null || {
+        echo "dockhand-start: ERROR: failed to create ce-internal network" >&2
+        return 1
+    }
+    return 0
+}
+
 create_container() {
     mkdir -p "${DOCKHAND_DATA}"
     
@@ -133,7 +152,7 @@ create_container() {
         --log-driver json-file \
         --log-opt max-size=10m \
         --log-opt max-file=3 \
-        --label com.centurylinklabs.watchtower.enable=true \
+        --label com.centurylinklabs.watchtower.enable=false \
         --health-cmd='grep -q ":0BB8" /proc/net/tcp /proc/net/tcp6 2>/dev/null' \
         --health-interval=30s \
         --health-timeout=5s \
@@ -164,6 +183,11 @@ trap 'rmdir "${LOCK_FILE}" 2>/dev/null' EXIT
 
 socket_accessible || {
     echo "dockhand-start: WARNING: Docker socket may be inaccessible; Dockhand will require manual environment setup" >&2
+}
+
+ensure_ce_internal || {
+    echo "dockhand-start: ERROR: ce-internal network unavailable; aborting" >&2
+    exit 1
 }
 
 if exists; then

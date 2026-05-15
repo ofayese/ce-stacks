@@ -4,6 +4,24 @@ Use this checklist to fix all identified issues before Dockhand deployment.
 
 ---
 
+## 2026-05-15 — Items now obsolete
+
+The following items in this checklist are **automated** by
+`scripts/init-nas.sh` (and `scripts/bootstrap-env.sh --apply`, which it
+invokes) and by the RC-script changes from
+[`implementation_plan.md`](./implementation_plan.md). You can skip the manual
+shell snippets below and just run `bash scripts/init-nas.sh` on the NAS:
+
+- ~~Fix #1: Create ce-internal Network~~ — now created by both `init-nas.sh` and `dockhand/scripts/dockhand-start.sh::ensure_ce_internal()`.
+- ~~Fix #2: Create All Missing .env Files~~ — `scripts/bootstrap-env.sh --apply` materializes every `.env` from its `.env.example` (operator still edits real values).
+- ~~Fix #3: Verify All Compose Files Now Validate~~ — `scripts/compose-validate.sh` is the canonical check; run after editing `.env` values.
+- ~~Fix #10: Link Solution Architect Document~~ — added to `README.md` "Architecture & Design".
+
+The High/Medium/Low items below (security_opt additions, PUID/PGID env
+additions, subnet registry, HAProxy doc, etc.) remain manual.
+
+---
+
 ## 🔴 CRITICAL FIXES (Do These First!)
 
 ### Fix #1: Create ce-internal Network

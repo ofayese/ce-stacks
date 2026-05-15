@@ -91,7 +91,7 @@ curl http://10.0.1.15:3866/health
 
 ```bash
 # Run automated diagnostic
-bash /volume2/docker/dockhand/health-check-fix.sh
+bash /volume2/docker/dockhand/scripts/health-check-fix.sh
 
 # Or check manually
 docker exec dockhand wget --quiet --tries=1 --spider http://127.0.0.1:3000/health && echo "✓ Health check works" || echo "✗ Health check failed"
@@ -105,7 +105,7 @@ docker exec dockhand ps aux | grep bun
 
 ### Documentation
 
-See `dockhand/HEALTH_CHECK_DEBUG.md` for comprehensive troubleshooting:
+See `dockhand/docs/HEALTH_CHECK_DEBUG.md` for comprehensive troubleshooting:
 
 - Step-by-step diagnosis
 - Common issues & solutions
@@ -118,13 +118,13 @@ See `dockhand/HEALTH_CHECK_DEBUG.md` for comprehensive troubleshooting:
 
 ### Updated
 
-- ✅ `dockhand/dockhand-start.sh` - Fixed health check parameters
+- ✅ `dockhand/scripts/dockhand-start.sh` - Fixed health check parameters
 
 ### Created
 
-- ✅ `dockhand/HEALTH_CHECK_FIX.md` - This issue & solution (4.7KB)
-- ✅ `dockhand/HEALTH_CHECK_DEBUG.md` - Troubleshooting guide (8.4KB)
-- ✅ `dockhand/health-check-fix.sh` - Diagnostic script (3.3KB)
+- ✅ `dockhand/docs/HEALTH_CHECK_FIX.md` - This issue & solution (4.7KB)
+- ✅ `dockhand/docs/HEALTH_CHECK_DEBUG.md` - Troubleshooting guide (8.4KB)
+- ✅ `dockhand/scripts/health-check-fix.sh` - Diagnostic script (3.3KB)
 
 ---
 
@@ -143,8 +143,8 @@ See `dockhand/HEALTH_CHECK_DEBUG.md` for comprehensive troubleshooting:
 
 ### If Still Unhealthy
 
-1. Run `bash dockhand/health-check-fix.sh`
-2. Review `dockhand/HEALTH_CHECK_DEBUG.md`
+1. Run `bash dockhand/scripts/health-check-fix.sh`
+2. Review `dockhand/docs/HEALTH_CHECK_DEBUG.md`
 3. Check logs: `docker logs dockhand | tail -100`
 
 ---

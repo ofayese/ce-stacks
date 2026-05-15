@@ -2,6 +2,16 @@
 
 This directory is designed to be copied to `/volume2/docker/dockhand/` on your Synology NAS.
 
+> ⚠️ **Idempotent re-sync.** The raw `cp -r ce-stacks/dockhand /volume2/docker/dockhand`
+> shown below is destructive on re-run: it will overwrite operator-managed
+> files such as `.env`, `data/`, `db/`, `stacks/`, and `secrets/`. For
+> *subsequent* updates (after the initial copy), prefer one of:
+>
+> - **Full bootstrap**: `bash /volume2/docker/ce-stacks/scripts/init-nas.sh`
+> - **Dockhand-only re-sync**: `bash /volume2/docker/ce-stacks/scripts/dockhand-sync.sh`
+>
+> Both protect the runtime state directories listed above.
+
 ## What is this?
 
 **dockhand/** is a **reference directory** at the root of your ce-stacks git repository. It contains:

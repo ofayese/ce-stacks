@@ -389,5 +389,5 @@ After applying fixes, if still unhealthy:
 
 **Dockhand Official**: https://dockhand.pro/manual  
 **Your Audit Report**: See AUDIT_REPORT.md for other issues  
-**RC Script**: `/volume2/docker/dockhand/dockhand-start.sh`
+**RC Script**: `/volume2/docker/dockhand/scripts/dockhand-start.sh`
 

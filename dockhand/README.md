@@ -19,7 +19,7 @@ This directory contains the Dockhand container orchestrator configuration for ce
 The RC script manages Dockhand lifecycle on DSM reboots:
 
 ```bash
-sudo cp /volume2/docker/ce-stacks/scripts/dockhand-start.sh /usr/local/etc/rc.d/dockhand.sh
+sudo cp /volume2/docker/ce-stacks/dockhand/scripts/dockhand-start.sh /usr/local/etc/rc.d/dockhand.sh
 sudo chmod +x /usr/local/etc/rc.d/dockhand.sh
 sudo /usr/local/etc/rc.d/dockhand.sh
 ```
@@ -31,7 +31,7 @@ Dockhand will be available at `http://10.0.1.15:3866` after health check passes 
 For manual testing or development:
 
 ```bash
-cd /volume2/docker/ce-stacks/stacks/dockhand
+cd /volume2/docker/ce-stacks/dockhand
 docker compose up -d
 ```
 
@@ -61,7 +61,7 @@ After deployment, access the web UI and configure:
 3. **Registries**: Add ghcr.io, codeberg.org, quay.io
 4. **Git Webhooks**: Register GitHub repo for auto-sync
 
-See `/volume2/docker/ce-stacks/MIGRATION.md` for detailed setup guide.
+See `/volume2/docker/ce-stacks/dockhand/docs/MIGRATION.md` for detailed setup guide.
 
 ## Git Webhook Integration
 
@@ -148,24 +148,33 @@ grep -A5 "labels:" /volume2/docker/ce-stacks/stacks/<stack>/compose.yaml
 
 ## Related Documentation
 
-- **Full Migration Guide**: `/volume2/docker/ce-stacks/MIGRATION.md`
-- **Validation Script**: `/volume2/docker/ce-stacks/scripts/dockhand-validate.sh`
-- **Migration Script**: `/volume2/docker/ce-stacks/scripts/dockhand-migration.sh`
-- **RC Startup Script**: `/volume2/docker/ce-stacks/scripts/dockhand-start.sh`
+- **Full Migration Guide**: `/volume2/docker/ce-stacks/dockhand/docs/MIGRATION.md`
+- **DSM Boot Persistence**: `/volume2/docker/ce-stacks/dockhand/docs/DSM_BOOT_PERSISTENCE.md`
+- **Validation Script**: `/volume2/docker/ce-stacks/dockhand/scripts/dockhand-validate.sh`
+- **Historical Portainer→Dockhand Migration Script**: `/volume2/docker/ce-stacks/dockhand/scripts/dockhand-migration.sh`
+- **RC Startup Script**: `/volume2/docker/ce-stacks/dockhand/scripts/dockhand-start.sh`
+- **Re-sync helper**: `/volume2/docker/ce-stacks/scripts/dockhand-sync.sh`
 - **Official Docs**: https://dockhand.pro/manual
 
-## Rollback to Portainer
+## Rollback / disable Dockhand without affecting running stacks
 
-If you need to revert to Portainer CE:
+Dockhand is just the UI — your stacks run as independent containers managed by
+the Docker engine. Stopping Dockhand never stops them.
 
 ```bash
-# Stop Dockhand
+# Stop and remove Dockhand
 sudo docker stop dockhand && sudo docker rm dockhand
 
-# Restore Portainer RC script and data
-sudo cp /volume2/docker/ce-stacks/scripts/portainer-start.sh /usr/local/etc/rc.d/portainer.sh
-sudo chmod +x /usr/local/etc/rc.d/portainer.sh
-sudo /usr/local/etc/rc.d/portainer.sh
+# (Optional) prevent it from coming back on next reboot/run
+sudo rm -f /usr/local/etc/rc.d/dockhand.sh
 
-# All containers continue running; Portainer re-initializes
+# All other containers continue running. Re-deploy Dockhand later with:
+sudo cp /volume2/docker/ce-stacks/dockhand/scripts/dockhand-start.sh /usr/local/etc/rc.d/dockhand.sh
+sudo chmod +x /usr/local/etc/rc.d/dockhand.sh
+sudo /usr/local/etc/rc.d/dockhand.sh
 ```
+
+> Note: Portainer is no longer part of this topology. The historical
+> `dockhand-migration.sh` script under `dockhand/scripts/` is retained only as a
+> reference for the original Portainer→Dockhand migration and is not part of
+> the current deploy flow.

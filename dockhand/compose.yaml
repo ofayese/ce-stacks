@@ -1,3 +1,8 @@
+# NOTE: This compose.yaml is for ad-hoc / development use only.
+# In production, Dockhand is managed by the RC script
+# `dockhand/scripts/dockhand-start.sh` (installed at /usr/local/etc/rc.d/dockhand.sh).
+# Keep this file in sync with the RC script's `docker run` arguments.
+
 services:
   dockhand:
     container_name: Dockhand
@@ -16,8 +21,8 @@ services:
       - 10.0.1.15:3866:3000
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ${STACK_ROOT}/dockhand/data:/app/data:rw
-      - /volume2/docker/ce-stacks/stacks:/app/stacks:rw
+      - ${DOCKHAND_DATA:-/volume2/docker/dockhand}:/app/data:rw
+      - ${STACK_ROOT:-/volume2/docker/ce-stacks/stacks}:/app/stacks:rw
     environment:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
