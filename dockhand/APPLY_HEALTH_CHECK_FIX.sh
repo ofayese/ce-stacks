@@ -4,6 +4,10 @@
 
 set -e
 
+# Synology non-interactive SSH does not include /usr/local/bin in PATH.
+# Resolve docker binary once; caller can override via DOCKER=/path/to/docker.
+DOCKER="${DOCKER:-$(command -v docker 2>/dev/null || echo /usr/local/bin/docker)}"
+
 echo "═══════════════════════════════════════════════════════════════════════════"
 echo "DOCKHAND HEALTH CHECK - DEFINITIVE FIX"
 echo "═══════════════════════════════════════════════════════════════════════════"
@@ -14,15 +18,15 @@ echo "STEP 1: Checking current health check configuration..."
 echo ""
 
 echo "Current health check command:"
-docker inspect dockhand | jq '.Config.Healthcheck.Test' 2>/dev/null || echo "Cannot read health check"
+"${DOCKER}" inspect dockhand | jq '.Config.Healthcheck.Test' 2>/dev/null || echo "Cannot read health check"
 
 echo ""
 echo "Last 3 health check results:"
-docker inspect dockhand | jq '.State.Health.Log[-3:] | .[] | {Start: .Start, ExitCode: .ExitCode, Output: .Output}' 2>/dev/null || echo "Cannot read health log"
+"${DOCKER}" inspect dockhand | jq '.State.Health.Log[-3:] | .[] | {Start: .Start, ExitCode: .ExitCode, Output: .Output}' 2>/dev/null || echo "Cannot read health log"
 
 echo ""
 echo "Does curl exist in container?"
-if docker exec dockhand which curl >/dev/null 2>&1; then
+if "${DOCKER}" exec dockhand which curl >/dev/null 2>&1; then
     echo "✓ Yes - curl is available"
 else
     echo "✗ No - curl NOT found (this is the problem!)"
@@ -30,7 +34,7 @@ fi
 
 echo ""
 echo "Does wget exist in container?"
-if docker exec dockhand which wget >/dev/null 2>&1; then
+if "${DOCKER}" exec dockhand which wget >/dev/null 2>&1; then
     echo "✓ Yes - wget is available (we'll use this)"
 else
     echo "✗ No - wget not found either"
@@ -43,8 +47,8 @@ echo "════════════════════════�
 echo ""
 
 echo "Stopping and removing old container..."
-docker stop dockhand || true
-docker rm dockhand || true
+"${DOCKER}" stop dockhand || true
+"${DOCKER}" rm dockhand || true
 
 echo "Updating RC script with fixed health check..."
 sudo cp /volume2/docker/dockhand/scripts/dockhand-start.sh /usr/local/etc/rc.d/dockhand.sh
@@ -70,7 +74,7 @@ echo "STEP 4: Verifying health status..."
 echo "═══════════════════════════════════════════════════════════════════════════"
 echo ""
 
-HEALTH=$(docker inspect dockhand | jq -r '.State.Health.Status' 2>/dev/null || echo "unknown")
+HEALTH=$("${DOCKER}" inspect dockhand | jq -r '.State.Health.Status' 2>/dev/null || echo "unknown")
 
 echo "Current health status: $HEALTH"
 echo ""
@@ -79,10 +83,10 @@ if [ "$HEALTH" = "healthy" ]; then
     echo "✓ SUCCESS! Dockhand is now HEALTHY"
     echo ""
     echo "Container status:"
-    docker ps | grep dockhand
+    "${DOCKER}" ps | grep dockhand
     echo ""
     echo "Full health info:"
-    docker inspect dockhand | jq '.State.Health'
+    "${DOCKER}" inspect dockhand | jq '.State.Health'
     echo ""
     echo "You can now access Dockhand at: http://10.0.1.15:3866"
 else
@@ -91,10 +95,10 @@ else
     echo "Running diagnostics..."
     echo ""
     echo "Health check log:"
-    docker inspect dockhand | jq '.State.Health.Log[-3:]'
+    "${DOCKER}" inspect dockhand | jq '.State.Health.Log[-3:]'
     echo ""
     echo "Container logs (last 30 lines):"
-    docker logs dockhand | tail -30
+    "${DOCKER}" logs dockhand | tail -30
     echo ""
     echo "Troubleshooting:"
     echo "1. Check logs above for errors"

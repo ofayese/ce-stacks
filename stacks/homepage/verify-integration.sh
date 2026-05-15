@@ -25,6 +25,10 @@
 
 set -o pipefail
 
+# Synology non-interactive SSH does not include /usr/local/bin in PATH.
+# Resolve docker binary once; caller can override via DOCKER=/path/to/docker.
+DOCKER="${DOCKER:-$(command -v docker 2>/dev/null || echo /usr/local/bin/docker)}"
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONTAINER_NAME="Homepage"
 SOCKET_PATH="/var/run/docker.sock"
@@ -75,9 +79,9 @@ section() {
 
 section "CHECK 1: Homepage Container Status"
 
-if docker ps --filter "name=${CONTAINER_NAME}" --format "{{.Names}}" | grep -q "^${CONTAINER_NAME}$"; then
+if "${DOCKER}" ps --filter "name=${CONTAINER_NAME}" --format "{{.Names}}" | grep -q "^${CONTAINER_NAME}$"; then
 	success "Homepage container is running"
-	CONTAINER_ID=$(docker ps --filter "name=${CONTAINER_NAME}" --format "{{.ID}}")
+	CONTAINER_ID=$("${DOCKER}" ps --filter "name=${CONTAINER_NAME}" --format "{{.ID}}")
 	info "Container ID: ${CONTAINER_ID}"
 else
 	error "Homepage container is not running"
@@ -91,7 +95,7 @@ fi
 
 section "CHECK 2: Docker Socket Mount"
 
-if docker inspect "${CONTAINER_NAME}" | grep -q "${SOCKET_PATH}"; then
+if "${DOCKER}" inspect "${CONTAINER_NAME}" | grep -q "${SOCKET_PATH}"; then
 	success "Docker socket is mounted into Homepage container"
 	info "Mount point: ${SOCKET_PATH} (read-only)"
 else
@@ -106,9 +110,9 @@ fi
 
 section "CHECK 3: Socket Readability"
 
-if docker exec "${CONTAINER_NAME}" test -r "${SOCKET_PATH}" 2>/dev/null; then
+if "${DOCKER}" exec "${CONTAINER_NAME}" test -r "${SOCKET_PATH}" 2>/dev/null; then
 	success "Docker socket is readable from inside Homepage"
-	SOCKET_LS=$(docker exec "${CONTAINER_NAME}" ls -lah "${SOCKET_PATH}" 2>/dev/null)
+	SOCKET_LS=$("${DOCKER}" exec "${CONTAINER_NAME}" ls -lah "${SOCKET_PATH}" 2>/dev/null)
 	info "Socket details: $(echo "$SOCKET_LS" | awk '{print $1, $3, $4, $9}')"
 else
 	error "Docker socket is NOT readable from inside Homepage"
@@ -147,10 +151,10 @@ else
 	while IFS= read -r CONTAINER; do
 		[ -z "$CONTAINER" ] && continue
 
-		if docker ps -a --format "{{.Names}}" | grep -q "^${CONTAINER}$"; then
+		if "${DOCKER}" ps -a --format "{{.Names}}" | grep -q "^${CONTAINER}$"; then
 			((FOUND_COUNT++))
 			# Check if running or stopped
-			if docker ps --format "{{.Names}}" | grep -q "^${CONTAINER}$"; then
+			if "${DOCKER}" ps --format "{{.Names}}" | grep -q "^${CONTAINER}$"; then
 				info "  ✓ ${CONTAINER} (running)"
 			else
 				warning "  ⚠ ${CONTAINER} (stopped) - Status won't show in Homepage"

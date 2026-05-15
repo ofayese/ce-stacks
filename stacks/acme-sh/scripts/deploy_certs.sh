@@ -42,6 +42,10 @@ notify_discord() {
 	curl -fsS -X POST "${DISCORD_WEBHOOK_URL}" -H 'Content-Type: application/json' -d "${payload}" || true
 }
 
+# Synology non-interactive SSH does not include /usr/local/bin in PATH.
+# Resolve docker binary once; caller can override via DOCKER=/path/to/docker.
+DOCKER="${DOCKER:-$(command -v docker 2>/dev/null || echo /usr/local/bin/docker)}"
+
 STACK_ROOT="${STACK_ROOT:?Set STACK_ROOT to your stacks directory (e.g. /volume2/docker/ce-stacks/stacks)}"
 ACME_CERT_ROOT="${ACME_CERT_ROOT:-/volume2/certs/acme}"
 SKIP_TRAEFIK="${SKIP_TRAEFIK:-0}"
@@ -160,9 +164,9 @@ if [[ "${DO_TRAEFIK}" -eq 1 && "${SKIP_TRAEFIK}" != "1" ]]; then
 		(
 			cd "${proj}" || exit 1
 			if [[ -f .env ]]; then
-				docker compose --env-file .env restart
+				"${DOCKER}" compose --env-file .env restart
 			else
-				docker compose restart
+				"${DOCKER}" compose restart
 			fi
 		)
 		echo "restarted: ${tstack}"

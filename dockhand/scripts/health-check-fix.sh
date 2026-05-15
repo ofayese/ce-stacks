@@ -4,6 +4,10 @@
 
 set -e
 
+# Synology non-interactive SSH does not include /usr/local/bin in PATH.
+# Resolve docker binary once; caller can override via DOCKER=/path/to/docker.
+DOCKER="${DOCKER:-$(command -v docker 2>/dev/null || echo /usr/local/bin/docker)}"
+
 echo "=== DOCKHAND HEALTH CHECK QUICK FIX ==="
 echo ""
 
@@ -13,12 +17,12 @@ echo ""
 
 # Get container status
 echo "Container Status:"
-docker ps | grep dockhand || echo "❌ Container not found"
+"${DOCKER}" ps | grep dockhand || echo "❌ Container not found"
 echo ""
 
 # Get health status
 echo "Health Status:"
-docker inspect dockhand 2>/dev/null | jq '.State.Health.Status' 2>/dev/null || echo "❌ Cannot get health status"
+"${DOCKER}" inspect dockhand 2>/dev/null | jq '.State.Health.Status' 2>/dev/null || echo "❌ Cannot get health status"
 echo ""
 
 # Test health endpoint from host
@@ -32,19 +36,19 @@ echo ""
 
 # Test inside container
 echo "Testing health endpoint (from container at 127.0.0.1:3000):"
-if docker exec dockhand curl -s http://127.0.0.1:3000/health >/dev/null 2>&1; then
+if "${DOCKER}" exec dockhand curl -s http://127.0.0.1:3000/health >/dev/null 2>&1; then
     echo "✓ Health endpoint responds from inside container"
 else
     echo "❌ Health endpoint failed from inside container"
     echo ""
     echo "Checking if curl exists in container..."
-    if docker exec dockhand which curl >/dev/null 2>&1; then
+    if "${DOCKER}" exec dockhand which curl >/dev/null 2>&1; then
         echo "✓ curl is installed"
     else
         echo "❌ curl NOT FOUND - this is likely the problem!"
         echo ""
         echo "Checking for wget instead..."
-        if docker exec dockhand which wget >/dev/null 2>&1; then
+        if "${DOCKER}" exec dockhand which wget >/dev/null 2>&1; then
             echo "✓ wget is available - we can use this!"
         else
             echo "⚠️  neither curl nor wget found"
@@ -55,7 +59,7 @@ echo ""
 
 # Step 2: Show logs
 echo "Recent logs (last 30 lines):"
-docker logs dockhand 2>/dev/null | tail -30 || echo "Cannot read logs"
+"${DOCKER}" logs dockhand 2>/dev/null | tail -30 || echo "Cannot read logs"
 echo ""
 
 # Step 3: Provide fix options

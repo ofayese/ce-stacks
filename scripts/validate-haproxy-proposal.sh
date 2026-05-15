@@ -7,6 +7,10 @@ ROOT="${_script_dir}"
 while [[ ! -f "${ROOT}/README.md" && "${ROOT}" != "/" ]]; do
 	ROOT="$(dirname "${ROOT}")"
 done
+# Synology non-interactive SSH does not include /usr/local/bin in PATH.
+# Resolve docker binary once; caller can override via DOCKER=/path/to/docker.
+DOCKER="${DOCKER:-$(command -v docker 2>/dev/null || echo /usr/local/bin/docker)}"
+
 cfg="${ROOT}/stacks/_haproxy/haproxy.cfg"
 map_src="${ROOT}/stacks/_haproxy/maps/host.map"
 if [[ ! -f "${cfg}" ]]; then
@@ -24,14 +28,14 @@ run_haproxy_check() {
 		haproxy -c -f "${haproxy_cfg}"
 		return
 	fi
-	if command -v docker >/dev/null 2>&1; then
+	if [[ -x "${DOCKER}" ]]; then
 		local cfg_dir
 		cfg_dir="$(dirname "${haproxy_cfg}")"
-		docker run --rm -v "${cfg_dir}:${cfg_dir}:ro" haproxytech/haproxy-alpine:3.0 \
+		"${DOCKER}" run --rm -v "${cfg_dir}:${cfg_dir}:ro" haproxytech/haproxy-alpine:3.0 \
 			haproxy -c -f "${haproxy_cfg}"
 		return
 	fi
-	echo "validate-haproxy-proposal: SKIP (need haproxy or docker in PATH)" >&2
+	echo "validate-haproxy-proposal: SKIP (need haproxy or docker; tried ${DOCKER})" >&2
 	return 0
 }
 
