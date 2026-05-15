@@ -33,6 +33,8 @@ services:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
       - TZ=America/New_York
+      - OLLAMA_API_BASE_URL=${OLLAMA_API_BASE_URL}
+      - BRIDGE_SHARED_SECRET=${BRIDGE_SHARED_SECRET}
     labels:
       - com.centurylinklabs.watchtower.enable=true
     # GAP-02 fix: add ce-internal so mcp-gateway can resolve ollama:11434 by DNS.

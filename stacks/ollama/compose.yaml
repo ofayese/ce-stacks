@@ -28,13 +28,13 @@ services:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
       - OLLAMA_HOST=0.0.0.0
-      # CPU: keep at 1 — parallelism halves per-request throughput on R1600
+      # CPU: keep at 1 - parallelism halves per-request throughput on R1600
       - OLLAMA_NUM_PARALLEL=${OLLAMA_NUM_PARALLEL:-1}
       # CPU: only one model in memory at a time
       - OLLAMA_MAX_LOADED_MODELS=${OLLAMA_MAX_LOADED_MODELS:-1}
       # Keep model loaded 30 min after last request (CPU reload takes 15-60s)
       - OLLAMA_KEEP_ALIVE=${OLLAMA_KEEP_ALIVE:-30m}
-      # Flash attention reduces KV cache memory for long contexts — always enable on CPU
+      # Flash attention reduces KV cache memory for long contexts - always enable on CPU
       - OLLAMA_FLASH_ATTENTION=1
       - TZ=America/New_York
     labels:
@@ -57,17 +57,17 @@ services:
       - ce-internal
   ollama-model-init:
     # One-shot service: pulls all required models after Ollama comes online.
-    # Uses same image as otsai-server — no additional pull needed.
-    # Docker / DSM UI may show this container as Exited — that is SUCCESS (exit 0), not a fault.
+    # Uses same image as otsai-server - no additional pull needed.
+    # Docker / DSM UI may show this container as Exited - that is SUCCESS (exit 0), not a fault.
     # Do not set restart: unless-stopped here; a long-running init would fight the main ollama service.
-    # restart: "no" — intentional: runs once when explicitly invoked.
+    # restart: "no" - intentional: runs once when explicitly invoked.
     # Re-runs on: docker compose --profile init up --force-recreate ollama-model-init
-    # Models persist in STACK_ROOT/ollama/data/ollama — skips already-pulled models.
+    # Models persist in STACK_ROOT/ollama/data/ollama - skips already-pulled models.
     image: ollama/ollama@sha256:d00473cb58f0082c07cd6ed0d326a8a86f443ab69c51f8fc2b1a41687d45c661
     container_name: ollama-model-init
     profiles:
       - init
-    restart: no # intentional: one-shot init — not a long-running service
+    restart: no # intentional: one-shot init - not a long-running service
     mem_limit: 256m
     cpu_shares: 128
     security_opt:
@@ -84,13 +84,13 @@ services:
       - ${STACK_ROOT}/ollama/data/ollama:/root/.ollama:rw
     environment:
       - OLLAMA_HOST=http://ollama:11434
-      # Tier 1 — Baseline models (always pull, small/fast)
+      # Tier 1 - Baseline models (always pull, small/fast)
       # nomic-embed-text: REQUIRED for AnythingLLM RAG embeddings
       - TIER1_MODELS=${OLLAMA_TIER1_MODELS:-phi4:mini nomic-embed-text
         llama3.2:3b}
-      # Tier 2 — Primary models (pull on first boot, ~15-25 min total)
+      # Tier 2 - Primary models (pull on first boot, ~15-25 min total)
       - TIER2_MODELS=${OLLAMA_TIER2_MODELS:-qwen2.5-coder:7b llama3.1:8b}
-      # Tier 3 — Secondary models (optional; set to "" to skip)
+      # Tier 3 - Secondary models (optional; set to "" to skip)
       - TIER3_MODELS=${OLLAMA_TIER3_MODELS:-deepseek-r1:7b mistral:7b qwen2.5:7b}
       - TZ=America/New_York
     entrypoint:
@@ -126,7 +126,7 @@ services:
             echo "[model-init] PULL  $${MODEL} ..."
             /usr/bin/ollama pull "$${MODEL}" && \
               echo "[model-init] OK    $${MODEL}" || \
-              echo "[model-init] FAIL  $${MODEL} (network or registry error — will retry on next restart)"
+              echo "[model-init] FAIL  $${MODEL} (network or registry error - will retry on next restart)"
           fi
         }
 
@@ -179,11 +179,12 @@ services:
     environment:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
-      # Use Docker DNS (same ollama-net) — avoids host round-trip
+      # Use Docker DNS (same ollama-net) - avoids host round-trip
       - OLLAMA_BASE_URL=http://ollama:11434
+      - BRIDGE_SHARED_SECRET=${BRIDGE_SHARED_SECRET}
       - WEBUI_AUTH=1
       - WEBUI_NAME=olutechsys AI
-      - WEBUI_URL=${WEBUI_URL:-https://ai.otsorundscore.olutechsys.com}
+      - WEBUI_URL=${WEBUI_URL:-https://oai.otsorundscore.olutechsys.com}
       # Comma-separated model names shown in dropdown (does NOT auto-pull).
       # ollama-model-init handles auto-pull when the stack starts.
       - DEFAULT_MODELS=${DEFAULT_MODELS:-phi4:mini,qwen2.5-coder:7b,nomic-embed-text}

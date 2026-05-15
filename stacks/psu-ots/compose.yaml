@@ -19,6 +19,7 @@ services:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
       - TZ=${TZ:-America/New_York}
+      - BRIDGE_SHARED_SECRET=${BRIDGE_SHARED_SECRET}
       # Paths inside container for NAS scripts + compose bind roots
       - NAS_REPO_ROOT=${NAS_REPO_ROOT:-/nas-repo}
       - PSU_STACK_ROOT=${PSU_STACK_ROOT:-/nas-repo/stacks}

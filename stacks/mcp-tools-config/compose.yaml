@@ -14,6 +14,7 @@ services:
     environment:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
+      - BRIDGE_SHARED_SECRET=${BRIDGE_SHARED_SECRET}
     restart: "no" # intentional: one-shot placeholder service
     networks:
       - mcp-tools-net
