@@ -50,6 +50,9 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     extra_hosts:
       - otsorundscore.olutechsys.com:10.0.1.15
     networks:
@@ -80,6 +83,9 @@ services:
     depends_on:
       ollama:
         condition: service_healthy
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     volumes:
       - ${STACK_ROOT}/ollama/data/ollama:/root/.ollama:rw
     environment:
