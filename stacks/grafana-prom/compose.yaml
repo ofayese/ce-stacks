@@ -10,10 +10,9 @@ services:
       - grafana-net
     mem_limit: 512m
     cpu_shares: 512
-    # cpus: removed - Synology DS723+ kernel lacks CFS scheduler cgroup (NanoCPUs unsupported)
     security_opt:
       - no-new-privileges:true
-    user: ${SYNO_UID:-0}:${SYNO_GID:-0}
+    user: "${PUID:-0}:${PGID:-0}"
     logging:
       driver: json-file
       options:
@@ -27,7 +26,7 @@ services:
           "--no-verbose",
           "--tries=1",
           "--spider",
-          "http://localhost:3000/api/health",
+          "http://localhost:3000/api/health"
         ]
       interval: 30s
       timeout: 5s
@@ -41,7 +40,7 @@ services:
     environment:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
-      - TZ=${TIMEZONE}
+      - TZ=America/New_York
     restart: unless-stopped
 
   prometheus:
@@ -57,10 +56,9 @@ services:
       - ce-internal
     mem_limit: 1g
     cpu_shares: 768
-    # cpus: removed - Synology DS723+ kernel lacks CFS scheduler cgroup (NanoCPUs unsupported)
     security_opt:
       - no-new-privileges:true
-    user: ${SYNO_UID:-0}:${SYNO_GID:-0}
+    user: "${PUID:-0}:${PGID:-0}"
     logging:
       driver: json-file
       options:
@@ -77,7 +75,7 @@ services:
           "--no-verbose",
           "--tries=1",
           "--spider",
-          "http://localhost:9090/",
+          "http://localhost:9090/"
         ]
       interval: 30s
       timeout: 5s
@@ -85,79 +83,16 @@ services:
     volumes:
       - ${STACK_ROOT}/grafana-prom/data/prometheus:/prometheus:rw
       - ${STACK_ROOT}/grafana-prom/prom.yml:/etc/prometheus/prometheus.yml:ro
-      # GAP-04: mount alert rules directory (prom.yml rule_files points here)
       - ${STACK_ROOT}/grafana-prom/alerts:/etc/prometheus/alerts:ro
-      # Same token file Watchtower uses (see ../watchtower/compose.yaml + secrets/README.md).
       - ${STACK_ROOT}/grafana-prom/secrets/watchtower_bearer_token.txt:/etc/prometheus/watchtower_bearer_token:ro
     restart: unless-stopped
     depends_on:
-      node-exporter:
-        condition: service_healthy
       snmp-exporter:
         condition: service_healthy
       cadvisor:
         condition: service_healthy
       alertmanager:
         condition: service_healthy
-
-  node-exporter:
-    image: prom/node-exporter:v1.11.1
-    command:
-      - --collector.disable-defaults
-      - --collector.stat
-      - --collector.time
-      - --collector.cpu
-      - --collector.loadavg
-      - --collector.hwmon
-      - --collector.meminfo
-      - --collector.diskstats
-      # Required by Dashboard 1860 (Node Exporter Full) - network and filesystem panels.
-      - --collector.netdev
-      - --collector.filesystem
-      # Additional collectors available on DSM Linux kernel (pressure/systemd skipped -
-      # PSI requires kernel 4.20+ and Synology does not run systemd).
-      - --collector.uname
-      - --collector.vmstat
-      - --collector.netstat
-      - --collector.filefd
-      - --collector.entropy
-      - --collector.sockstat
-      - --collector.arp
-      - --collector.processes
-    container_name: Prometheus-Node
-    hostname: prometheus-node
-    networks:
-      - prometheus-net
-    mem_limit: 256m
-    mem_reservation: 64m
-    cpu_shares: 512
-    # cpus: removed - Synology DS723+ kernel lacks CFS scheduler cgroup (NanoCPUs unsupported)
-    security_opt:
-      - no-new-privileges:true
-    read_only: true
-    user: ${SYNO_UID:-0}:${SYNO_GID:-0}
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
-    environment:
-      - PUID=${PUID:-0}
-      - PGID=${PGID:-0}
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "wget",
-          "--no-verbose",
-          "--tries=1",
-          "--spider",
-          "http://localhost:9100/",
-        ]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-    restart: unless-stopped
 
   snmp-exporter:
     image: prom/snmp-exporter:v0.30.1
@@ -171,11 +106,10 @@ services:
     mem_limit: 256m
     mem_reservation: 64m
     cpu_shares: 512
-    # cpus: removed - Synology DS723+ kernel lacks CFS scheduler cgroup (NanoCPUs unsupported)
     security_opt:
       - no-new-privileges:true
     read_only: true
-    user: ${SYNO_UID:-0}:${SYNO_GID:-0}
+    user: "${PUID:-0}:${PGID:-0}"
     logging:
       driver: json-file
       options:
@@ -184,8 +118,6 @@ services:
     environment:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
-      # SNMP credentials - values come from .env (see .env.example).
-      # snmp.yml uses ${SNMP_USERNAME} etc.; --config.expand-env resolves them at startup.
       - SNMP_USERNAME=${SNMP_USERNAME}
       - SNMP_AUTH_PASSWORD=${SNMP_AUTH_PASSWORD}
       - SNMP_PRIV_PASSWORD=${SNMP_PRIV_PASSWORD}
@@ -197,7 +129,7 @@ services:
           "--no-verbose",
           "--tries=1",
           "--spider",
-          "http://localhost:9116/",
+          "http://localhost:9116/"
         ]
       interval: 30s
       timeout: 5s
@@ -215,7 +147,6 @@ services:
     mem_limit: 256m
     mem_reservation: 64m
     cpu_shares: 512
-    # cpus: removed - Synology DS723+ kernel lacks CFS scheduler cgroup (NanoCPUs unsupported)
     security_opt:
       - no-new-privileges:true
     read_only: true
@@ -224,40 +155,17 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-    # cAdvisor requires host rootfs/sysfs for container metrics (read-only). Documented NAS exception.
     volumes:
-      - /:/rootfs:ro # EXEMPT cAdvisor host metrics
-      - /var/run:/var/run:ro # EXEMPT cAdvisor host metrics
-      - /sys:/sys:ro # EXEMPT cAdvisor host metrics
-
-      # /var/run socket context
-      # docker.sock :ro - cAdvisor reads Docker engine metrics only.
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    environment:
-      - PUID=${PUID:-0}
-      - PGID=${PGID:-0}
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/healthz"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-    restart: unless-stopped
-
-    networks:
-      - prometheus-net
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
 
   alertmanager:
-    # GAP-04 fix: Alertmanager routes Prometheus alerts to Discord (and other receivers).
-    # Config: stacks/grafana-prom/alertmanager.yml
-    # Alert rules: stacks/grafana-prom/alerts/nas_alerts.yml
-    # SETUP: Set webhook_url in alertmanager.yml before starting.
     image: prom/alertmanager:v0.28.1
     container_name: Alertmanager
     hostname: alertmanager
     mem_limit: 128m
     cpu_shares: 256
-    # cpus: removed - Synology DS723+ kernel lacks CFS scheduler cgroup (NanoCPUs unsupported)
     security_opt:
       - no-new-privileges:true
     logging:
@@ -276,12 +184,14 @@ services:
       - ${STACK_ROOT}/grafana-prom/data/alertmanager:/alertmanager:rw
     healthcheck:
       test:
-        - CMD
-        - wget
-        - "--no-verbose"
-        - "--tries=1"
-        - "--spider"
-        - "http://localhost:9093/-/healthy"
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:9093/-/healthy"
+        ]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -289,8 +199,7 @@ services:
     environment:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
-      - TZ=${TIMEZONE}
-    # Alertmanager on grafana-net so Prometheus (also on grafana-net) can reach it.
+      - TZ=America/New_York
     networks:
       - grafana-net
     restart: unless-stopped
@@ -303,17 +212,6 @@ networks:
     driver: bridge
     ipam:
       config:
-        # Subnet allocation on this NAS:
-        # 172.17.0.0/16 = Docker default bridge (reserved)
-        # 172.21.0.0/16 = watchtower_default (auto, Portainer deploy)
-        # 172.22.0.0/16 = dozzle_default (auto, Portainer deploy) -- blocks 172.22.x.x
-        # 172.23.0.0/16 = it-tools_default (auto, Portainer deploy)
-        # 172.24.0.0/16 = openresume_default (auto, Portainer deploy) -- blocks 172.24.x.x
-        # 172.26.0.0/24 = ce-internal (cross-stack backbone, external)
-        # 172.27.0.0/24 = ollama-net
-        # 172.28.0.0/24 = db-net
-        # 172.29.0.0/24 = grafana-net (this stack) -- moved from 172.22.0.0
-        # 172.29.1.0/24 = prometheus-net (this stack) -- moved from 172.22.1.0
         - subnet: 172.29.0.0/24
           gateway: 172.29.0.1
   prometheus-net:

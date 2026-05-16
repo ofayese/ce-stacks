@@ -2,15 +2,12 @@ global:
   scrape_interval: 15s
   evaluation_interval: 15s
 
-# GAP-04 fix: wire alert rules and Alertmanager.
-# Rule files are mounted into /etc/prometheus/alerts/ via the compose volume.
 rule_files:
   - /etc/prometheus/alerts/*.yml
 
 alerting:
   alertmanagers:
     - static_configs:
-        # Alertmanager is on grafana-net — resolves by container hostname.
         - targets: ["alertmanager:9093"]
 
 scrape_configs:
@@ -20,11 +17,15 @@ scrape_configs:
 
   - job_name: "node-exporter"
     static_configs:
-      - targets: ["prometheus-node:9100"]
+      # Scrapes your SynoCommunity package directly on the NAS host OS
+      - targets: ["10.0.1.15:9100"]
+
+  - job_name: "ntopng"
+    static_configs:
+      # Scrapes your native SynoCommunity ntopng package
+      - targets: ["10.0.1.15:3000"]
 
   - job_name: "snmp-exporter"
-    # Scrapes the exporter's own Go runtime metrics (/metrics) — not NAS SNMP data.
-    # NAS SNMP data is collected by the "nas" job below via /snmp.
     static_configs:
       - targets: ["prometheus-snmp:9116"]
 
@@ -44,7 +45,7 @@ scrape_configs:
     metrics_path: /snmp
     params:
       module: [synology]
-      auth: [public_v3] # ADDED: Explicitly links to the SNMPv3 credentials in snmp.yml
+      auth: [public_v3]
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
@@ -56,5 +57,4 @@ scrape_configs:
     metrics_path: /v1/metrics
     bearer_token_file: /etc/prometheus/watchtower_bearer_token
     static_configs:
-      # Host-published Watchtower HTTP API (watchtower/compose.yaml ports).
       - targets: ["10.0.1.15:18787"]

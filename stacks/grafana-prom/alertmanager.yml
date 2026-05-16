@@ -1,27 +1,12 @@
-# Alertmanager configuration — ce-stacks NAS monitoring
-# GAP-04 fix: deploy alongside Prometheus to get proactive alerting.
-#
-# SETUP:
-#   1. Set DISCORD_WEBHOOK_URL in stacks/grafana-prom/.env
-#      (Settings → Integrations → Webhooks in your Discord server)
-#   2. Replace REPLACE_WITH_DISCORD_WEBHOOK_URL below with your webhook URL
-#      (e.g. https://discord.com/api/webhooks/1234567890/AbCdEfGh...)
-#   3. docker compose up -d alertmanager
-#   4. Verify at http://10.0.1.15:9093
-
 global:
-  # How long to wait before declaring a resolved alert truly resolved
   resolve_timeout: 5m
 
-# Default routing tree — all alerts go to Discord unless overridden
 route:
   receiver: discord-nas
   group_by: ['alertname', 'instance', 'job']
-  group_wait: 30s        # wait 30s to batch alerts before first send
-  group_interval: 5m     # minimum time before re-sending for same group
-  repeat_interval: 4h    # re-alert every 4h if still firing
-
-  # Override for critical alerts: re-alert every 1h
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
   routes:
     - matchers:
         - severity="critical"
@@ -34,8 +19,7 @@ receivers:
       - webhook_url: 'REPLACE_WITH_DISCORD_WEBHOOK_URL'
         send_resolved: true
         title: >-
-          {{ if eq .Status "firing" }}🔴 FIRING{{ else }}✅ RESOLVED{{ end }}
-          [{{ .CommonLabels.alertname }}]
+          {{ if eq .Status "firing" }}🔥 FIRING{{ else }}✅ RESOLVED{{ end }} [{{ .CommonLabels.alertname }}]
         message: |
           {{ range .Alerts }}
           **Alert:** {{ .Labels.alertname }}
@@ -48,9 +32,7 @@ receivers:
           **Started:** {{ .StartsAt | since | humanizeDuration }} ago
           {{ end }}
 
-# Inhibition rules prevent alert storms
 inhibit_rules:
-  # If a job is down, suppress target-level alerts from that job
   - source_matchers:
       - alertname="PrometheusTargetDown"
     target_matchers:
