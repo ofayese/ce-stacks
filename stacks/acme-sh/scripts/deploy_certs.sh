@@ -16,11 +16,14 @@ Environment:
   LIVE_HAPROXY_CERT_DIR   Default /var/packages/haproxy/var/crt/ - if HAPROXY_CERT_STAGE_DIR equals this,
                             haproxy -c may run (see DO_HAPROXY_CHECK); otherwise -c is skipped (wrong paths in cfg)
   BUNDLE_SPECS            Optional "profile:out.pem" space-separated list. Default:
-                            otsorundscore:otsorundscore.olutechsys.com.pem misfitsds:misfitsds.olutechsys.com.pem
+                            wildcard:olutechsys.com.pem otsorundscore:otsorundscore.olutechsys.com.pem misfitsds:misfitsds.olutechsys.com.pem
   ACME_PROFILE            Optional - when set and BUNDLE_SPECS is empty, builds one bundle:
+                            wildcard      → olutechsys.com.pem
                             otsorundscore → otsorundscore.olutechsys.com.pem
                             misfitsds     → misfitsds.olutechsys.com.pem
   HAPROXY_BIN             Default /volume1/@appstore/haproxy/sbin/haproxy (Synology package); must exist for -c
+  HAPROXY_USER            Default sc-haproxy - owner applied to deployed PEM bundles
+  HAPROXY_GROUP           Default synocommunity - group applied to deployed PEM bundles
   HAPROXY_CFG             Config for haproxy -c; default ${STACK_ROOT}/_haproxy/haproxy.cfg
   DISCORD_WEBHOOK_URL     Optional - notify on hard failures (same var name as acme-sh compose)
 
@@ -52,19 +55,22 @@ while [[ "${1:-}" == -* ]]; do
 done
 
 HAPROXY_BIN="${HAPROXY_BIN:-/volume1/@appstore/haproxy/sbin/haproxy}"
+HAPROXY_USER="${HAPROXY_USER:-sc-haproxy}"
+HAPROXY_GROUP="${HAPROXY_GROUP:-synocommunity}"
 HAPROXY_CFG="${HAPROXY_CFG:-${STACK_ROOT}/_haproxy/haproxy.cfg}"
 # Default to the Synology HAProxy package cert directory; bundles are deployed directly here.
 LIVE_HAPROXY_CERT_DIR="${LIVE_HAPROXY_CERT_DIR:-/var/packages/haproxy/var/crt/}"
 HAPROXY_CERT_STAGE_DIR="${HAPROXY_CERT_STAGE_DIR:-/var/packages/haproxy/var/crt/}"
 CERT_DIR="${HAPROXY_CERT_STAGE_DIR}"
-DEFAULT_SPECS="otsorundscore:otsorundscore.olutechsys.com.pem misfitsds:misfitsds.olutechsys.com.pem"
+DEFAULT_SPECS="wildcard:olutechsys.com.pem otsorundscore:otsorundscore.olutechsys.com.pem misfitsds:misfitsds.olutechsys.com.pem"
 SPECS="${BUNDLE_SPECS:-${DEFAULT_SPECS}}"
 if [[ -n "${ACME_PROFILE:-}" && -z "${BUNDLE_SPECS:-}" ]]; then
 	case "${ACME_PROFILE}" in
+		wildcard)      SPECS="wildcard:olutechsys.com.pem" ;;
 		otsorundscore) SPECS="otsorundscore:otsorundscore.olutechsys.com.pem" ;;
-		misfitsds) SPECS="misfitsds:misfitsds.olutechsys.com.pem" ;;
+		misfitsds)     SPECS="misfitsds:misfitsds.olutechsys.com.pem" ;;
 		*)
-			echo "ERROR: ACME_PROFILE must be otsorundscore|misfitsds or set BUNDLE_SPECS explicitly (got: ${ACME_PROFILE})" >&2
+			echo "ERROR: ACME_PROFILE must be wildcard|otsorundscore|misfitsds or set BUNDLE_SPECS explicitly (got: ${ACME_PROFILE})" >&2
 			exit 2
 			;;
 	esac
@@ -95,6 +101,7 @@ stage_one() {
 		cp -a "${final}" "${final}.lkg"
 	fi
 	mv -f "${staged}" "${final}"
+	chown "${HAPROXY_USER}:${HAPROXY_GROUP}" "${final}" || true
 	chmod 0640 "${final}" || true
 	echo "ok: ${final}"
 }
