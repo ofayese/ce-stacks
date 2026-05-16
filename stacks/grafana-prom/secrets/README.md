@@ -39,3 +39,24 @@ Then restart Grafana to pick up the new datasource:
 cd /volume2/docker/ce-stacks/stacks/grafana-prom
 docker compose restart grafana
 ```
+
+## `discord_webhook_url.txt`
+
+Discord webhook URL for Alertmanager notifications. Used by
+`alertmanager.yml` via `webhook_url_file` — no env var required.
+
+Get the URL from: Discord server → Settings → Integrations → Webhooks → Copy Webhook URL
+
+Create on the NAS (never commit this file):
+
+```bash
+echo -n 'https://discord.com/api/webhooks/<id>/<token>' > /volume2/docker/ce-stacks/stacks/grafana-prom/secrets/discord_webhook_url.txt
+chmod 600 /volume2/docker/ce-stacks/stacks/grafana-prom/secrets/discord_webhook_url.txt
+```
+
+Then restart Alertmanager:
+
+```bash
+cd /volume2/docker/ce-stacks/stacks/grafana-prom
+docker compose restart alertmanager
+```
