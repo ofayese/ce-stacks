@@ -23,7 +23,7 @@
 #   3. Name: "DS723", Socket: "unix:///var/run/docker.sock", Public IP: "10.0.1.15"
 #   4. Settings > Authentication > Users > Add user (create admin)
 #   5. Settings > Registries > Add: GitHub (ghcr.io), Codeberg, Quay.io
-#   6. Import existing stacks from /ce-stacks/stacks/ via Settings > Stacks or git webhook
+#   6. Import existing stacks from /volume2/docker/ce-stacks/stacks/ via Settings > Stacks or git webhook
 #
 # Configuration:
 #   Image:       fnsys/dockhand:latest (or pin to specific tag for stability)
@@ -160,7 +160,7 @@ create_container() {
         --health-start-period=120s \
         -v /var/run/docker.sock:/var/run/docker.sock \
         -v "${DOCKHAND_DATA}:/app/data" \
-        -v /ce-stacks/stacks:/app/stacks:rw \
+        -v /volume2/docker/ce-stacks/stacks:/app/stacks:rw \
         -e PUID="$PUID" \
         -e PGID="$PGID" \
         -e SKIP_DF_COLLECTION=true \
