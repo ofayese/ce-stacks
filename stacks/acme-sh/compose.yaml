@@ -13,7 +13,7 @@ services:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
       - TZ=America/New_York
-    # network_mode: host has been REMOVED
+    network_mode: host
     volumes:
       - ${STACK_ROOT}/acme-sh/data:/acme.sh
       - ${ACME_CERT_ROOT:-/volume2/certs/acme}:/volume2/certs/acme
