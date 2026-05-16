@@ -22,7 +22,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ${DOCKHAND_DATA:-/volume2/docker/dockhand}:/app/data:rw
-      - ${STACK_ROOT:-/volume2/docker/ce-stacks/stacks}:/app/stacks:rw
+      - ${STACK_ROOT:-/ce-stacks/stacks}:/app/stacks:rw
     environment:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
