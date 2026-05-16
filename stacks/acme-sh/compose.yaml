@@ -18,6 +18,10 @@ services:
       - ${STACK_ROOT}/acme-sh/data:/acme.sh
       - ${ACME_CERT_ROOT:-/volume2/certs/acme}:/volume2/certs/acme
       - ${STACK_ROOT}/acme-sh/scripts/docker-entrypoint.sh:/acme-sh-entrypoint.sh:ro
+      # Bind-mount the raw secrets directory so any file inside is readable by
+      # scripts running in the container. Individual secrets are also injected
+      # at /run/secrets/<name> via the Docker secrets block below.
+      - ${STACK_ROOT}/acme-sh/secrets:/acme-sh/secrets:ro
     command: daemon
     logging:
       driver: json-file

@@ -32,5 +32,5 @@ inject_secret() {
     fi
 }
 
-inject_secret "code_server_password" "code@5010"
-inject_secret "sudo_password"        "code@5010"
+inject_secret "code_server_password" "PASSWORD"
+inject_secret "sudo_password"        "SUDO_PASSWORD"

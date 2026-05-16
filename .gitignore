@@ -39,6 +39,15 @@ id_dsa.*
 account.key
 cert.key
 
+# Secret text files in per-stack secrets/ directories (passwords, tokens, etc.)
+# These are consumed by Docker secrets at runtime; must never be committed.
+# NOTE: stacks/databases/secrets/*.txt and stacks/grafana-prom/secrets/*.txt
+# contain intentional CI dummy values and are already tracked — use
+# `git rm --cached` to stop tracking them if you replace with real credentials.
+stacks/acme-sh/secrets/*.txt
+stacks/code-server/secrets/*.txt
+stacks/grafana-prom/secrets/*.txt
+
 # ---------------------------------------------------------------------------
 # Runtime .env files — keep .env.example, never commit .env
 # ---------------------------------------------------------------------------
