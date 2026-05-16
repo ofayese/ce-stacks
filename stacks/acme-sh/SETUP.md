@@ -15,8 +15,8 @@ For 4096-bit RSA, substitute `--keylength 4096` in every `--issue` block below
 ├── misfitsds-sub/                 apex + wildcards on both zones + optional `*.ots` / `*.mft` SANs (see SETUP)
 ├── otsmbpro16/                    otsmbpro16.olutechsys.com
 ├── hpdevcore/                     hpdevcore.olutechsys.com
-├── otsorundscore/                 HAProxy PEMs: `otsorundscore.*` + `*.otsorundscore.*` (`.olutechsys.com` + `.olutech.systems`)
-├── misfitsds/                     HAProxy PEMs: `misfitsds.*` + `*.misfitsds.*` (both TLDs)
+├── otsorundscore/                 HAProxy PEMs: `otsorundscore.olutechsys.com`, `otsorundscore.olutech.systems`, `*.otsorundscore.olutechsys.com`, `*.otsorundscore.olutech.systems`
+├── misfitsds/                     HAProxy PEMs: `misfitsds.olutechsys.com`, `misfitsds.olutech.systems`, `*.misfitsds.olutechsys.com`, `*.misfitsds.olutech.systems`
 ├── haproxy/                       Combined PEM bundles from **`scripts/deploy_certs.sh`** (default **`HAPROXY_CERT_STAGE_DIR`**)
 ├── deploy-otsorundscore.bash         legacy Mac staging (see archive/SETUP_LEGACY_2026-05-10.md)
 ├── deploy-misfitsds.bash          legacy misfitsds deploy (see archive)
@@ -326,8 +326,6 @@ migration, PEMs stay at the same paths under `/volume2/certs/acme/`.
    sudo docker exec AcmeSh acme.sh --remove -d '*.misfitsds.olutechsys.com' --ecc
    sudo docker exec AcmeSh acme.sh --remove -d 'otsmbpro16.olutechsys.com' --ecc
    sudo docker exec AcmeSh acme.sh --remove -d 'hpdevcore.olutechsys.com' --ecc
-   sudo docker exec AcmeSh acme.sh --remove -d '*.otsorundscore.olutechsys.com' --ecc
-   sudo docker exec AcmeSh acme.sh --remove -d '*.misfitsds.olutechsys.com' --ecc
    ```
 
 3. **Issue:** run each block in [Issue all certs](#issue-all-certs) (`--keylength 2048`).
@@ -350,19 +348,27 @@ migration, PEMs stay at the same paths under `/volume2/certs/acme/`.
 Run each block once (DNS ~1–2 min per cert). Default key is `--keylength 2048`.
 
 Primary `-d` strings (for `--install-cert`, `--renew`, and non-`--ecc` remove):
-`*.olutechsys.com`, `otsorundscore.olutechsys.com` (otsorundscore-sub), `misfitsds.olutechsys.com` (misfitsds-sub),
-`otsmbpro16.olutechsys.com`, `hpdevcore.olutechsys.com`, `*.otsorundscore.olutechsys.com`,
-`*.misfitsds.olutechsys.com` — confirm with
+`olutechsys.com` (wildcard), `otsorundscore.olutechsys.com` (otsorundscore-sub and otsorundscore/ HAProxy),
+`misfitsds.olutechsys.com` (misfitsds-sub and misfitsds/ HAProxy),
+`otsmbpro16.olutechsys.com`, `hpdevcore.olutechsys.com` — confirm with
 `acme.sh --list` if anything differs.
 
 ### wildcard — \*.olutechsys.com + \*.olutech.systems
 
 ```bash
 sudo docker exec AcmeSh acme.sh --issue \
-  -d '*.olutechsys.com'  -d 'olutechsys.com' \
-  -d '*.olutech.systems' -d 'olutech.systems' \
+  -d 'olutechsys.com' \
+  -d '*.olutechsys.com' \
+  -d 'olutech.systems' \
+  -d '*.olutech.systems' \
   --keylength 2048 \
   --dns dns_cf --server letsencrypt
+```
+
+**Re-issue after an older order used `*.olutechsys.com` as primary:** remove the old RSA order first, then issue again:
+
+```bash
+sudo docker exec AcmeSh acme.sh --remove -d '*.olutechsys.com'
 ```
 
 ### otsorundscore-sub — apex + `*.otsorundscore.*` (+ optional namespace wildcards)
@@ -432,6 +438,8 @@ Dedicated `otsorundscore/` and `misfitsds/` PEM dirs are the source for HAProxy 
 
 ```bash
 sudo docker exec AcmeSh acme.sh --issue \
+  -d 'otsorundscore.olutechsys.com' \
+  -d 'otsorundscore.olutech.systems' \
   -d '*.otsorundscore.olutechsys.com' \
   -d '*.otsorundscore.olutech.systems' \
   --keylength 2048 \
@@ -440,6 +448,8 @@ sudo docker exec AcmeSh acme.sh --issue \
 
 ```bash
 sudo docker exec AcmeSh acme.sh --issue \
+  -d 'misfitsds.olutechsys.com' \
+  -d 'misfitsds.olutech.systems' \
   -d '*.misfitsds.olutechsys.com' \
   -d '*.misfitsds.olutech.systems' \
   --keylength 2048 \
@@ -469,7 +479,7 @@ sudo mkdir -p \
 
 ```bash
 sudo docker exec AcmeSh acme.sh --install-cert \
-  -d '*.olutechsys.com' \
+  -d 'olutechsys.com' \
   --cert-file      /volume2/certs/acme/wildcard/cert.pem \
   --key-file       /volume2/certs/acme/wildcard/privkey.pem \
   --ca-file        /volume2/certs/acme/wildcard/chain.pem \
@@ -521,7 +531,7 @@ sudo docker exec AcmeSh acme.sh --install-cert \
 
 ```bash
 sudo docker exec AcmeSh acme.sh --install-cert \
-  -d '*.otsorundscore.olutechsys.com' \
+  -d 'otsorundscore.olutechsys.com' \
   --cert-file      /volume2/certs/acme/otsorundscore/cert.pem \
   --key-file       /volume2/certs/acme/otsorundscore/privkey.pem \
   --ca-file        /volume2/certs/acme/otsorundscore/chain.pem \
@@ -531,7 +541,7 @@ sudo docker exec AcmeSh acme.sh --install-cert \
 
 ```bash
 sudo docker exec AcmeSh acme.sh --install-cert \
-  -d '*.misfitsds.olutechsys.com' \
+  -d 'misfitsds.olutechsys.com' \
   --cert-file      /volume2/certs/acme/misfitsds/cert.pem \
   --key-file       /volume2/certs/acme/misfitsds/privkey.pem \
   --ca-file        /volume2/certs/acme/misfitsds/chain.pem \
@@ -563,12 +573,12 @@ Force renewal (RSA only; do not pass `--ecc`). Use each cert’s primary `-d` fr
 `acme.sh --list` (see [Issue all certs](#issue-all-certs)):
 
 ```bash
-sudo docker exec AcmeSh acme.sh --renew -d '*.olutechsys.com' --force
+sudo docker exec AcmeSh acme.sh --renew -d 'olutechsys.com' --force
 sudo docker exec AcmeSh acme.sh --renew -d 'hpdevcore.olutechsys.com' --force
 ```
 
 Repeat for `otsorundscore.olutechsys.com`, `misfitsds.olutechsys.com`,
-`otsmbpro16.olutechsys.com`, `*.otsorundscore.olutechsys.com`, `*.misfitsds.olutechsys.com`, etc. (each cert’s primary `-d` from `acme.sh --list`).
+`otsmbpro16.olutechsys.com` etc. (each cert’s primary `-d` from `acme.sh --list`).
 
 ---
 
@@ -746,8 +756,8 @@ sudo synopkg restart ContainerManager
 | DSM cert slot — misfitsds services     | `misfitsds-sub/`                                                  | acme.sh                       | Legacy bash ([archive](archive/SETUP_LEGACY_2026-05-10.md)) |
 | MacBook (otsmbpro16)                   | `otsmbpro16/`                                                     | acme.sh                       | Legacy `deploy-otsmbpro16.bash` ([archive](archive/SETUP_LEGACY_2026-05-10.md)) |
 | Laptop (hpdevcore)                     | `hpdevcore/`                                                      | acme.sh                       | Legacy `deploy-hpdevcore.bash` ([archive](archive/SETUP_LEGACY_2026-05-10.md)) |
-| OTS HAProxy / edge services            | `otsorundscore/` (`*.otsorundscore.{olutechsys,olutech.systems}`) | acme.sh                       | **`scripts/deploy_certs.sh`** → `/var/packages/haproxy/var/crt/` |
-| MFT HAProxy / edge services            | `misfitsds/` (`*.misfitsds.{olutechsys,olutech.systems}`)         | acme.sh                       | **`scripts/deploy_certs.sh`** → `/var/packages/haproxy/var/crt/` |
+| OTS HAProxy / edge services            | `otsorundscore/` (`otsorundscore.olutechsys.com`, `otsorundscore.olutech.systems`, `*.otsorundscore.{olutechsys.com,olutech.systems}`) | acme.sh | **`scripts/deploy_certs.sh`** → `/var/packages/haproxy/var/crt/` |
+| MFT HAProxy / edge services            | `misfitsds/` (`misfitsds.olutechsys.com`, `misfitsds.olutech.systems`, `*.misfitsds.{olutechsys.com,olutech.systems}`)                 | acme.sh | **`scripts/deploy_certs.sh`** → `/var/packages/haproxy/var/crt/` |
 
 The previous local CA codebase (`setup-docker-tls.bash`, `deploy-nas-cert.bash`)
 has been retired and archived to `/volume2/certs/archives/scripts-2026-04-27/`.
