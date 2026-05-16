@@ -1,0 +1,26 @@
+# Grafana datasource provisioning — InfluxDB (ntopng time-series)
+# Auto-provisioned on Grafana startup; no manual UI steps required.
+#
+# InfluxDB is queried via the NAS host IP (proxy access) because InfluxDB
+# is a separate stack with no shared Docker network with grafana-prom.
+#
+# INFLUXDB_GRAFANA_PASSWORD is injected from the Grafana container environment.
+# Set it in stacks/grafana-prom/.env — keep in sync with stacks/influxdb/.env.
+apiVersion: 1
+
+datasources:
+  - name: InfluxDB-ntopng
+    type: influxdb
+    uid: influxdb-ntopng
+    url: http://10.0.1.15:8086
+    access: proxy
+    # Database name must match INFLUXDB_DATABASE in stacks/influxdb/.env
+    database: ntopng
+    isDefault: false
+    editable: false
+    user: grafana
+    secureJsonData:
+      password: $INFLUXDB_GRAFANA_PASSWORD
+    jsonData:
+      httpMode: GET
+      timeInterval: "30s"

@@ -41,6 +41,9 @@ services:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
       - TZ=America/New_York
+      # Required for InfluxDB datasource provisioning (influxdb.yml uses $INFLUXDB_GRAFANA_PASSWORD).
+      # Keep in sync with stacks/influxdb/.env INFLUXDB_GRAFANA_PASSWORD.
+      - INFLUXDB_GRAFANA_PASSWORD=${INFLUXDB_GRAFANA_PASSWORD}
     restart: unless-stopped
 
   prometheus:
