@@ -17,10 +17,12 @@ services:
         max-size: "10m"
         max-file: "3"
     ports:
-      # Internal data store — not publicly routed through HAProxy.
-      # ntopng (native NAS package) writes here from the host OS.
-      # Grafana reads via proxy datasource at http://10.0.1.15:8086.
+      # ntopng (native NAS package) writes here from the host OS — needs host-published port.
       - "10.0.1.15:8086:8086"
+    networks:
+      # ce-internal allows Grafana to reach InfluxDB by container name (influxdb:8086)
+      # without relying on host-IP routing from inside bridge networks (unreliable on Synology DSM).
+      - ce-internal
     volumes:
       - ${STACK_ROOT}/influxdb/data:/var/lib/influxdb:rw
     environment:
@@ -49,3 +51,7 @@ services:
     labels:
       # Stateful time-series DB — never auto-update; version pin is intentional
       - com.centurylinklabs.watchtower.enable=false
+
+networks:
+  ce-internal:
+    external: true

@@ -1,8 +1,9 @@
 # Grafana datasource provisioning — InfluxDB (ntopng time-series)
 # Auto-provisioned on Grafana startup; no manual UI steps required.
 #
-# InfluxDB is queried via the NAS host IP (proxy access) because InfluxDB
-# is a separate stack with no shared Docker network with grafana-prom.
+# Both Grafana and InfluxDB are attached to the ce-internal network, so
+# Grafana reaches InfluxDB by container hostname (influxdb:8086) rather than
+# the host LAN IP — host-IP routing from bridge networks is unreliable on Synology DSM.
 #
 # Password is read from a secret file mounted into the Grafana container:
 #   secrets/influxdb_grafana_password.txt → /run/secrets/influxdb_grafana_password
@@ -14,7 +15,7 @@ datasources:
   - name: InfluxDB-ntopng
     type: influxdb
     uid: influxdb-ntopng
-    url: http://10.0.1.15:8086
+    url: http://influxdb:8086
     access: proxy
     # Database name must match INFLUXDB_DATABASE in stacks/influxdb/.env
     database: ntopng

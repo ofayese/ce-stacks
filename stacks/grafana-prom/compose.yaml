@@ -8,6 +8,7 @@ services:
         condition: service_healthy
     networks:
       - grafana-net
+      - ce-internal
     mem_limit: 512m
     cpu_shares: 512
     security_opt:
