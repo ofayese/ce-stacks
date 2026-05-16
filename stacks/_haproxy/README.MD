@@ -13,8 +13,8 @@ HAProxy is installed as a **bare-metal service** on the Synology NAS (not contai
 **Key Sections**:
 
 1. **Global settings** - timeouts, logging, SSL defaults
-2. **Frontend sections** - listen on port 80/443, define ACLs
-3. **Backend sections** - upstream targets (container IPs/ports)
+2. **Frontend sections** - listen on port 8280 (HTTP redirect) / 8281 (HTTPS), 8282 (stats)
+3. **Backend sections** - upstream targets (container IPs/ports); routing via `maps/host.map`
 
 ### Typical Backend Entry
 
@@ -30,22 +30,22 @@ backend services
 
 ### SSL/TLS Configuration
 
-**Certificates** stored in `/volume1/certs/` (typically from acme-sh)
+**Certificates** deployed by `stacks/acme-sh/scripts/deploy_certs.sh` to `/var/packages/haproxy/var/crt/` (PEM bundles = fullchain + key, one file per cert profile).
 
 **Binding HTTPS**:
 
 ```
-frontend https_in
-    bind *:443 ssl crt /volume1/certs/acme/domain.com/fullchain.pem
+frontend https-in
+    bind 10.0.1.15:8281 ssl crt /var/packages/haproxy/var/crt/ alpn h2,http/1.1
     mode http
 ```
 
 **Force HTTP → HTTPS**:
 
 ```
-frontend http_in
-    bind *:80
-    redirect scheme https
+frontend http-redirect
+    bind 10.0.1.15:8280
+    redirect scheme https code 301
 ```
 
 ---
@@ -57,7 +57,7 @@ frontend http_in
 1. **Edit HAProxy config**:
 
    ```bash
-   sudo nano /usr/local/etc/haproxy/haproxy.cfg
+   sudo nano /var/packages/haproxy/var/haproxy.cfg
    ```
 
 2. **Add backend section**:
@@ -79,7 +79,7 @@ frontend http_in
 4. **Validate config**:
 
    ```bash
-   sudo haproxy -f /usr/local/etc/haproxy/haproxy.cfg -c
+   sudo /volume1/@appstore/haproxy/sbin/haproxy -c -f /var/packages/haproxy/var/haproxy.cfg
    ```
 
 5. **Restart**:
@@ -95,7 +95,7 @@ When `acme-sh` renews certificates:
 1. **Verify new cert exists**:
 
    ```bash
-   ls -la /volume1/certs/acme/domain.com/
+   ls -la /var/packages/haproxy/var/crt/
    ```
 
 2. **Restart HAProxy** (automatically reloads certs):
@@ -114,7 +114,7 @@ tail -f /var/log/haproxy.log
 ss -pltn | grep haproxy
 
 # Test config syntax
-sudo haproxy -f /usr/local/etc/haproxy/haproxy.cfg -c
+sudo /volume1/@appstore/haproxy/sbin/haproxy -c -f /var/packages/haproxy/var/haproxy.cfg
 ```
 
 ---
@@ -125,20 +125,20 @@ sudo haproxy -f /usr/local/etc/haproxy/haproxy.cfg -c
 
 ```bash
 # Check config syntax
-sudo haproxy -f /usr/local/etc/haproxy/haproxy.cfg -c
+sudo /volume1/@appstore/haproxy/sbin/haproxy -c -f /var/packages/haproxy/var/haproxy.cfg
 
 # View system logs
 tail -50 /var/log/haproxy.log
 dmesg | tail -20
 
 # Check port availability
-ss -pltn | grep 80
-ss -pltn | grep 443
+ss -pltn | grep 8280
+ss -pltn | grep 8281
 ```
 
 **Common causes**:
 
-- Port 80/443 already in use
+- Port 8280/8281 already in use (check with `ss -pltn`)
 - Certificate file missing or unreadable
 - Config syntax error
 
@@ -172,7 +172,7 @@ ss -pltn | grep 443
 
 ### Performance / Slow Requests
 
-**Check timeout settings** in `/usr/local/etc/haproxy/haproxy.cfg`:
+**Check timeout settings** in `/var/packages/haproxy/var/haproxy.cfg`:
 
 ```
 defaults
@@ -194,7 +194,7 @@ defaults
 
 ```bash
 # Backup to repo
-cp /usr/local/etc/haproxy/haproxy.cfg \
+cp /var/packages/haproxy/var/haproxy.cfg \
    stacks/_haproxy/haproxy.cfg.bak
 
 # Keep in version control (git)
@@ -205,7 +205,7 @@ git add stacks/_haproxy/haproxy.cfg.bak
 
 ```bash
 # Check certificate validity
-openssl x509 -in /volume1/certs/acme/domain.com/fullchain.pem -noout -dates
+openssl x509 -in /volume2/certs/acme/wildcard/fullchain.pem -noout -dates
 
 # acme-sh should auto-renew, but verify cron
 crontab -l | grep acme

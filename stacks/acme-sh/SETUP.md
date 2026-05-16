@@ -131,7 +131,7 @@ After new or renewed PEMs under **`${ACME_CERT_ROOT}`** (profiles such as **`ots
    - **HAProxy restart:** after successful **`haproxy -c`**, restart via **DSM → Package Center → HAProxy → Action → Restart**.  
    - Rationale: host-run vs in-container ADR (see `stacks/acme-sh/scripts/deploy_certs.sh` header).
 
-2. **TLS edge verify:** **`stacks/acme-sh/scripts/verify_serving.sh`** — requires **`CONNECT_HOST`**; set **`CONNECT_PORT`** (default **`443`** — HAProxy HTTPS), **`SNI`** (defaults to **`CONNECT_HOST`**), **`MIN_VALID_DAYS`** (default **21** for **`openssl x509 -checkend`**), optional **`EXPECTED_SUBJECT`**. On TLS / subject / expiry failure, posts to **`DISCORD_WEBHOOK_URL`** when set (same variable name as **`stacks/acme-sh/.env.example`**).
+2. **TLS edge verify:** **`stacks/acme-sh/scripts/verify_serving.sh`** — requires **`CONNECT_HOST`**; set **`CONNECT_PORT`** (default **`8281`** — HAProxy HTTPS), **`SNI`** (defaults to **`CONNECT_HOST`**), **`MIN_VALID_DAYS`** (default **21** for **`openssl x509 -checkend`**), optional **`EXPECTED_SUBJECT`**. On TLS / subject / expiry failure, posts to **`DISCORD_WEBHOOK_URL`** when set (same variable name as **`stacks/acme-sh/.env.example`**).
 
 3. **Legacy bash deployers:** `deploy-otsorundscore.bash` / `deploy-misfitsds.bash` under `${ACME_CERT_ROOT}` remain operator-specific; prefer the repo **`deploy_certs.sh`** path above for HAProxy bundles.
 
@@ -144,7 +144,7 @@ Importing DSM’s **control panel** or **reverse-proxy** certificate is **manual
 ```bash
 openssl x509 -in /volume2/certs/acme/otsorundscore/fullchain.pem -noout -subject -dates 2>/dev/null || true
 sudo docker exec AcmeSh /acme-sh-entrypoint.sh --list
-CONNECT_HOST=10.0.1.15 CONNECT_PORT=443 SNI=psu.otsorundscore.olutechsys.com MIN_VALID_DAYS=21 \
+CONNECT_HOST=10.0.1.15 CONNECT_PORT=8281 SNI=psu.otsorundscore.olutechsys.com MIN_VALID_DAYS=21 \
   bash "${STACK_ROOT}/acme-sh/scripts/verify_serving.sh"
 ```
 
