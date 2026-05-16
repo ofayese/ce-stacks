@@ -181,6 +181,7 @@ services:
       - "--config.file=/etc/alertmanager/alertmanager.yml"
       - "--storage.path=/alertmanager"
       - "--web.listen-address=0.0.0.0:9093"
+      - "--config.expand-env"
     ports:
       - "10.0.1.15:9093:9093"
     volumes:
@@ -204,6 +205,7 @@ services:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
       - TZ=America/New_York
+      - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL:-http://localhost}
     networks:
       - grafana-net
     restart: unless-stopped

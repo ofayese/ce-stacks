@@ -16,7 +16,7 @@ route:
 receivers:
   - name: discord-nas
     discord_configs:
-      - webhook_url: 'REPLACE_WITH_DISCORD_WEBHOOK_URL'
+      - webhook_url: '${DISCORD_WEBHOOK_URL:-http://localhost}'
         send_resolved: true
         title: >-
           {{ if eq .Status "firing" }}🔥 FIRING{{ else }}✅ RESOLVED{{ end }} [{{ .CommonLabels.alertname }}]
