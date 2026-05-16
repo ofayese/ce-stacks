@@ -117,7 +117,7 @@ sudo docker logs -f AcmeSh
 Run matching **`--install-cert`** blocks in [Configure output paths](#configure-output-paths-run-once-per-cert-after-issue). Use each order’s **primary** `-d` from:
 
 ```bash
-sudo docker exec AcmeSh acme.sh --list
+sudo docker exec AcmeSh /acme-sh-entrypoint.sh --list
 ```
 
 ### 7. Reload consumers (repo scripts + ADR)
@@ -143,7 +143,7 @@ Importing DSM’s **control panel** or **reverse-proxy** certificate is **manual
 
 ```bash
 openssl x509 -in /volume2/certs/acme/otsorundscore/fullchain.pem -noout -subject -dates 2>/dev/null || true
-sudo docker exec AcmeSh acme.sh --list
+sudo docker exec AcmeSh /acme-sh-entrypoint.sh --list
 CONNECT_HOST=10.0.1.15 CONNECT_PORT=443 SNI=psu.otsorundscore.olutechsys.com MIN_VALID_DAYS=21 \
   bash "${STACK_ROOT}/acme-sh/scripts/verify_serving.sh"
 ```
@@ -318,14 +318,14 @@ migration, PEMs stay at the same paths under `/volume2/certs/acme/`.
    `/volume2/certs/acme/`.
 2. **Remove ECDSA orders** before re-issue. Run the block; skip errors for
    names that were never ECC. Match `-d` to each ECC row’s primary domain in
-   `sudo docker exec AcmeSh acme.sh --list` if yours differ from these:
+   `sudo docker exec AcmeSh /acme-sh-entrypoint.sh --list` if yours differ from these:
 
    ```bash
-   sudo docker exec AcmeSh acme.sh --remove -d '*.olutechsys.com' --ecc
-   sudo docker exec AcmeSh acme.sh --remove -d '*.otsorundscore.olutechsys.com' --ecc
-   sudo docker exec AcmeSh acme.sh --remove -d '*.misfitsds.olutechsys.com' --ecc
-   sudo docker exec AcmeSh acme.sh --remove -d 'otsmbpro16.olutechsys.com' --ecc
-   sudo docker exec AcmeSh acme.sh --remove -d 'hpdevcore.olutechsys.com' --ecc
+   sudo docker exec AcmeSh /acme-sh-entrypoint.sh --remove -d '*.olutechsys.com' --ecc
+   sudo docker exec AcmeSh /acme-sh-entrypoint.sh --remove -d '*.otsorundscore.olutechsys.com' --ecc
+   sudo docker exec AcmeSh /acme-sh-entrypoint.sh --remove -d '*.misfitsds.olutechsys.com' --ecc
+   sudo docker exec AcmeSh /acme-sh-entrypoint.sh --remove -d 'otsmbpro16.olutechsys.com' --ecc
+   sudo docker exec AcmeSh /acme-sh-entrypoint.sh --remove -d 'hpdevcore.olutechsys.com' --ecc
    ```
 
 3. **Issue:** run each block in [Issue all certs](#issue-all-certs) (`--keylength 2048`).
@@ -356,7 +356,7 @@ Primary `-d` strings (for `--install-cert`, `--renew`, and non-`--ecc` remove):
 ### wildcard — \*.olutechsys.com + \*.olutech.systems
 
 ```bash
-sudo docker exec AcmeSh acme.sh --issue \
+sudo docker exec AcmeSh /acme-sh-entrypoint.sh --issue \
   -d 'olutechsys.com' \
   -d '*.olutechsys.com' \
   -d 'olutech.systems' \
@@ -368,7 +368,7 @@ sudo docker exec AcmeSh acme.sh --issue \
 **Re-issue after an older order used `*.olutechsys.com` as primary:** remove the old RSA order first, then issue again:
 
 ```bash
-sudo docker exec AcmeSh acme.sh --remove -d '*.olutechsys.com'
+sudo docker exec AcmeSh /acme-sh-entrypoint.sh --remove -d '*.olutechsys.com'
 ```
 
 ### otsorundscore-sub — apex + `*.otsorundscore.*` (+ optional namespace wildcards)
@@ -379,7 +379,7 @@ Optional `*.otsorundscore.olutechsys.com` and `*.misfitsds.olutechsys.com` dupli
 `otsorundscore/` and `misfitsds/` orders — omit those two lines if you prefer separate cert rotation only.
 
 ```bash
-sudo docker exec AcmeSh acme.sh --issue \
+sudo docker exec AcmeSh /acme-sh-entrypoint.sh --issue \
   -d 'otsorundscore.olutechsys.com' \
   -d 'otsorundscore.olutech.systems' \
   -d '*.otsorundscore.olutechsys.com' \
@@ -393,7 +393,7 @@ sudo docker exec AcmeSh acme.sh --issue \
 **Re-issue after an older order used `*.otsorundscore.olutechsys.com` as primary:** remove the old RSA order first, then issue again (match `-d` from `acme.sh --list`):
 
 ```bash
-sudo docker exec AcmeSh acme.sh --remove -d '*.otsorundscore.olutechsys.com'
+sudo docker exec AcmeSh /acme-sh-entrypoint.sh --remove -d '*.otsorundscore.olutechsys.com'
 ```
 
 ### misfitsds-sub — apex + `*.misfitsds.*` (+ optional namespace wildcards)
@@ -401,7 +401,7 @@ sudo docker exec AcmeSh acme.sh --remove -d '*.otsorundscore.olutechsys.com'
 Same optional SAN overlap note as otsorundscore-sub.
 
 ```bash
-sudo docker exec AcmeSh acme.sh --issue \
+sudo docker exec AcmeSh /acme-sh-entrypoint.sh --issue \
   -d 'misfitsds.olutechsys.com' \
   -d 'misfitsds.olutech.systems' \
   -d '*.misfitsds.olutechsys.com' \
@@ -415,7 +415,7 @@ sudo docker exec AcmeSh acme.sh --issue \
 ### otsmbpro16 — MacBook
 
 ```bash
-sudo docker exec AcmeSh acme.sh --issue \
+sudo docker exec AcmeSh /acme-sh-entrypoint.sh --issue \
   -d 'otsmbpro16.olutechsys.com' \
   -d 'otsmbpro16.olutech.systems' \
   --keylength 2048 \
@@ -425,7 +425,7 @@ sudo docker exec AcmeSh acme.sh --issue \
 ### hpdevcore — Laptop
 
 ```bash
-sudo docker exec AcmeSh acme.sh --issue \
+sudo docker exec AcmeSh /acme-sh-entrypoint.sh --issue \
   -d 'hpdevcore.olutechsys.com' \
   -d 'hpdevcore.olutech.systems' \
   --keylength 2048 \
@@ -437,7 +437,7 @@ sudo docker exec AcmeSh acme.sh --issue \
 Dedicated `otsorundscore/` and `misfitsds/` PEM dirs are the source for HAProxy combined bundles (built by `scripts/deploy_certs.sh`). If you already included `*.otsorundscore.olutechsys.com` / `*.misfitsds.olutechsys.com` as extra SANs on **otsorundscore-sub** or **misfitsds-sub**, you can skip the duplicate orders below (same names on two certs = two independent renewals).
 
 ```bash
-sudo docker exec AcmeSh acme.sh --issue \
+sudo docker exec AcmeSh /acme-sh-entrypoint.sh --issue \
   -d 'otsorundscore.olutechsys.com' \
   -d 'otsorundscore.olutech.systems' \
   -d '*.otsorundscore.olutechsys.com' \
@@ -447,7 +447,7 @@ sudo docker exec AcmeSh acme.sh --issue \
 ```
 
 ```bash
-sudo docker exec AcmeSh acme.sh --issue \
+sudo docker exec AcmeSh /acme-sh-entrypoint.sh --issue \
   -d 'misfitsds.olutechsys.com' \
   -d 'misfitsds.olutech.systems' \
   -d '*.misfitsds.olutechsys.com' \
@@ -478,7 +478,7 @@ sudo mkdir -p \
 ```
 
 ```bash
-sudo docker exec AcmeSh acme.sh --install-cert \
+sudo docker exec AcmeSh /acme-sh-entrypoint.sh --install-cert \
   -d 'olutechsys.com' \
   --cert-file      /volume2/certs/acme/wildcard/cert.pem \
   --key-file       /volume2/certs/acme/wildcard/privkey.pem \
@@ -488,7 +488,7 @@ sudo docker exec AcmeSh acme.sh --install-cert \
 ```
 
 ```bash
-sudo docker exec AcmeSh acme.sh --install-cert \
+sudo docker exec AcmeSh /acme-sh-entrypoint.sh --install-cert \
   -d 'otsorundscore.olutechsys.com' \
   --cert-file      /volume2/certs/acme/otsorundscore-sub/cert.pem \
   --key-file       /volume2/certs/acme/otsorundscore-sub/privkey.pem \
@@ -498,7 +498,7 @@ sudo docker exec AcmeSh acme.sh --install-cert \
 ```
 
 ```bash
-sudo docker exec AcmeSh acme.sh --install-cert \
+sudo docker exec AcmeSh /acme-sh-entrypoint.sh --install-cert \
   -d 'misfitsds.olutechsys.com' \
   --cert-file      /volume2/certs/acme/misfitsds-sub/cert.pem \
   --key-file       /volume2/certs/acme/misfitsds-sub/privkey.pem \
@@ -508,7 +508,7 @@ sudo docker exec AcmeSh acme.sh --install-cert \
 ```
 
 ```bash
-sudo docker exec AcmeSh acme.sh --install-cert \
+sudo docker exec AcmeSh /acme-sh-entrypoint.sh --install-cert \
   -d 'otsmbpro16.olutechsys.com' \
   --cert-file      /volume2/certs/acme/otsmbpro16/cert.pem \
   --key-file       /volume2/certs/acme/otsmbpro16/privkey.pem \
@@ -518,7 +518,7 @@ sudo docker exec AcmeSh acme.sh --install-cert \
 ```
 
 ```bash
-sudo docker exec AcmeSh acme.sh --install-cert \
+sudo docker exec AcmeSh /acme-sh-entrypoint.sh --install-cert \
   -d 'hpdevcore.olutechsys.com' \
   --cert-file      /volume2/certs/acme/hpdevcore/cert.pem \
   --key-file       /volume2/certs/acme/hpdevcore/privkey.pem \
@@ -530,7 +530,7 @@ sudo docker exec AcmeSh acme.sh --install-cert \
 ## Configure HAProxy cert output paths (otsorundscore + misfitsds)
 
 ```bash
-sudo docker exec AcmeSh acme.sh --install-cert \
+sudo docker exec AcmeSh /acme-sh-entrypoint.sh --install-cert \
   -d 'otsorundscore.olutechsys.com' \
   --cert-file      /volume2/certs/acme/otsorundscore/cert.pem \
   --key-file       /volume2/certs/acme/otsorundscore/privkey.pem \
@@ -540,7 +540,7 @@ sudo docker exec AcmeSh acme.sh --install-cert \
 ```
 
 ```bash
-sudo docker exec AcmeSh acme.sh --install-cert \
+sudo docker exec AcmeSh /acme-sh-entrypoint.sh --install-cert \
   -d 'misfitsds.olutechsys.com' \
   --cert-file      /volume2/certs/acme/misfitsds/cert.pem \
   --key-file       /volume2/certs/acme/misfitsds/privkey.pem \
@@ -566,15 +566,15 @@ paths. When bundles change, run **`scripts/deploy_certs.sh`** (and **`verify_ser
 Check all managed certs and expiry:
 
 ```bash
-sudo docker exec AcmeSh acme.sh --list
+sudo docker exec AcmeSh /acme-sh-entrypoint.sh --list
 ```
 
 Force renewal (RSA only; do not pass `--ecc`). Use each cert’s primary `-d` from
 `acme.sh --list` (see [Issue all certs](#issue-all-certs)):
 
 ```bash
-sudo docker exec AcmeSh acme.sh --renew -d 'olutechsys.com' --force
-sudo docker exec AcmeSh acme.sh --renew -d 'hpdevcore.olutechsys.com' --force
+sudo docker exec AcmeSh /acme-sh-entrypoint.sh --renew -d 'olutechsys.com' --force
+sudo docker exec AcmeSh /acme-sh-entrypoint.sh --renew -d 'hpdevcore.olutechsys.com' --force
 ```
 
 Repeat for `otsorundscore.olutechsys.com`, `misfitsds.olutechsys.com`,
