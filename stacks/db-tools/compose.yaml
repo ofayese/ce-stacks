@@ -1,0 +1,74 @@
+services:
+  adminer:
+    container_name: Adminer
+    image: adminer:5.4.2-standalone
+    mem_limit: 256m
+    cpu_shares: 256
+    # cpus: removed - Synology DS723+ kernel lacks CFS scheduler cgroup (NanoCPUs unsupported)
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    restart: unless-stopped
+    ports:
+      - 10.0.1.15:8895:8080
+    environment:
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      # Point at Synology native package databases (10.0.1.15 = NAS LAN IP).
+      # Override via .env if you need a different default server.
+      - ADMINER_DEFAULT_SERVER=${ADMINER_DEFAULT_SERVER:-10.0.1.15}
+      - ADMINER_DESIGN=hydra
+      - TZ=${TZ:-America/New_York}
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -fs
+        - http://localhost:8080/
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    labels:
+      - com.centurylinklabs.watchtower.enable=true
+
+  phpmyadmin:
+    container_name: PhpMyAdmin
+    image: phpmyadmin:5.2.2
+    mem_limit: 256m
+    cpu_shares: 256
+    # cpus: removed - Synology DS723+ kernel lacks CFS scheduler cgroup (NanoCPUs unsupported)
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    restart: unless-stopped
+    ports:
+      - 10.0.1.15:8378:80
+    environment:
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      # Point at Synology native MariaDB package.
+      # PMA_HOST must be the NAS LAN IP (not localhost) because this runs in a container.
+      - PMA_HOST=${PMA_HOST:-10.0.1.15}
+      - PMA_PORT=${PMA_PORT:-3306}
+      - TZ=${TZ:-America/New_York}
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -fs
+        - http://localhost:80/
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    labels:
+      - com.centurylinklabs.watchtower.enable=true
