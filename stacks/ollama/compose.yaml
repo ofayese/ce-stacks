@@ -14,7 +14,7 @@ services:
     mem_reservation: 6g
     cpu_shares: 1024
     # Hard cap: never let Ollama pin both cores under sustained inference (Cool mode).
-    cpus: "1.5"
+    # cpus: removed - Synology DS723+ kernel lacks CFS scheduler cgroup (NanoCPUs unsupported)
     security_opt:
       - no-new-privileges:true
     logging:
@@ -75,7 +75,7 @@ services:
     # SSE streaming + RAG indexing without competing with the ollama serve container.
     mem_limit: 1g
     cpu_shares: 768
-    cpus: "0.75"
+    # cpus: removed - Synology DS723+ kernel lacks CFS scheduler cgroup (NanoCPUs unsupported)
     security_opt:
       - no-new-privileges:true
     logging:

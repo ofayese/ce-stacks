@@ -18,7 +18,7 @@ services:
     mem_limit: 3g
     cpu_shares: 1024
     # Hard cap: code-server + Node/TS toolchains can saturate both cores during npm install.
-    cpus: "1.5"
+    # cpus: removed - Synology DS723+ kernel lacks CFS scheduler cgroup (NanoCPUs unsupported)
     security_opt:
       - no-new-privileges:true
     logging:
@@ -80,7 +80,7 @@ services:
     # 128 MB and small dev datasets rarely exceed 200 MB resident.
     mem_limit: 1g
     cpu_shares: 512
-    cpus: "0.75"
+    # cpus: removed - Synology DS723+ kernel lacks CFS scheduler cgroup (NanoCPUs unsupported)
     security_opt:
       - no-new-privileges:true
     logging:
@@ -126,7 +126,7 @@ services:
     container_name: CodeServerPMA
     mem_limit: 512m
     cpu_shares: 256
-    cpus: "0.25"
+    # cpus: removed - Synology DS723+ kernel lacks CFS scheduler cgroup (NanoCPUs unsupported)
     security_opt:
       - no-new-privileges:true
     logging:

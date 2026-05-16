@@ -10,7 +10,7 @@ services:
     restart: unless-stopped
     mem_limit: 256m
     cpu_shares: 256
-    cpus: "0.25"
+    # cpus: removed - Synology DS723+ kernel lacks CFS scheduler cgroup (NanoCPUs unsupported)
     security_opt:
       - no-new-privileges:true
     environment:

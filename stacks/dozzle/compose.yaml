@@ -6,7 +6,7 @@ services:
     # artifact. Measured RSS on a busy DS723+ stays under 80 MB.
     mem_limit: 256m
     cpu_shares: 768
-    cpus: "0.5"
+    # cpus: removed - Synology DS723+ kernel lacks CFS scheduler cgroup (NanoCPUs unsupported)
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped

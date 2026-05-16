@@ -7,7 +7,7 @@ services:
     # Host-profile fix: 2g → 1536m. KasmVNC + Electron(GitHub Desktop) RSS ~700 MB idle.
     mem_limit: 1536m
     cpu_shares: 512
-    cpus: "1.0"
+    # cpus: removed - Synology DS723+ kernel lacks CFS scheduler cgroup (NanoCPUs unsupported)
     security_opt:
       # KasmVNC mounts tmpfs and requires unconfined seccomp profile.
       # See docs/dsm-732-runtime-quirks.md §4 — do not remove this line.

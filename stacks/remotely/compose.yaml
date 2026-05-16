@@ -28,7 +28,7 @@ services:
     mem_limit: 1g
     # ASP.NET Core + SignalR hub; 1g covers concurrent remote sessions on a homelab.
     cpu_shares: 512
-    cpus: "0.75"
+    # cpus: removed - Synology DS723+ kernel lacks CFS scheduler cgroup (NanoCPUs unsupported)
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped

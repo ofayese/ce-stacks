@@ -6,7 +6,7 @@ services:
       - --transport=streaming
     mem_limit: 512m
     cpu_shares: 512
-    cpus: "0.5"
+    # cpus: removed - Synology DS723+ kernel lacks CFS scheduler cgroup (NanoCPUs unsupported)
     security_opt:
       - no-new-privileges:true
     logging:
