@@ -117,3 +117,18 @@ done < <(
 )
 
 echo "All compose files validated OK."
+
+# ── Host-profile lints ──────────────────────────────────────────────
+# These run after the per-stack `docker compose config` pass succeeds, so
+# any budget / subnet violation surfaces as a separate, actionable failure
+# rather than masking real YAML errors. See docs/host-profile-otsorundscore.md.
+if [[ -x "${ROOT}/scripts/lint-rfc1918.sh" ]]; then
+	echo ""
+	echo "── RFC1918 subnet lint ──"
+	"${ROOT}/scripts/lint-rfc1918.sh" --quiet
+fi
+if [[ -x "${ROOT}/scripts/lint-host-budget.sh" ]]; then
+	echo ""
+	echo "── Host memory budget lint (HOST_MEM_BUDGET_MB=${HOST_MEM_BUDGET_MB:-32000}) ──"
+	"${ROOT}/scripts/lint-host-budget.sh"
+fi

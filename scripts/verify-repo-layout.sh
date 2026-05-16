@@ -29,3 +29,10 @@ if [[ "${err}" -ne 0 ]]; then
 fi
 
 echo "OK: repo layout (no root-level stack-name duplicates)."
+
+# Chain RFC1918 subnet linter (host-profile rule — see docs/dsm-732-runtime-quirks.md §8).
+if [[ -x "${ROOT}/scripts/lint-rfc1918.sh" ]]; then
+	echo ""
+	echo "── RFC1918 subnet lint ──"
+	"${ROOT}/scripts/lint-rfc1918.sh" --quiet
+fi

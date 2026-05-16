@@ -13,7 +13,7 @@ no inbound firewall ports are required beyond the web UI.
 
 ## Prerequisites
 
-- Traefik (`traefik-ots`) or DSM Reverse Proxy serving HTTPS for the public URL
+- HAProxy or DSM Reverse Proxy serving HTTPS for the public URL
 - **WebSocket enabled** in the reverse proxy (see below — required for remote sessions)
 
 ## WebSocket requirement (critical)
@@ -22,15 +22,15 @@ Remotely uses SignalR over WebSocket for both the management plane and remote co
 sessions. Without WebSocket support in the reverse proxy, sessions will fail silently
 once an HTTPS connection is established.
 
-**DSM Reverse Proxy:**
+**HAProxy:** Add `timeout tunnel 1h` in the `defaults` section (already set in `stacks/_haproxy/haproxy.cfg`) and ensure the backend entry uses `option http-server-close` — no extra WebSocket headers are needed at the HAProxy layer for this service.
+
+**DSM Reverse Proxy (alternative):**
 
 1. Control Panel → Login Portal → Advanced → Reverse Proxy
 2. Select the Remotely proxy rule → Edit
 3. Custom Header tab → Create → select **WebSocket**
    (auto-adds `Upgrade: websocket` and `Connection: Upgrade` headers)
 4. Save
-
-**Traefik:** WebSocket is transparent — no extra configuration needed.
 
 ## Environment variables
 
@@ -90,13 +90,21 @@ sudo docker compose down
 
 To restore from backup, copy the data directory contents back and `docker compose up -d`.
 
-## Traefik labels (optional — add to compose.yaml when routing via Traefik)
+## HAProxy routing
 
-```yaml
-labels:
-  - traefik.enable=true
-  - traefik.http.routers.remotely.rule=Host(`remotely.otsorundscore.olutechsys.com`)
-  - traefik.http.routers.remotely.entrypoints=websecure
-  - traefik.http.routers.remotely.tls=true
-  - traefik.http.services.remotely.loadbalancer.server.port=5000
+Add to `stacks/_haproxy/haproxy.cfg` and `stacks/_haproxy/maps/host.map` to expose Remotely via HAProxy:
+
 ```
+# haproxy.cfg
+backend remotely-be
+    option httpchk GET /
+    server remotely 10.0.1.15:5371 check
+
+# maps/host.map
+remotely.olutechsys.com	remotely-be
+remotely.olutech.systems	remotely-be
+remotely.otsorundscore.olutechsys.com	remotely-be
+remotely.otsorundscore.olutech.systems	remotely-be
+```
+
+After editing: validate with `haproxy -c`, then restart HAProxy via **DSM → Package Center → HAProxy → Action → Restart**.

@@ -19,9 +19,9 @@ Containerized acme.sh in daemon mode — issues and renews TLS certificates via 
 
 Installed PEMs under `${ACME_CERT_ROOT:-/volume2/certs/acme}` are consumed by other stacks; **do not modify directly**.
 
-## Post-issue deploy + verify (HAProxy / Traefik)
+## Post-issue deploy + verify (HAProxy)
 
-- **`acme-sh/scripts/deploy_certs.sh`** — host-run: PEM → combined bundles under **`HAPROXY_CERT_STAGE_DIR`** (default **`/volume2/certs/acme/haproxy`**, created if missing); optional **`haproxy -c`** only when that dir matches **`${STACK_ROOT}/_haproxy/certs`**; optional single-stack Traefik restart (**`TRAEFIK_PROFILE`** / **`TRAEFIK_STACK`**). Does not reload HAProxy. See **`SETUP.md`** §7.
+- **`acme-sh/scripts/deploy_certs.sh`** — host-run: PEM → combined bundles deployed directly to **`HAPROXY_CERT_STAGE_DIR`** (default **`/var/packages/haproxy/var/crt/`** — Synology HAProxy package cert directory, created if missing); optional **`haproxy -c`** when that dir matches **`LIVE_HAPROXY_CERT_DIR`**. Does not reload HAProxy — operator must reload via DSM package UI after validation. See **`SETUP.md`** §7.
 - **`acme-sh/scripts/verify_serving.sh`** — fail-closed OpenSSL SNI check (optional Discord on failure via **`DISCORD_WEBHOOK_URL`**).
 
 ## Required env (`.env`, gitignored)

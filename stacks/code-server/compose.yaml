@@ -12,8 +12,13 @@ services:
     # to prevent connection drops. Timeout: 600s in Application Portal.
     image: ghcr.io/linuxserver/code-server:4.118.0-ls337
     container_name: CodeServer
-    mem_limit: 4g
+    # Host-profile fix: 4g → 3g. Realistic working set for code-server + a couple
+    # of Node/TS workspaces is ~1.5 GB; 3g leaves headroom for `npm install` peaks
+    # without crowding the DB sidecars on a 32 GB host.
+    mem_limit: 3g
     cpu_shares: 1024
+    # Hard cap: code-server + Node/TS toolchains can saturate both cores during npm install.
+    cpus: "1.5"
     security_opt:
       - no-new-privileges:true
     logging:
@@ -64,13 +69,18 @@ services:
       start_period: 30s
     labels:
       - com.centurylinklabs.watchtower.enable=true
+    extra_hosts:
+      - otsorundscore.olutechsys.com:10.0.1.15
     networks:
       - code-server-net
   db:
     image: mysql:8.3
     container_name: CodeServerDB
-    mem_limit: 2g
+    # Host-profile fix: 2g → 1g. Dev-only MySQL; InnoDB buffer pool defaults to
+    # 128 MB and small dev datasets rarely exceed 200 MB resident.
+    mem_limit: 1g
     cpu_shares: 512
+    cpus: "0.75"
     security_opt:
       - no-new-privileges:true
     logging:
@@ -116,6 +126,7 @@ services:
     container_name: CodeServerPMA
     mem_limit: 512m
     cpu_shares: 256
+    cpus: "0.25"
     security_opt:
       - no-new-privileges:true
     logging:

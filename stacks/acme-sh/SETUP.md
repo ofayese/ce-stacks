@@ -15,8 +15,8 @@ For 4096-bit RSA, substitute `--keylength 4096` in every `--issue` block below
 ├── misfitsds-sub/                 apex + wildcards on both zones + optional `*.ots` / `*.mft` SANs (see SETUP)
 ├── otsmbpro16/                    otsmbpro16.olutechsys.com
 ├── hpdevcore/                     hpdevcore.olutechsys.com
-├── otsorundscore/                 Traefik-OTS PEMs: `otsorundscore.*` + `*.otsorundscore.*` (`.olutechsys.com` + `.olutech.systems`)
-├── misfitsds/                     Traefik-MFT PEMs: `misfitsds.*` + `*.misfitsds.*` (both TLDs)
+├── otsorundscore/                 HAProxy PEMs: `otsorundscore.*` + `*.otsorundscore.*` (`.olutechsys.com` + `.olutech.systems`)
+├── misfitsds/                     HAProxy PEMs: `misfitsds.*` + `*.misfitsds.*` (both TLDs)
 ├── haproxy/                       Combined PEM bundles from **`scripts/deploy_certs.sh`** (default **`HAPROXY_CERT_STAGE_DIR`**)
 ├── deploy-otsorundscore.bash         legacy Mac staging (see archive/SETUP_LEGACY_2026-05-10.md)
 ├── deploy-misfitsds.bash          legacy misfitsds deploy (see archive)
@@ -36,7 +36,7 @@ For 4096-bit RSA, substitute `--keylength 4096` in every `--issue` block below
 
 ## Certificate layout: host-named primary vs optional / legacy paths
 
-- **Primary (Traefik + host-named services):** under **`${ACME_CERT_ROOT}`** (default `/volume2/certs/acme`), PEM trees **`otsorundscore/`** and **`misfitsds/`** — Traefik mounts these for **`*.otsorundscore.*`** and **`*.misfitsds.*`** on both **`.olutechsys.com`** and **`.olutech.systems`**. Follow the **`--issue`** / **`--install-cert`** blocks for those dirs first when standing up TLS for the NAS fleet.
+- **Primary (HAProxy + host-named services):** under **`${ACME_CERT_ROOT}`** (default `/volume2/certs/acme`), PEM trees **`otsorundscore/`** and **`misfitsds/`** — HAProxy consumes combined bundles built from these by **`scripts/deploy_certs.sh`** (deployed to `/var/packages/haproxy/var/crt/`). Follow the **`--issue`** / **`--install-cert`** blocks for those dirs first when standing up TLS for the NAS fleet.
 - **Optional / broader:** **`wildcard/`**, **`otsorundscore-sub/`**, **`misfitsds-sub/`** cover apex + multi-zone + optional extra SANs for operators who keep consolidated or overlapping orders; skip creating dirs you never issue for.
 - **Legacy / lab / operator-specific:** historical **`*.ots.*`** / **`*.mft.*`** service hostnames are deprecated for **new** work (see root **`AGENTS.md`**). **`deploy-*.bash`** under **`${ACME_CERT_ROOT}`**, **`daemon-tls.json`** (TLS-only Docker), and similar assets remain documented for back-compat or laptop staging; for HAProxy bundles from NAS stacks prefer **`stacks/acme-sh/scripts/deploy_certs.sh`** with **`ACME_PROFILE`** / **`BUNDLE_SPECS`**.
 
@@ -124,14 +124,14 @@ sudo docker exec AcmeSh acme.sh --list
 
 After new or renewed PEMs under **`${ACME_CERT_ROOT}`** (profiles such as **`otsorundscore`**, **`misfitsds`** — see the tree at the top of this file):
 
-1. **HAProxy bundles + optional Traefik restart (host-run, preferred):**  
-   - Script: **`stacks/acme-sh/scripts/deploy_certs.sh`** — builds combined PEMs into **`HAPROXY_CERT_STAGE_DIR`** (default **`/volume2/certs/acme/haproxy`**; **`mkdir -p`** on run). Atomic replace + **`.lkg`** rollback still applies under that directory when **`haproxy -c`** runs and fails (**`haproxy -c`** is skipped unless **`HAPROXY_CERT_STAGE_DIR`** equals **`${STACK_ROOT}/_haproxy/certs`**, so the config’s `crt` paths match staged files; copy bundles to the live path your **`haproxy.cfg`** uses, then validate/reload HAProxy manually in DSM or via your own procedure). The script does **not** restart or reload HAProxy.  
-   - **Single profile (optional):** with **`BUNDLE_SPECS` unset**, set **`ACME_PROFILE=otsorundscore`** or **`misfitsds`** to stage **one** HAProxy bundle using the default filename mapping (see script header).  
-   - **Traefik:** set **`TRAEFIK_PROFILE=ots`** or **`mft`** (or **`TRAEFIK_STACK=traefik-ots`** / **`traefik-mft`**) so **only one** Traefik stack is restarted; defaults skip Traefik if unset.  
-   - **HAProxy validate:** when staging matches the live cert dir, **`haproxy -c`** runs against **`HAPROXY_CFG`** (default **`${STACK_ROOT}/_haproxy/haproxy.cfg`**) if **`HAPROXY_BIN`** is executable (Synology package default **`/volume1/@appstore/haproxy/sbin/haproxy`**).  
+1. **HAProxy bundles (host-run, preferred):**  
+   - Script: **`stacks/acme-sh/scripts/deploy_certs.sh`** — builds combined PEMs and deploys them directly to **`HAPROXY_CERT_STAGE_DIR`** (default **`/var/packages/haproxy/var/crt/`** — Synology HAProxy package cert directory; **`mkdir -p`** on run). Atomic replace + **`.lkg`** rollback applies when **`haproxy -c`** runs and fails. The script does **not** restart or reload HAProxy.  
+   - **Single profile (optional):** with **`BUNDLE_SPECS` unset**, set **`ACME_PROFILE=otsorundscore`** or **`misfitsds`** to deploy **one** HAProxy bundle using the default filename mapping (see script header).  
+   - **HAProxy validate:** when `HAPROXY_CERT_STAGE_DIR` matches `LIVE_HAPROXY_CERT_DIR` (both default to `/var/packages/haproxy/var/crt/`), **`haproxy -c`** runs against **`HAPROXY_CFG`** (default **`${STACK_ROOT}/_haproxy/haproxy.cfg`**) if **`HAPROXY_BIN`** is executable (Synology package default **`/volume1/@appstore/haproxy/sbin/haproxy`**).  
+   - **HAProxy restart:** after successful **`haproxy -c`**, restart via **DSM → Package Center → HAProxy → Action → Restart**.  
    - Rationale: host-run vs in-container ADR (see `stacks/acme-sh/scripts/deploy_certs.sh` header).
 
-2. **TLS edge verify:** **`stacks/acme-sh/scripts/verify_serving.sh`** — requires **`CONNECT_HOST`**; set **`CONNECT_PORT`** (default **`6443`**), **`SNI`** (defaults to **`CONNECT_HOST`**), **`MIN_VALID_DAYS`** (default **21** for **`openssl x509 -checkend`**), optional **`EXPECTED_SUBJECT`**. On TLS / subject / expiry failure, posts to **`DISCORD_WEBHOOK_URL`** when set (same variable name as **`stacks/acme-sh/.env.example`**).
+2. **TLS edge verify:** **`stacks/acme-sh/scripts/verify_serving.sh`** — requires **`CONNECT_HOST`**; set **`CONNECT_PORT`** (default **`443`** — HAProxy HTTPS), **`SNI`** (defaults to **`CONNECT_HOST`**), **`MIN_VALID_DAYS`** (default **21** for **`openssl x509 -checkend`**), optional **`EXPECTED_SUBJECT`**. On TLS / subject / expiry failure, posts to **`DISCORD_WEBHOOK_URL`** when set (same variable name as **`stacks/acme-sh/.env.example`**).
 
 3. **Legacy bash deployers:** `deploy-otsorundscore.bash` / `deploy-misfitsds.bash` under `${ACME_CERT_ROOT}` remain operator-specific; prefer the repo **`deploy_certs.sh`** path above for HAProxy bundles.
 
@@ -144,7 +144,7 @@ Importing DSM’s **control panel** or **reverse-proxy** certificate is **manual
 ```bash
 openssl x509 -in /volume2/certs/acme/otsorundscore/fullchain.pem -noout -subject -dates 2>/dev/null || true
 sudo docker exec AcmeSh acme.sh --list
-CONNECT_HOST=10.0.1.15 CONNECT_PORT=6443 SNI=psu.otsorundscore.olutechsys.com MIN_VALID_DAYS=21 \
+CONNECT_HOST=10.0.1.15 CONNECT_PORT=443 SNI=psu.otsorundscore.olutechsys.com MIN_VALID_DAYS=21 \
   bash "${STACK_ROOT}/acme-sh/scripts/verify_serving.sh"
 ```
 
@@ -426,9 +426,9 @@ sudo docker exec AcmeSh acme.sh --issue \
   --dns dns_cf --server letsencrypt
 ```
 
-## Issue host-named Traefik certs (`otsorundscore/` + `misfitsds/` dirs)
+## Issue host-named HAProxy certs (`otsorundscore/` + `misfitsds/` dirs)
 
-Dedicated `otsorundscore/` and `misfitsds/` PEM dirs are still recommended for Traefik stacks that mount only those paths. If you already included `*.otsorundscore.olutechsys.com` / `*.misfitsds.olutechsys.com` as extra SANs on **otsorundscore-sub** or **misfitsds-sub**, you can skip the duplicate orders below (same names on two certs = two independent renewals).
+Dedicated `otsorundscore/` and `misfitsds/` PEM dirs are the source for HAProxy combined bundles (built by `scripts/deploy_certs.sh`). If you already included `*.otsorundscore.olutechsys.com` / `*.misfitsds.olutechsys.com` as extra SANs on **otsorundscore-sub** or **misfitsds-sub**, you can skip the duplicate orders below (same names on two certs = two independent renewals).
 
 ```bash
 sudo docker exec AcmeSh acme.sh --issue \
@@ -517,7 +517,7 @@ sudo docker exec AcmeSh acme.sh --install-cert \
   --reloadcmd      "chmod 640 /volume2/certs/acme/hpdevcore/privkey.pem"
 ```
 
-## Configure ots and mft output paths
+## Configure HAProxy cert output paths (otsorundscore + misfitsds)
 
 ```bash
 sudo docker exec AcmeSh acme.sh --install-cert \
@@ -543,7 +543,7 @@ sudo docker exec AcmeSh acme.sh --install-cert \
 
 ## Legacy per-device deploy (archived)
 
-For **HAProxy / Traefik**, use **`scripts/deploy_certs.sh`** and **`scripts/verify_serving.sh`** after PEMs refresh on disk (see [Deploy acme-sh end-to-end](#deploy-acme-sh-end-to-end-checklist) step 7). Older **Mac-staged `deploy-otsorundscore.bash`**, **`deploy-misfitsds.bash`**, **`deploy-otsmbpro16.bash`**, **`deploy-hpdevcore.bash`**, DSM / **`daemon.json`** merges, mTLS staging, client-context installs, and optional **Mac cron** runbooks are preserved in **[`archive/SETUP_LEGACY_2026-05-10.md`](archive/SETUP_LEGACY_2026-05-10.md)** (anchor **`#mtls-bundle-reference`** for the on-NAS mTLS merge).
+For **HAProxy**, use **`scripts/deploy_certs.sh`** and **`scripts/verify_serving.sh`** after PEMs refresh on disk (see [Deploy acme-sh end-to-end](#deploy-acme-sh-end-to-end-checklist) step 7). Older **Mac-staged `deploy-otsorundscore.bash`**, **`deploy-misfitsds.bash`**, **`deploy-otsmbpro16.bash`**, **`deploy-hpdevcore.bash`**, DSM / **`daemon.json`** merges, mTLS staging, client-context installs, and optional **Mac cron** runbooks are preserved in **[`archive/SETUP_LEGACY_2026-05-10.md`](archive/SETUP_LEGACY_2026-05-10.md)** (anchor **`#mtls-bundle-reference`** for the on-NAS mTLS merge).
 
 ---
 
@@ -551,7 +551,7 @@ For **HAProxy / Traefik**, use **`scripts/deploy_certs.sh`** and **`scripts/veri
 
 acme.sh in `daemon` mode checks for renewals every 24 hours and auto-copies
 updated certs to `/volume2/certs/acme/` via the configured `--install-cert`
-paths. When bundles change, run **`scripts/deploy_certs.sh`** (and **`verify_serving.sh`**) so HAProxy / Traefik reload with valid PEMs. Optional legacy **`deploy-*.bash`** automation: **[`archive/SETUP_LEGACY_2026-05-10.md`](archive/SETUP_LEGACY_2026-05-10.md)**.
+paths. When bundles change, run **`scripts/deploy_certs.sh`** (and **`verify_serving.sh`**) so HAProxy reloads with valid PEMs. Optional legacy **`deploy-*.bash`** automation: **[`archive/SETUP_LEGACY_2026-05-10.md`](archive/SETUP_LEGACY_2026-05-10.md)**.
 
 Check all managed certs and expiry:
 
@@ -746,8 +746,8 @@ sudo synopkg restart ContainerManager
 | DSM cert slot — misfitsds services     | `misfitsds-sub/`                                                  | acme.sh                       | Legacy bash ([archive](archive/SETUP_LEGACY_2026-05-10.md)) |
 | MacBook (otsmbpro16)                   | `otsmbpro16/`                                                     | acme.sh                       | Legacy `deploy-otsmbpro16.bash` ([archive](archive/SETUP_LEGACY_2026-05-10.md)) |
 | Laptop (hpdevcore)                     | `hpdevcore/`                                                      | acme.sh                       | Legacy `deploy-hpdevcore.bash` ([archive](archive/SETUP_LEGACY_2026-05-10.md)) |
-| OTS Traefik / edge services            | `otsorundscore/` (`*.otsorundscore.{olutechsys,olutech.systems}`) | acme.sh                       | **`scripts/deploy_certs.sh`** + Traefik (`tls.yaml`) |
-| MFT Traefik / edge services            | `misfitsds/` (`*.misfitsds.{olutechsys,olutech.systems}`)         | acme.sh                       | **`scripts/deploy_certs.sh`** + Traefik (`tls.yaml`) |
+| OTS HAProxy / edge services            | `otsorundscore/` (`*.otsorundscore.{olutechsys,olutech.systems}`) | acme.sh                       | **`scripts/deploy_certs.sh`** → `/var/packages/haproxy/var/crt/` |
+| MFT HAProxy / edge services            | `misfitsds/` (`*.misfitsds.{olutechsys,olutech.systems}`)         | acme.sh                       | **`scripts/deploy_certs.sh`** → `/var/packages/haproxy/var/crt/` |
 
 The previous local CA codebase (`setup-docker-tls.bash`, `deploy-nas-cert.bash`)
 has been retired and archived to `/volume2/certs/archives/scripts-2026-04-27/`.

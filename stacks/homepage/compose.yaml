@@ -4,6 +4,7 @@ services:
     image: ghcr.io/gethomepage/homepage:v1.12.0
     mem_limit: 512m
     cpu_shares: 512
+    cpus: "0.5"
     security_opt:
       - no-new-privileges:true
     logging:

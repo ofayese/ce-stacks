@@ -4,6 +4,7 @@ services:
     image: valkey/valkey:8.0.2-alpine
     mem_limit: 256m
     cpu_shares: 512
+    cpus: "0.25"
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped
@@ -44,6 +45,7 @@ services:
     user: 0:0
     mem_limit: 512m
     cpu_shares: 768
+    cpus: "0.5"
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped

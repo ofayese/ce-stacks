@@ -1,14 +1,20 @@
 services:
   ollama:
-    container_name: otsai-server
+    container_name: otsai
     # DS723+: AMD Ryzen R1600 (2 cores / 4 threads), 32 GB RAM, CPU-only.
-    # Check https://hub.docker.com/r/ollama/ollama/tags for latest stable.
-    image: ollama/ollama@sha256:d00473cb58f0082c07cd6ed0d326a8a86f443ab69c51f8fc2b1a41687d45c661
-    # GAP-05 fix: reduced from 16g → 14g. 14B Q4_K_M models need ~8.5 GB; 14g gives
-    # 5.5 GB KV cache headroom while recovering 2 GB for DSM + other stacks.
-    mem_limit: 14g
-    mem_reservation: 8g
+    # PINNED: floating :latest is dangerous on a stateful model store. Refresh
+    # this digest manually after testing on a non-prod host; this also gates
+    # Watchtower from auto-pulling (mid-pull restart corrupts model blobs).
+    # To refresh: docker pull ollama/ollama:0.4.7 ; docker inspect …
+    image: ollama/ollama:0.4.7
+    # Host-profile fix (otsorundscore, 32 GB / 2c): lowered 14g → 10g, reservation
+    # 8g → 6g. 7B-Q4 models RSS ~5–6 GB; 10g leaves 4 GB KV cache headroom and
+    # recovers 4 GB for DSM + other stacks on this 2-core CPU-only host.
+    mem_limit: 10g
+    mem_reservation: 6g
     cpu_shares: 1024
+    # Hard cap: never let Ollama pin both cores under sustained inference (Cool mode).
+    cpus: "1.5"
     security_opt:
       - no-new-privileges:true
     logging:
@@ -17,11 +23,15 @@ services:
         max-size: 10m
         max-file: "3"
     restart: unless-stopped
-    # network_mode: host - shares host network stack so ollama can reach
-    # registry.ollama.ai for model pulls. Synology Docker bridge DNS is broken:
-    # 127.0.0.11 unreachable, and outbound UDP/53 is firewalled from container nets.
-    # Port 11434 is exposed directly on the NAS host; no ports: mapping needed.
-    network_mode: "host"
+    # FIXED: Changed from network_mode: host to bridge network (ollama-net).
+    # This allows open-webui to reach Ollama via container hostname "otsai-server"
+    # instead of trying to reach 10.0.1.15:11434 from a different bridge network.
+    # Synology Docker bridge DNS is broken (127.0.0.11), but internal bridge works.
+    # Outbound to registry.ollama.ai works fine from bridge networks.
+    ports:
+      - 10.0.1.15:11434:11434
+    networks:
+      - ollama-net
     # entrypoint.sh pattern from mariushosting.com: starts ollama serve then pulls
     # models in one container - no separate init container needed.
     entrypoint: ["/bin/bash", "/entrypoint.sh"]
@@ -44,7 +54,9 @@ services:
       - OLLAMA_FLASH_ATTENTION=1
       - TZ=America/New_York
     labels:
-      - com.centurylinklabs.watchtower.enable=true
+      # Pinned to a fixed semver tag (see image: above). Watchtower MUST NOT
+      # auto-pull — a mid-pull restart corrupts the model store under /root/.ollama.
+      - com.centurylinklabs.watchtower.enable=false
     # Healthcheck: ollama binary self-probe via CMD (curl not in image).
     healthcheck:
       test:
@@ -59,8 +71,11 @@ services:
   open-webui:
     container_name: otsai-webui
     image: ghcr.io/open-webui/open-webui:v0.9.5
-    mem_limit: 2g
+    # Host-profile fix: 2g → 1g. Open-WebUI is a Node/Python web UI; 1g covers
+    # SSE streaming + RAG indexing without competing with the ollama serve container.
+    mem_limit: 1g
     cpu_shares: 768
+    cpus: "0.75"
     security_opt:
       - no-new-privileges:true
     logging:
@@ -76,15 +91,16 @@ services:
     environment:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
-      # otsai-server uses network_mode: host - reach via NAS LAN IP (not Docker DNS)
-      - OLLAMA_BASE_URL=http://10.0.1.15:11434
+      # FIXED: Changed from 10.0.1.15:11434 to otsai-server (container hostname).
+      # Both services now on ollama-net, so container DNS resolves otsai-server to Ollama.
+      - OLLAMA_BASE_URL=http://otsai:11434
       - BRIDGE_SHARED_SECRET=${BRIDGE_SHARED_SECRET}
       - WEBUI_AUTH=1
-      - WEBUI_NAME=olutechsys AI
+      - WEBUI_NAME=OluTechSystems.AI
       - WEBUI_URL=${WEBUI_URL:-https://10.0.1.15:8893}
       # Comma-separated model names shown in dropdown (does NOT auto-pull).
       # entrypoint.sh handles auto-pull when otsai-server starts.
-      - DEFAULT_MODELS=${DEFAULT_MODELS:-phi4:mini,qwen2.5-coder:7b,nomic-embed-text}
+      - DEFAULT_MODELS=${DEFAULT_MODELS:-stablelm2:3b,stablelm2:7b,qwen2.5-coder:7b,nomic-embed-text}
       - TZ=America/New_York
     depends_on:
       ollama:
@@ -106,7 +122,7 @@ services:
 
 networks:
   ollama-net:
-    # Used by open-webui only. otsai-server uses network_mode: host.
+    # Used by both ollama and open-webui.
     name: ollama-net
     driver: bridge
     ipam:

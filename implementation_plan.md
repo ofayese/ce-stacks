@@ -1,91 +1,118 @@
 # Implementation Plan
 
 [Overview]
-Reconcile every inconsistency between the ce-stacks repository (cloned to `/volume2/docker/ce-stacks`) and the runtime Dockhand install (copied to `/volume2/docker/dockhand`) so the documented deploy flow works end-to-end without manual corrections.
+Close every concrete gap that prevents the `ce-stacks` repository from running cleanly on the live NAS `otsorundscore` (Synology DS723+, AMD Ryzen R1600 2-core / 32 GB RAM / no GPU, DSM 7.3.2-86009 Update 3, Cool mode).
 
-The repo currently advertises a `git clone … && cp dockhand /volume2/docker/dockhand` workflow, but several docs and scripts predate the relocation of Dockhand from `stacks/dockhand/` to the repo root, and predate the `scripts/`+`docs/` reorganization inside `dockhand/`. Three classes of defects exist: (1) stale path references that 404 or copy-fail when followed verbatim; (2) configuration drift between `dockhand/compose.yaml`, `dockhand/scripts/dockhand-start.sh`, and `dockhand/.env.example` (Watchtower label value, `STACK_ROOT` semantics, data mount path); and (3) operational gaps (no DSM Task-Scheduler boot instructions, RC script doesn't self-heal `ce-internal`, Portainer rollback artifacts still referenced). This plan corrects all three classes in one coherent pass with no behavior change to already-running stacks. The plan also leaves `dockhand/scripts/dockhand-migration.sh` intact as a historical reference and explicitly relabels it so future readers do not assume Portainer is still part of the topology.
+The repo is functionally correct in the abstract — networks, env files, security_opt, PUID/PGID, healthchecks, and the dockhand-drift reconciliation tracked in [`docs/implementation_plan_dockhand_drift.md`](./docs/implementation_plan_dockhand_drift.md) are all closed. What is still broken on this *specific* host falls into five buckets: (1) resource over-commitment (the sum of declared `mem_limit` values is ≈ 43 GB on a 32 GB box, with no hard CPU caps on a 2-core CPU); (2) a non-RFC1918 subnet (`172.32.0.0/24` on `psu-ots`) that will mis-route through any future NAT or VPN; (3) DSM 7.3 / Container Manager runtime quirks the repo currently glosses over (legacy `mem_limit`/`cpu_shares` in Compose v2, `build:` on `synology-api-bridge:local`, `seccomp:unconfined` on `github-desktop`, BTRFS storage driver implications); (4) Ollama-on-CPU realities for a 2-core, no-GPU host with a floating `:latest` tag and 14 GB reservation; and (5) Watchtower / extra_hosts inconsistencies that surface only at runtime on `otsorundscore.olutechsys.com`. This plan fixes all five buckets in one coherent pass with the smallest possible change surface and zero impact on any stack that is already healthy.
+
+The plan is additive where possible: where a fix involves changing existing values (e.g. lowering `mem_limit`, swapping a subnet), the new value is calibrated against the realistic free-memory budget on `otsorundscore` (DSM uses ≈ 3 GB, BTRFS cache ≈ 2 GB, kernel/Container Manager overhead ≈ 1 GB → ≈ 26 GB usable for stacks). Watchtower exemptions are preserved on stateful services. Floating tags are pinned only where the upstream image is known-stable (Ollama is the one explicit exception, gated by a Watchtower exemption).
 
 [Types]
-No code types are introduced; the only "type-like" change is the codification of three canonical contracts that all docs and scripts must honor.
+This is a Compose/Bash/Markdown codebase; the only "types" are the canonical contracts every stack must honor on this NAS.
 
-- `STACK_ROOT` ALWAYS points to the `stacks/` directory itself, i.e. `/volume2/docker/ce-stacks/stacks`. This matches `scripts/init-nas.sh`. `dockhand/.env.example` and `dockhand/compose.yaml` must conform.
-- `DOCKHAND_DATA` ALWAYS points to `/volume2/docker/dockhand` (runtime root, outside the repo). It is the bind-mount source for `/app/data` inside the Dockhand container.
-- Dockhand RC-script source-of-truth lives at `dockhand/scripts/dockhand-start.sh` in the repo → synced to `/volume2/docker/dockhand/scripts/dockhand-start.sh` on the NAS → installed at `/usr/local/etc/rc.d/dockhand.sh`. No other path is valid; every doc and script must use these three paths consistently.
-
-Watchtower-on-Dockhand policy: `com.centurylinklabs.watchtower.enable=false`. Rationale: `fnsys/dockhand` only publishes the floating `latest` tag, and the compose.yaml comment already explicitly warns against auto-update. The RC script must be brought into alignment with the compose.yaml value (not the other way around).
+- **Memory budget contract.** Σ(`mem_limit`) across all simultaneously-running stacks must be ≤ 26 GB. Stacks that exceed this when stacked are mutually exclusive and must be documented as such in `README.md`.
+- **CPU contract.** On a 2-core / 4-thread CPU, every long-running service must declare `cpus:` (hard cap) in addition to `cpu_shares` (relative weight). Recommended ceiling per service: `cpus: "1.5"` for the heaviest workload (Ollama / code-server / mysql / psu-ots), `cpus: "0.5"` for sidecars, `cpus: "0.25"` for log viewers/utility services.
+- **Subnet contract.** Every bridge subnet must lie inside RFC1918 (`10/8`, `172.16/12`, `192.168/16`). `172.32.0.0/24` is **outside** `172.16.0.0/12` and is reallocated to `172.31.10.0/24`.
+- **Image-tag contract.** Stateful services (DBs, Ollama model store, PSU LiteDB) are pinned by digest **and** carry `com.centurylinklabs.watchtower.enable=false`. Stateless services may pin by semver tag and may opt into Watchtower. The single exception (`ollama/ollama:latest`) gets the Watchtower-exempt label.
+- **Compose-field contract.** New service definitions use `deploy.resources.limits.{cpus,memory}` and `deploy.resources.reservations.memory` (Compose v2.20+ honors these outside Swarm). Existing `mem_limit` / `cpu_shares` lines are migrated only where the file is already being edited; a one-shot migration script handles the rest.
+- **Hostname/extra_hosts contract.** Every web-facing stack that fronts on `otsorundscore.olutechsys.com` declares the same `extra_hosts: ["otsorundscore.olutechsys.com:10.0.1.15"]` block. The repo currently has it on 4 of ≈ 8 candidate stacks — this plan unifies.
 
 [Files]
-File changes are split into edits, new files, and one historical relabel.
+Edits are grouped by gap; new files are listed separately.
 
 Files to modify (existing):
-- `README.md` — fix line 104 (`/volume2/docker/ce-stacks/dockhand/dockhand-start.sh` → `/volume2/docker/ce-stacks/dockhand/scripts/dockhand-start.sh`); fix the broken link near line 121 (`./stacks/dockhand/README.md` → `./dockhand/README.md`); remove the stale `portainer-start.sh` entry from the directory layout (around line 41–42) and replace with `dockhand/scripts/dockhand-start.sh`; add a new "DSM boot persistence" subsection under "Getting Started" linking to the new `dockhand/docs/DSM_BOOT_PERSISTENCE.md`; add a short "Architecture & Design" section linking `solution-architect.md`.
-- `DOCKHAND_MIGRATION.md` — replace every `stacks/dockhand/` with `dockhand/`; fix the example `sudo cp …/dockhand-start.sh` path on line 29 to include `scripts/`; rewrite the rollback paragraph so it no longer assumes Portainer scripts exist (replace with "Dockhand is just the UI — stopping it does not stop your stacks").
-- `dockhand/README.md` — fix the manual `docker compose up -d` cwd on line 34 (`/volume2/docker/ce-stacks/stacks/dockhand` → `/volume2/docker/ce-stacks/dockhand`); fix every entry in the "Related Documentation" block to point at `dockhand/docs/MIGRATION.md`, `dockhand/scripts/dockhand-validate.sh`, `dockhand/scripts/dockhand-migration.sh`, and `dockhand/scripts/dockhand-start.sh`; rewrite the "Rollback to Portainer" section as "Rollback / disable Dockhand without affecting running stacks".
-- `dockhand/compose.yaml` — change `${STACK_ROOT}/dockhand/data:/app/data:rw` to `${DOCKHAND_DATA:-/volume2/docker/dockhand}:/app/data:rw`; change the hardcoded `/volume2/docker/ce-stacks/stacks:/app/stacks:rw` to `${STACK_ROOT:-/volume2/docker/ce-stacks/stacks}:/app/stacks:rw`; keep the Watchtower label as `enable=false` (already correct); add an inline comment that this compose file is for ad-hoc/dev use and the RC script is canonical for production lifecycle.
-- `dockhand/.env.example` — change the commented `STACK_ROOT` example value from `/volume2/docker/ce-stacks` to `/volume2/docker/ce-stacks/stacks`; add a commented `DOCKHAND_DATA=/volume2/docker/dockhand` example for symmetry; add a sentence clarifying that this file is consumed only by `docker compose` runs (not by the RC script, which has its own defaults).
-- `dockhand/STRUCTURE.md` — remove the phantom root-level `DEPLOYMENT.md` line (around line 11, "DEPLOYMENT.md ← Deployment instructions (root)"); the file only exists under `docs/`. Verify the rest of the file matches reality after other edits.
-- `dockhand/scripts/dockhand-start.sh` — change `--label com.centurylinklabs.watchtower.enable=true` to `--label com.centurylinklabs.watchtower.enable=false` to match the policy decision; add a new `ensure_ce_internal()` helper that idempotently creates the `ce-internal` bridge (`172.26.0.0/24`, gateway `172.26.0.1`) if absent; invoke `ensure_ce_internal` before `create_container` in the main logic block.
-- `dockhand/scripts/health-check-fix.sh` — fix the printed instruction on line 74 (`/volume2/docker/dockhand/dockhand-start.sh` → `/volume2/docker/dockhand/scripts/dockhand-start.sh`).
-- `dockhand/scripts/dockhand-migration.sh` — prepend a header banner clearly labeling it "Historical: Portainer → Dockhand migration helper. Retained for reference. Not part of the current deploy flow." No logic changes.
-- `dockhand/docs/HEALTH_CHECK_SOLUTION.md` — fix line 94 (`/volume2/docker/dockhand/health-check-fix.sh` → `/volume2/docker/dockhand/scripts/health-check-fix.sh`); fix line ~122 (`dockhand/dockhand-start.sh` → `dockhand/scripts/dockhand-start.sh`).
-- `dockhand/docs/HEALTH_CHECK_DEBUG.md` — fix the `RC Script` path reference around line 392 to include `scripts/`.
-- `dockhand/docs/HEALTH_CHECK_FIX.md` — sweep for any remaining `/volume2/docker/dockhand/dockhand-start.sh` (no `scripts/`) references and correct them.
-- `dockhand/docs/DEPLOYMENT.md` — add a clarifying note that the raw `cp -r ce-stacks/dockhand /volume2/docker/dockhand` is destructive on re-run; recommend `bash scripts/init-nas.sh` (or the new `scripts/dockhand-sync.sh`) as the canonical, idempotent sync path that preserves runtime `.env`, `data/`, and `secrets/`.
-- `AUDIT_REPORT.md` — append a "Resolution status (2026-05-15)" section noting which audit items are closed by this plan (Issues #2, #3, #9 are now addressed by `init-nas.sh` + this reconciliation).
-- `QUICK_FIX_CHECKLIST.md` — same: cross out items now obsoleted by `scripts/bootstrap-env.sh --apply` (already invoked by `init-nas.sh`) and by this plan.
+
+- `stacks/ollama/compose.yaml` — pin `ollama/ollama:latest` → `ollama/ollama:0.4.7` (or current stable digest at time of apply); lower `otsai-server.mem_limit` from `14g` to `10g` and `mem_reservation` from `8g` to `6g`; add `cpus: "1.5"`; add `OLLAMA_MAX_LOADED_MODELS=1` and `OLLAMA_NUM_PARALLEL=1` to the env block (CPU-only on 2 cores); add `com.centurylinklabs.watchtower.enable=false` label (Ollama models corrupt on mid-pull restart); on the `open-webui` service add `cpus: "0.75"` and lower `mem_limit` to `1g`.
+- `stacks/dozzle/compose.yaml` — lower `mem_limit` from `3g` to `256m`; add `cpus: "0.5"`. Dozzle tails Docker socket streams; 3 GB is a copy-paste artifact.
+- `stacks/code-server/compose.yaml` — keep `code-server.mem_limit: 4g` but add `cpus: "1.5"`; `db.mem_limit` (mysql:8.3) stays `2g` but add `cpus: "0.75"`; `phpmyadmin.mem_limit` stays `512m` but add `cpus: "0.25"`; add an `extra_hosts` block for `otsorundscore.olutechsys.com:10.0.1.15` on the `code-server` service.
+- `stacks/databases/compose.yaml` — add `cpus: "1.0"` (mariadb), `cpus: "0.75"` (postgres), `cpus: "0.25"` (adminer). Re-confirm digest pins on mariadb/postgres (already pinned by tag, no digest — add `image: mariadb:11.4.10@sha256:…` and same for postgres; resolved at apply time).
+- `stacks/grafana-prom/compose.yaml` — add `cpus:` caps: grafana `0.5`, prometheus `1.0`, node-exporter / snmp-exporter / cadvisor `0.25` each, alertmanager `0.25`.
+- `stacks/github-desktop/compose.yaml` — keep `seccomp:unconfined` but add an inline comment linking to KasmVNC SECCOMP requirement so a future audit pass does not strip it; add `cpus: "1.0"`. Verify on DSM 7.3.2 U3 that AppArmor does not block `unconfined` (runtime check, documented in `docs/dsm-732-runtime-quirks.md`).
+- `stacks/psu-ots/compose.yaml` — change subnet from `172.32.0.0/24` (non-RFC1918) → `172.31.10.0/24` (gateway `172.31.10.1`); add `cpus: "1.5"`; verify the `${ACME_CERT_ROOT:-/volume2/certs/acme}` mount target exists on the host (referenced docs entry).
+- `stacks/zabbix/compose.yaml` — add `cpus: "0.75"` (zabbix-server-pgsql), `cpus: "0.5"` (postgres), `cpus: "0.5"` (web-nginx); already pinned, no image changes.
+- `stacks/agents_gateway_data/compose.yaml` — change docker.sock mount from `rw` to `ro` and document an optional `tecnativa/docker-socket-proxy` side-car alternative in the README; add `cpus: "0.5"`.
+- `stacks/synology-api-bridge/compose.yaml` — keep `build: .` but add an explicit warning comment that first-time deploy requires `docker compose -f stacks/synology-api-bridge/compose.yaml build` from SSH (DSM Container Manager UI does not always pick up local builds); pin Python base by digest (already done in `Dockerfile`); add `cpus: "0.25"`.
+- `stacks/watchtower/compose.yaml` — lower poll interval if currently set to default (3600 s) → `21600` (6 h); add `WATCHTOWER_LABEL_ENABLE=true` so only labelled services are touched (defense-in-depth on top of the per-service `enable=false` labels); add `cpus: "0.25"`.
+- `stacks/searxng/compose.yaml`, `stacks/homepage/compose.yaml`, `stacks/openresume/compose.yaml`, `stacks/codex-docs/compose.yaml`, `stacks/it-tools/compose.yaml`, `stacks/remotely/compose.yaml`, `stacks/acme-sh/compose.yaml`, `stacks/mcp-tools-config/compose.yaml` — add `cpus:` caps per the [Types] ceiling (sidecars `0.5`, utilities `0.25`).
+- `stacks/_haproxy/haproxy.cfg` — no logic change; add a header comment noting it is invoked by the bare-metal HAProxy from `@appstore` and that `/volume2/certs/acme/` must be readable by the HAProxy uid; cross-reference `stacks/acme-sh` for cert renewal.
+- `README.md` — add a new "Host Profile: otsorundscore" section near the top documenting: CPU/RAM ceiling (32 GB / 2 core / no GPU), the 26 GB usable budget, the "stacks mutually exclusive under load" table (Ollama-heavy vs full monitoring vs full IDE stack), and a pointer to `docs/dsm-732-runtime-quirks.md`. Update the "Network Subnets" table to replace `172.32.0.0/24` with `172.31.10.0/24` for `psu-ots`.
+- `AUDIT_REPORT.md` — append a "2026-05-15 host-profile reconciliation" section listing the new gaps (Issue #12 mem overcommit, #13 non-RFC1918 subnet, #14 Ollama floating tag, #15 docker.sock rw on gateway, #16 missing cpus caps, #17 dozzle mem outlier).
+- `scripts/verify-repo-layout.sh` — add two new assertions: (a) every `subnet:` line in `stacks/*/compose.yaml` falls inside an RFC1918 range; (b) Σ(`mem_limit`) across all stacks ≤ a configurable ceiling (default 26g).
+- `scripts/compose-validate.sh` — invoke the new `scripts/lint-host-budget.sh` after the existing per-stack `docker compose config` pass.
 
 Files to create (new):
-- `implementation_plan.md` (repo root) — this plan, persisted for the implementation agent (this file itself).
-- `dockhand/docs/DSM_BOOT_PERSISTENCE.md` — short note covering: DSM 7.3 does **not** auto-execute `/usr/local/etc/rc.d/*.sh` on boot; create a Task Scheduler "Triggered Task → Boot-up → root → `bash /usr/local/etc/rc.d/dockhand.sh`" task; include verification steps (`sudo /usr/local/etc/rc.d/dockhand.sh` returns 0, then `docker ps | grep dockhand` shows healthy) and a one-line uninstall.
-- `scripts/dockhand-sync.sh` — thin wrapper that re-runs only Section 7 of `init-nas.sh` (the rsync `REPO_ROOT/dockhand/ → /volume2/docker/dockhand/` step, excluding `.env`, `data/`, `secrets/`) for operators who want to update Dockhand-only files without a full bootstrap. Same fallback semantics as `init-nas.sh` (rsync if available, else `cp` with no-clobber for protected paths). Exit non-zero if `dockhand/scripts/dockhand-start.sh` is not found in the source tree.
 
-Files to delete:
-- None. `dockhand/scripts/dockhand-migration.sh` is relabeled (see above), not deleted, so git history of the migration decision is preserved.
+- `docs/dsm-732-runtime-quirks.md` — concrete runbook for DSM 7.3.2-86009 U3 on a DS723+: Container Manager vs CLI deploy paths, BTRFS `@docker` storage driver quirks (`docker system prune -af --volumes` cadence), `seccomp:unconfined` verification, Cool-mode thermal throttling behavior under sustained CPU (Ollama), `rc.d` non-execution at boot (covered by the existing DSM Task Scheduler note), and the `volume1` (`@appstore` HAProxy) ↔ `volume2` (Docker) cross-volume cert-path coordination.
+- `docs/host-profile-otsorundscore.md` — single source of truth for the host: hostname `otsorundscore`, FQDN `otsorundscore.olutechsys.com`, LAN IP `10.0.1.15`, NTP `time.google.com`, TZ `America/New_York`, CPU `Ryzen R1600` (Zen / AVX2 / no GPU), RAM 32 GB, DSM `7.3.2-86009 Update 3`, serial `2490TPRRB8926`, model `DS723+`. Pulled directly from the user-supplied facts. Linked from `README.md`.
+- `scripts/lint-host-budget.sh` — Bash script. For every `stacks/*/compose.yaml`, parses `mem_limit` (yq if available, else awk fallback), normalizes to MB, sums per stack and across all stacks, compares against `${HOST_MEM_BUDGET_MB:-26624}` (26 GB). Exits non-zero with a per-stack breakdown if total exceeds budget. Used by `scripts/compose-validate.sh` and runnable standalone (`bash scripts/lint-host-budget.sh`).
+- `scripts/lint-rfc1918.sh` — Bash script. Greps every `stacks/*/compose.yaml` for `subnet:` lines, parses each, fails if any subnet is outside `10.0.0.0/8`, `172.16.0.0/12`, or `192.168.0.0/16`. Called from `scripts/verify-repo-layout.sh`.
+- `scripts/migrate-mem-limits-to-deploy.sh` — one-shot, idempotent migration helper. Converts `mem_limit: X` + `cpu_shares: Y` blocks to the Compose-v2 canonical `deploy.resources.limits.memory` / `deploy.resources.reservations.memory` form, preserving comments. Default mode is `--dry-run`; `--apply` mutates files. Not run by CI — manual cut-over only.
+- `stacks/_haproxy/README.MD` (overwrite minor) — currently `README.MD` (capitalized). Confirm casing on case-sensitive filesystems (Linux NAS is case-sensitive; macOS dev is usually case-insensitive). Rename to `README.md` for consistency with the rest of the repo. Adds a paragraph noting `volume1` vs `volume2` cross-volume operations.
+
+Files to delete or move:
+
+- `implementation_plan.md` (root) — the previous dockhand-drift plan has been copied to `docs/implementation_plan_dockhand_drift.md` and this file now hosts the new host-profile plan. No deletion required.
 
 [Functions]
-One new function and one in-place modification, all in `dockhand/scripts/dockhand-start.sh`.
+The plan introduces three small shell functions; no application code.
 
 New functions:
-- `ensure_ce_internal()` in `dockhand/scripts/dockhand-start.sh` — runs `$DOCKER network inspect ce-internal >/dev/null 2>&1`; if exit code is non-zero, runs `$DOCKER network create --driver bridge --subnet 172.26.0.0/24 --gateway 172.26.0.1 ce-internal` and logs "dockhand-start: created ce-internal (172.26.0.0/24)". Returns 0 on success or already-present, non-zero only if create itself fails. Invoked once between the `socket_accessible` check and the `exists`/`create_container` branch.
+
+- `parse_mem_to_mb(value: string) -> int` in `scripts/lint-host-budget.sh` — pure-Bash converter that accepts `128m`, `512m`, `1g`, `14g`, `2G`, etc. and emits an integer megabyte count. Backed by an `awk` one-liner; no `yq` dependency. Unit-tested inline at script bottom via a `_self_test` block guarded by `[[ "${1:-}" == "--self-test" ]]`.
+- `assert_rfc1918(cidr: string) -> 0|1` in `scripts/lint-rfc1918.sh` — strips the prefix length, splits the first two octets, and tests membership in {`10.*`, `172.16-31.*`, `192.168.*`}. Returns 0 if inside RFC1918, 1 otherwise. Called once per `subnet:` line.
+- `migrate_block(file: path, service: string) -> 0|1` in `scripts/migrate-mem-limits-to-deploy.sh` — locates the `mem_limit`/`cpu_shares` lines under a given service and rewrites them to the `deploy.resources` block. Uses `awk` for in-place rewrite; preserves the rest of the file byte-for-byte. Idempotent: skips a service that already has a `deploy:` block.
 
 Modified functions:
-- `create_container()` in `dockhand/scripts/dockhand-start.sh` — no signature change; the only edit is the `--label com.centurylinklabs.watchtower.enable=true` line becomes `--label com.centurylinklabs.watchtower.enable=false` so the RC script and `dockhand/compose.yaml` agree.
 
-Removed functions: none.
+- None (no application source touched).
+
+Removed functions:
+
+- None.
 
 [Classes]
-N/A — this is a shell/markdown/compose codebase with no classes.
+N/A — no classes in this codebase.
 
 [Dependencies]
-No new runtime dependencies. The plan reduces effective dependency surface by retiring references to a `portainer-start.sh` script that no longer ships.
+No new runtime dependencies are introduced; the plan reduces operational risk by tightening tag pinning, not by adding packages.
 
-- Docker Compose v2 (already required).
-- `rsync` (already used by `init-nas.sh`; the new `scripts/dockhand-sync.sh` re-uses the same `command -v rsync && … || cp` fallback pattern).
-- No new container images, no version bumps, no registry changes, no package installs.
+- `bash 4+` (already required by every other script).
+- `awk` (BSD or GNU; both supported by the same `awk` invocations already used in `scripts/init-nas.sh`).
+- Optional: `yq` (v4+) — only consulted by `scripts/lint-host-budget.sh` if present; the awk fallback covers DSM hosts that lack it.
+- Optional: `crane` or `skopeo` — used by the operator (not by CI) to resolve `mariadb:11.4.10` → digest before pinning. Not a hard prereq.
+- No new container images, no version bumps to existing images outside the pin/unpin changes listed in [Files], no compose-plugin version requirement above what DSM 7.3.2 already ships (`docker compose v2.27+`).
 
 [Testing]
-Validation is script-based and local; no new test framework is introduced.
+All validation is local shell + a small set of `docker compose config -q` runs; no test framework is introduced.
 
-- Run `bash scripts/compose-validate.sh` after edits — must continue to pass for every `stacks/*/compose.yaml`. Then run `docker compose -f dockhand/compose.yaml config -q` once explicitly (the validator scopes itself to `stacks/`, so this is an extra one-off check).
-- Run `bash scripts/verify-repo-layout.sh` — must still report OK (no root-level duplicates of stack directory names).
-- The new `scripts/dockhand-sync.sh` asserts the existence of `dockhand/scripts/dockhand-start.sh` in the source tree at startup; manually verify by deleting the source temporarily in a scratch clone and confirming the script exits non-zero with an explicit error.
-- Manual on-NAS verification (documented, not automated): `bash /volume2/docker/dockhand/scripts/dockhand-validate.sh` followed by `curl -fs http://10.0.1.15:3866/health` must return 200.
-- Doc-link sanity check (run from repo root): `grep -rn "stacks/dockhand\|/volume2/docker/dockhand/dockhand-start\|/volume2/docker/dockhand/health-check-fix" .` must return zero matches outside `implementation_plan.md` and `.git/`.
+- `bash scripts/compose-validate.sh` — must continue to pass for every `stacks/*/compose.yaml` after each edit.
+- `bash scripts/verify-repo-layout.sh` — must pass with the two new assertions (`lint-rfc1918.sh` and `lint-host-budget.sh`). The mem-budget assertion is configurable via `HOST_MEM_BUDGET_MB` so dev machines with > 26 GB do not false-flag.
+- `bash scripts/lint-rfc1918.sh` — standalone run; expected output: `OK: 19 subnets inside RFC1918`.
+- `bash scripts/lint-host-budget.sh` — standalone run; expected output: `OK: total mem_limit 26.x GB ≤ 26.0 GB budget` (after the dozzle / ollama / open-webui cuts).
+- `bash scripts/migrate-mem-limits-to-deploy.sh --self-test --dry-run` — must report parity for a known-good fixture (a copy of `stacks/acme-sh/compose.yaml`); apply mode is not exercised by CI.
+- Manual on-NAS verification (documented in `docs/dsm-732-runtime-quirks.md`, not automated):
+  1. `docker network inspect ce-internal` returns 200; `docker network inspect psu-ots-net` confirms the new `172.31.10.0/24` subnet.
+  2. `docker stats --no-stream` while ollama serves a 7B Q4 model — actual RSS must stay below the new `10g` cap.
+  3. `synoinfo --get system_status` should not show thermal throttling under sustained ollama inference (Cool mode + 2 cores).
+  4. `curl -fs http://10.0.1.15:3866/health` (Dockhand) returns 200 after a reboot, confirming the DSM Task Scheduler "Boot-up" task (from the prior plan) still works.
+- Doc-link sweep (run from repo root): `grep -rn "172\.32\.0\.0" .` must return zero matches outside `docs/implementation_plan_dockhand_drift.md` (archived) and `.git/`.
 
 [Implementation Order]
-The sequence below minimizes the risk that an intermediate state breaks a currently-deployed NAS.
+The sequence below minimizes the risk that an intermediate state breaks any currently-running stack on `otsorundscore`.
 
-1. Path-only fixes (lowest risk, zero behavior change): edit `README.md`, `DOCKHAND_MIGRATION.md`, `dockhand/README.md`, `dockhand/STRUCTURE.md`, `dockhand/scripts/health-check-fix.sh`, `dockhand/docs/HEALTH_CHECK_SOLUTION.md`, `dockhand/docs/HEALTH_CHECK_DEBUG.md`, `dockhand/docs/HEALTH_CHECK_FIX.md`.
-2. `STACK_ROOT` / `DOCKHAND_DATA` alignment: update `dockhand/.env.example` and `dockhand/compose.yaml` to the canonical values. Run `docker compose -f dockhand/compose.yaml config -q` locally to confirm interpolation succeeds.
-3. Watchtower-label reconciliation: change `--label com.centurylinklabs.watchtower.enable=true` to `…=false` in `dockhand/scripts/dockhand-start.sh`. The compose.yaml is already `false` — no edit there.
-4. Add `ensure_ce_internal()` to `dockhand/scripts/dockhand-start.sh` and invoke it in the main flow so the script is safe to run before `init-nas.sh` on a fresh NAS.
-5. Relabel `dockhand/scripts/dockhand-migration.sh` header as historical.
-6. Create `dockhand/docs/DSM_BOOT_PERSISTENCE.md` and add links to it from `README.md` and `dockhand/README.md`.
-7. Create `scripts/dockhand-sync.sh`, then add a "Re-sync without full bootstrap" pointer in `dockhand/docs/DEPLOYMENT.md`.
-8. Sweep `AUDIT_REPORT.md` and `QUICK_FIX_CHECKLIST.md` to mark resolved items.
-9. Final validation pass:
+1. **Snapshot first.** On the NAS, `docker compose ls` and `docker network ls` are captured into `/volume2/docker/_snapshots/$(date +%F)-pre-host-profile.txt` so the operator can roll back without guessing.
+2. **Static files only, zero behavior change.** Create `docs/dsm-732-runtime-quirks.md` and `docs/host-profile-otsorundscore.md`. Link both from `README.md` (new "Host Profile: otsorundscore" section). Rename `stacks/_haproxy/README.MD` → `stacks/_haproxy/README.md` (case fix). No service restart required.
+3. **Linters before mutations.** Create `scripts/lint-rfc1918.sh` and `scripts/lint-host-budget.sh`. Wire them into `scripts/verify-repo-layout.sh` and `scripts/compose-validate.sh`. Run both — they should fail with the *current* values (psu-ots non-RFC1918, total mem 43 GB > 26 GB). This is the baseline against which fixes are measured.
+4. **Subnet fix (low risk, single stack).** Edit `stacks/psu-ots/compose.yaml` subnet → `172.31.10.0/24`. Update the README network table. Rerun `lint-rfc1918.sh` → must pass. Operator restarts psu-ots only: `docker compose -f stacks/psu-ots/compose.yaml up -d --force-recreate`.
+5. **Memory / CPU caps — sidecars first (lowest blast radius).** Apply `cpus:` caps and trim `mem_limit` on the cheapest stacks: `dozzle`, `mcp-tools-config`, `it-tools`, `acme-sh`, `watchtower`, `homepage`, `searxng`, `openresume`, `codex-docs`, `remotely`. Re-run `lint-host-budget.sh` after each edit — totals fall monotonically. No restarts required (Compose change propagates next deploy).
+6. **Memory / CPU caps — medium stacks.** `agents_gateway_data` (also flips docker.sock to `:ro`), `synology-api-bridge`, `github-desktop`, `grafana-prom`, `zabbix`, `databases`. Re-run linters.
+7. **Memory / CPU caps — heavy stacks.** `code-server` (three services), `psu-ots`, `ollama`. The ollama edit also pins the image and adds the Watchtower-exempt label and `OLLAMA_MAX_LOADED_MODELS=1`. Re-run linters — total must now be ≤ 26 GB.
+8. **Optional Compose-v2 migration.** Run `scripts/migrate-mem-limits-to-deploy.sh --dry-run`; review diff; run `--apply` only if the operator wants to retire the legacy `mem_limit`/`cpu_shares` fields. **Not** part of the critical path — the legacy fields keep working on DSM 7.3.2.
+9. **Final validation pass:**
    - `bash scripts/compose-validate.sh`
    - `bash scripts/verify-repo-layout.sh`
-   - `docker compose -f dockhand/compose.yaml config -q`
-   - `grep -rn "stacks/dockhand\|/volume2/docker/dockhand/dockhand-start\|/volume2/docker/dockhand/health-check-fix" . | grep -v implementation_plan.md | grep -v .git` returns empty.
-10. Commit as a single coherent change: `docs+infra: reconcile dockhand path/config drift, add DSM boot-persistence guide`.
+   - `bash scripts/lint-rfc1918.sh`
+   - `bash scripts/lint-host-budget.sh`
+   - `grep -rn "172\.32\.0\.0" . | grep -v docs/implementation_plan_dockhand_drift.md | grep -v .git` returns empty.
+10. **Commit as one logical change:** `feat(host-profile): right-size mem/cpu for otsorundscore (DS723+ 32GB/2c), reallocate psu-ots subnet to RFC1918, pin ollama, add DSM 7.3.2 quirks runbook`.
+11. **Deploy on NAS in waves.** Apply the new compose values one stack at a time using `docker compose -f stacks/<stack>/compose.yaml up -d`. Verify `docker stats` matches the new caps. Ollama is applied last (largest behavioral change). Snapshot from Step 1 enables targeted rollback per stack.

@@ -2,8 +2,11 @@ services:
   mariadb:
     container_name: MariaDB
     image: mariadb:11.4.10
+    # TODO(host-profile): pin by digest. Resolve on the NAS:
+    #   docker pull mariadb:11.4.10 && docker inspect mariadb:11.4.10 --format '{{index .RepoDigests 0}}'
     mem_limit: 2g
     cpu_shares: 768
+    cpus: "1.0"
     security_opt:
       - no-new-privileges:true
     logging:
@@ -45,8 +48,10 @@ services:
   postgres:
     container_name: PostgreSQL
     image: postgres:16-alpine
+    # TODO(host-profile): pin by digest (see mariadb comment above).
     mem_limit: 1g
     cpu_shares: 768
+    cpus: "0.75"
     security_opt:
       - no-new-privileges:true
     logging:
@@ -90,6 +95,7 @@ services:
     image: adminer:5.4.2-standalone
     mem_limit: 256m
     cpu_shares: 256
+    cpus: "0.25"
     security_opt:
       - no-new-privileges:true
     logging:

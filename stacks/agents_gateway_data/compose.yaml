@@ -6,6 +6,7 @@ services:
       - --transport=streaming
     mem_limit: 512m
     cpu_shares: 512
+    cpus: "0.5"
     security_opt:
       - no-new-privileges:true
     logging:
@@ -18,8 +19,10 @@ services:
       - 10.0.1.15:8812:8811
     volumes:
       # /var/run socket context
-      # SECURITY: docker.sock :rw - MCP gateway needs full API access for tool container integrations.
-      - /var/run/docker.sock:/var/run/docker.sock
+      # Host-profile fix: dropped :rw → :ro. Gateway reads container metadata only.
+      # If a future tool container truly needs :rw, front the socket with
+      # tecnativa/docker-socket-proxy (defense in depth — see README).
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     # Healthcheck type: A - HTTP /health probe (wget - verified 2026-05-07)
     # Host publishes 8812→8811; in-container probe stays on 8811. Upstream example uses /health.
     # Source: https://raw.githubusercontent.com/docker/mcp-gateway/main/examples/health/compose.yaml

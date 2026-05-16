@@ -14,10 +14,11 @@ OLLAMA_BIN="${OLLAMA_BIN:-/usr/bin/ollama}"
 
 # ── Default model list ────────────────────────────────────────────────────────
 # Tier 1: baseline - small/fast, always needed
-#   phi4:mini        ~2.5 GB  fast chat
+#   stablelm2:3b     ~1.9 GB  fast chat (replaced phi4:mini)
 #   nomic-embed-text ~270 MB  RAG embeddings (required for AnythingLLM)
 #   llama3.2:3b      ~2.0 GB  fast general
 # Tier 2: primary - workhorse models
+#   stablelm2:7b     ~4.1 GB  code/reasoning
 #   qwen2.5-coder:7b ~4.7 GB  code completion
 #   llama3.1:8b      ~4.9 GB  general reasoning
 # Tier 3: secondary - optional, comment out to save disk/RAM
@@ -25,7 +26,7 @@ OLLAMA_BIN="${OLLAMA_BIN:-/usr/bin/ollama}"
 #   mistral:7b       ~4.1 GB  general
 #   qwen2.5:7b       ~4.7 GB  multilingual general
 # ─────────────────────────────────────────────────────────────────────────────
-DEFAULT_MODELS="phi4:mini,nomic-embed-text,llama3.2:3b,qwen2.5-coder:7b,llama3.1:8b,deepseek-r1:7b,mistral:7b,qwen2.5:7b"
+DEFAULT_MODELS="stablelm2:3b,nomic-embed-text,llama3.2:3b,stablelm2:7b,qwen2.5-coder:7b,llama3.1:8b,deepseek-r1:7b,mistral:7b,qwen2.5:7b"
 
 # MODELS env var overrides the default list if set
 MODELS="${MODELS:-${DEFAULT_MODELS}}"

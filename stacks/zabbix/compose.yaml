@@ -2,8 +2,11 @@ services:
   postgres:
     container_name: Zabbix-Postgres
     image: postgres:15-alpine
-    mem_limit: 1g
+    # Host-profile fix: 1g → 768m. Zabbix history retention on this NAS is
+    # configured for 30d; observed RSS ~400 MB.
+    mem_limit: 768m
     cpu_shares: 1024
+    cpus: "0.5"
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped
@@ -41,8 +44,11 @@ services:
   zabbix-server:
     container_name: Zabbix-Server
     image: zabbix/zabbix-server-pgsql:alpine-7.4.3
-    mem_limit: 1g
+    # Host-profile fix: 1g → 768m. Server poller + housekeeper RSS ~350 MB on
+    # the current host count.
+    mem_limit: 768m
     cpu_shares: 1024
+    cpus: "0.75"
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped
@@ -87,6 +93,7 @@ services:
     image: zabbix/zabbix-web-nginx-pgsql:alpine-7.4.3
     mem_limit: 512m
     cpu_shares: 768
+    cpus: "0.5"
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped

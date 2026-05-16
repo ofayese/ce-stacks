@@ -6,6 +6,7 @@ services:
     image: yuihtt/open-resume@sha256:c3d089d648d00a71162a8dc7a6b919efc1bbc5da22ca9a82ff751e22651b0e9e
     mem_limit: 512m
     cpu_shares: 512
+    cpus: "0.5"
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped

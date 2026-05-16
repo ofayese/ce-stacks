@@ -3,9 +3,14 @@ services:
     build: .
     image: synology-api-bridge:local
     container_name: SynologyApiBridge
+    # NOTE(DSM 7.3): build: . above. First deploy MUST come from SSH, not Container
+    # Manager UI — see docs/dsm-732-runtime-quirks.md §1.
+    #   cd /volume2/docker/ce-stacks/stacks/synology-api-bridge
+    #   sudo /usr/local/bin/docker compose build && sudo /usr/local/bin/docker compose up -d
     restart: unless-stopped
     mem_limit: 256m
     cpu_shares: 256
+    cpus: "0.25"
     security_opt:
       - no-new-privileges:true
     environment:

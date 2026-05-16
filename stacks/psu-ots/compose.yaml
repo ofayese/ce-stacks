@@ -6,8 +6,10 @@ services:
     image: ironmansoftware/universal@sha256:069b858b0f010d522144745ac918cc12c8ea022d516f011fe7e2596efc3a03c4
     # Tag at publish time: 2026.1.6-ubuntu-24.04 (linux/amd64). Re-resolve digest on upgrade.
     restart: unless-stopped
-    mem_limit: 2g
+    # Host-profile fix: 2g → 1g. PSU + LiteDB working set on this NAS is ~400 MB.
+    mem_limit: 1g
     cpu_shares: 512
+    cpus: "1.0"
     security_opt:
       - no-new-privileges:true
     logging:
@@ -101,6 +103,8 @@ networks:
     driver: bridge
     ipam:
       config:
-        # 172.30.0.0/24 taken by zabbix-net. 172.32.0.0/24 confirmed free.
-        - subnet: 172.32.0.0/24
-          gateway: 172.32.0.1
+        # 172.30.0.0/24 taken by zabbix-net. Previous value 172.32.0.0/24 was OUTSIDE
+        # RFC1918 (172.16/12 ends at 172.31.255.255) and would mis-route through any
+        # future NAT/VPN. 172.31.10.0/24 is the next free RFC1918 /24 in the registry.
+        - subnet: 172.31.10.0/24
+          gateway: 172.31.10.1

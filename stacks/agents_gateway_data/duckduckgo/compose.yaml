@@ -6,6 +6,7 @@ services:
       - --transport=streaming
     mem_limit: 512m
     cpu_shares: 512
+    cpus: "0.5"
     security_opt:
       - no-new-privileges:true
     logging:
@@ -19,8 +20,8 @@ services:
       - 10.0.1.15:8812:8811
     volumes:
       # /var/run socket context
-      # SECURITY: docker.sock :rw — MCP gateway needs full API access for tool container integrations.
-      - /var/run/docker.sock:/var/run/docker.sock
+      # Host-profile fix: dropped :rw → :ro (parity with ../compose.yaml).
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     # Healthcheck type: A — HTTP /health probe (same as root compose.yaml)
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8811/health"]

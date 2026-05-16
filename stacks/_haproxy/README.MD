@@ -8,10 +8,11 @@ HAProxy is installed as a **bare-metal service** on the Synology NAS (not contai
 
 ### Location
 
-- **Config**: `/usr/local/etc/haproxy/haproxy.cfg`
-- **Binary**: `/usr/local/sbin/haproxy`
-- **Init script**: `/usr/local/etc/rc.d/haproxy` (auto-started by Synology)
-- **Logs**: `/var/log/haproxy.log`
+- **Config (live)**: `/var/packages/haproxy/var/haproxy.cfg`
+- **Cert directory (live)**: `/var/packages/haproxy/var/crt/` (PEM bundles deployed by `deploy_certs.sh`)
+- **Config (repo / source of truth)**: `stacks/_haproxy/haproxy.cfg` — copy to live path after validation
+- **Binary**: `/volume1/@appstore/haproxy/sbin/haproxy`
+- **Log buffer**: `/var/packages/haproxy/var/http-access.log`
 
 ### Installation Method
 
@@ -24,18 +25,19 @@ Persists on `/volume1/` (across Docker stack resets)
 **Check status**:
 
 ```bash
-sudo systemctl status haproxy
-# or
 ps aux | grep haproxy
+# or via DSM Package Center → HAProxy → Status
 ```
 
-**Restart HAProxy**:
+**Validate config before reload**:
 
 ```bash
-sudo /usr/local/etc/rc.d/haproxy restart
-# or use provided script
-bash stacks/_haproxy/haproxy-restart.sh
+sudo /volume1/@appstore/haproxy/sbin/haproxy -c -f /var/packages/haproxy/var/haproxy.cfg
 ```
+
+**Reload HAProxy** (after successful `-c`):
+
+Open **DSM → Package Center → HAProxy → Action → Restart** (or Stop then Start).
 
 ---
 
@@ -43,7 +45,8 @@ bash stacks/_haproxy/haproxy-restart.sh
 
 ### Main Config File
 
-**Location**: `/usr/local/etc/haproxy/haproxy.cfg`
+**Location (live)**: `/var/packages/haproxy/var/haproxy.cfg`  
+**Source of truth**: `stacks/_haproxy/haproxy.cfg` (validate then copy to live path)
 
 **Key Sections**:
 
@@ -65,13 +68,13 @@ backend services
 
 ### SSL/TLS Configuration
 
-**Certificates** stored in `/volume1/certs/` (typically from acme-sh)
+**Certificates** are deployed to `/var/packages/haproxy/var/crt/` by `stacks/acme-sh/scripts/deploy_certs.sh` (combined fullchain + privkey PEM bundles, one file per domain profile).
 
 **Binding HTTPS**:
 
 ```
-frontend https_in
-    bind *:443 ssl crt /volume1/certs/acme/domain.com/fullchain.pem
+frontend https-in
+    bind 10.0.1.15:443 ssl crt /var/packages/haproxy/var/crt/ alpn h2,http/1.1
     mode http
 ```
 
@@ -89,67 +92,67 @@ frontend http_in
 
 ### Add a New Backend Service
 
-1. **Edit HAProxy config**:
+1. **Edit the repo config**:
 
    ```bash
-   sudo nano /usr/local/etc/haproxy/haproxy.cfg
+   nano stacks/_haproxy/haproxy.cfg
    ```
 
 2. **Add backend section**:
 
    ```
    backend my_service
-       mode http
-       server service 10.0.1.15:9090
+       option httpchk GET /
+       server service 10.0.1.15:9090 check
    ```
 
-3. **Add ACL + route in frontend**:
+3. **Add host.map entry** (`stacks/_haproxy/maps/host.map`):
 
    ```
-   frontend https_in
-       acl my_service_req hdr(host) -i my-service.domain.com
-       use_backend my_service if my_service_req
+   my-service.olutechsys.com	my_service
    ```
 
 4. **Validate config**:
 
    ```bash
-   sudo haproxy -f /usr/local/etc/haproxy/haproxy.cfg -c
+   sudo /volume1/@appstore/haproxy/sbin/haproxy -c -f stacks/_haproxy/haproxy.cfg
    ```
 
-5. **Restart**:
+5. **Copy to live path and reload**:
 
    ```bash
-   bash stacks/_haproxy/haproxy-restart.sh
+   sudo cp stacks/_haproxy/haproxy.cfg /var/packages/haproxy/var/haproxy.cfg
    ```
+
+   Then restart HAProxy: **DSM → Package Center → HAProxy → Action → Restart**.
 
 ### Update SSL Certificate
 
 When `acme-sh` renews certificates:
 
-1. **Verify new cert exists**:
+1. **Run deploy_certs.sh** to build and deploy updated bundles:
 
    ```bash
-   ls -la /volume1/certs/acme/domain.com/
+   STACK_ROOT=/volume2/docker/ce-stacks/stacks bash stacks/acme-sh/scripts/deploy_certs.sh
    ```
 
-2. **Restart HAProxy** (automatically reloads certs):
+   This deploys PEM bundles to `/var/packages/haproxy/var/crt/` and runs `haproxy -c` automatically.
 
-   ```bash
-   bash stacks/_haproxy/haproxy-restart.sh
-   ```
+2. **Restart HAProxy** after successful validation:
+
+   Open **DSM → Package Center → HAProxy → Action → Restart**.
 
 ### Check HAProxy Status
 
 ```bash
-# View logs
-tail -f /var/log/haproxy.log
+# View access logs
+tail -f /var/packages/haproxy/var/http-access.log
 
 # Count connections
 ss -pltn | grep haproxy
 
 # Test config syntax
-sudo haproxy -f /usr/local/etc/haproxy/haproxy.cfg -c
+sudo /volume1/@appstore/haproxy/sbin/haproxy -c -f /var/packages/haproxy/var/haproxy.cfg
 ```
 
 ---
@@ -160,10 +163,10 @@ sudo haproxy -f /usr/local/etc/haproxy/haproxy.cfg -c
 
 ```bash
 # Check config syntax
-sudo haproxy -f /usr/local/etc/haproxy/haproxy.cfg -c
+sudo /volume1/@appstore/haproxy/sbin/haproxy -c -f /var/packages/haproxy/var/haproxy.cfg
 
-# View system logs
-tail -50 /var/log/haproxy.log
+# View access logs
+tail -50 /var/packages/haproxy/var/http-access.log
 dmesg | tail -20
 
 # Check port availability
@@ -207,7 +210,7 @@ ss -pltn | grep 443
 
 ### Performance / Slow Requests
 
-**Check timeout settings** in `/usr/local/etc/haproxy/haproxy.cfg`:
+**Check timeout settings** in `/var/packages/haproxy/var/haproxy.cfg`:
 
 ```
 defaults
@@ -228,22 +231,19 @@ defaults
 ### Backup Configuration
 
 ```bash
-# Backup to repo
-cp /usr/local/etc/haproxy/haproxy.cfg \
+# Live config → repo (review diffs before committing)
+cp /var/packages/haproxy/var/haproxy.cfg \
    stacks/_haproxy/haproxy.cfg.bak
-
-# Keep in version control (git)
 git add stacks/_haproxy/haproxy.cfg.bak
 ```
 
 ### Monitor Certificate Expiration
 
 ```bash
-# Check certificate validity
-openssl x509 -in /volume1/certs/acme/domain.com/fullchain.pem -noout -dates
+# Check cert bundles in the live cert dir
+openssl x509 -in /var/packages/haproxy/var/crt/otsorundscore.olutechsys.com.pem -noout -dates
 
-# acme-sh should auto-renew, but verify cron
-crontab -l | grep acme
+# acme-sh auto-renews; run deploy_certs.sh after renewal then reload HAProxy
 ```
 
 ### Update HAProxy (via App Store)
@@ -252,13 +252,13 @@ Synology App Store will notify of updates. **After updating**:
 
 ```bash
 # Verify version
-haproxy -v
+/volume1/@appstore/haproxy/sbin/haproxy -v
 
-# Restart with new binary
-bash stacks/_haproxy/haproxy-restart.sh
+# Validate config with new binary
+sudo /volume1/@appstore/haproxy/sbin/haproxy -c -f /var/packages/haproxy/var/haproxy.cfg
 
 # Check logs for any issues
-tail -20 /var/log/haproxy.log
+tail -20 /var/packages/haproxy/var/http-access.log
 ```
 
 ---

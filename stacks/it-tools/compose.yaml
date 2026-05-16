@@ -4,6 +4,7 @@ services:
     image: corentinth/it-tools:2024.10.22-7ca5933
     mem_limit: 256m
     cpu_shares: 256
+    cpus: "0.25"
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped

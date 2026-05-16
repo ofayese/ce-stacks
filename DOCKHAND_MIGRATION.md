@@ -6,10 +6,10 @@ This repository has been updated to support **Dockhand** as the primary Docker s
 
 ### New Files
 
-- **`stacks/dockhand/`** - Dockhand stack configuration and migration tooling
+- **`dockhand/`** - Dockhand stack configuration and migration tooling (repo root, NOT under `stacks/`)
   - `compose.yaml` — Reference compose definition (managed by RC script in production)
-  - `dockhand-start.sh` — RC script for DSM startup (copy to `/usr/local/etc/rc.d/dockhand.sh`)
-  - `MIGRATION.md` — Detailed step-by-step migration guide
+  - `scripts/dockhand-start.sh` — RC script for DSM startup (copy to `/usr/local/etc/rc.d/dockhand.sh`)
+  - `docs/MIGRATION.md` — Detailed step-by-step migration guide
   - `README.md` — Dockhand configuration and troubleshooting
   - `.env.example` — Environment variable reference
 
@@ -26,7 +26,7 @@ This repository has been updated to support **Dockhand** as the primary Docker s
 
 ```bash
 # 1. Copy RC script to DSM system startup (after copying dockhand/ to /volume2/docker/dockhand/)
-sudo cp /volume2/docker/dockhand/dockhand-start.sh /usr/local/etc/rc.d/dockhand.sh
+sudo cp /volume2/docker/dockhand/scripts/dockhand-start.sh /usr/local/etc/rc.d/dockhand.sh
 sudo chmod +x /usr/local/etc/rc.d/dockhand.sh
 
 # 2. Start Dockhand immediately
@@ -38,7 +38,7 @@ sudo /usr/local/etc/rc.d/dockhand.sh
 
 ### Full Migration
 
-See **`/volume2/docker/dockhand/MIGRATION.md`** for detailed, step-by-step instructions covering:
+See **`/volume2/docker/dockhand/docs/MIGRATION.md`** for detailed, step-by-step instructions covering:
 
 1. Pre-migration backup
 2. Dockhand deployment
@@ -59,7 +59,7 @@ See **`/volume2/docker/dockhand/MIGRATION.md`** for detailed, step-by-step instr
 
 - **All stacks continue running** during migration (containers are independent of orchestrator)
 - **Data is preserved** — All volumes and persistent data remain intact
-- **Rollback available** — Keep Portainer backup for 2-4 weeks before full deletion
+- **Rollback available** — Dockhand is just the UI; stopping it (`docker stop dockhand && docker rm dockhand`) does not affect running stacks.
 - **Validation provided** — Scripts to test label passthrough, watchtower compliance, socket access
 
 ## Reference
@@ -76,8 +76,8 @@ See **`/volume2/docker/dockhand/MIGRATION.md`** for detailed, step-by-step instr
 ## Need Help?
 
 1. **Getting Started**: Read `/volume2/docker/dockhand/README.md`
-2. **Full Migration**: Follow `/volume2/docker/dockhand/MIGRATION.md`
-3. **Troubleshooting**: See "Troubleshooting" section in `/volume2/docker/dockhand/MIGRATION.md`
+2. **Full Migration**: Follow `/volume2/docker/dockhand/docs/MIGRATION.md`
+3. **Troubleshooting**: See "Troubleshooting" section in `/volume2/docker/dockhand/docs/MIGRATION.md`
 4. **Official Docs**: https://dockhand.pro/manual
 
 ---

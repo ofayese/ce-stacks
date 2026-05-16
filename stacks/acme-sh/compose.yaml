@@ -4,6 +4,7 @@ services:
     container_name: AcmeSh
     mem_limit: 128m
     cpu_shares: 256
+    cpus: "0.25"
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped

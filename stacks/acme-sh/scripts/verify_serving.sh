@@ -4,7 +4,7 @@
 set -euo pipefail
 
 CONNECT_HOST="${CONNECT_HOST:?Set CONNECT_HOST (IP or hostname)}"
-CONNECT_PORT="${CONNECT_PORT:-6443}"
+CONNECT_PORT="${CONNECT_PORT:-443}"
 SNI="${SNI:-}"
 EXPECTED_SUBJECT="${EXPECTED_SUBJECT:-}"
 MIN_VALID_DAYS="${MIN_VALID_DAYS:-21}"
@@ -17,7 +17,7 @@ Required env:
   CONNECT_HOST   e.g. 10.0.1.15
 
 Optional env:
-  CONNECT_PORT   default 6443 (Traefik HTTPS edge - use 443 if HAProxy terminates TLS)
+  CONNECT_PORT   default 443 (HAProxy HTTPS edge; override if your HAProxy binds a different port)
   SNI            -servername value (default: CONNECT_HOST if set, else none)
   EXPECTED_SUBJECT  substring required in openssl x509 -subject output
   MIN_VALID_DAYS   default 21 - openssl x509 -checkend threshold (fail if not valid that long)

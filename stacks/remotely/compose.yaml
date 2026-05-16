@@ -28,6 +28,7 @@ services:
     mem_limit: 1g
     # ASP.NET Core + SignalR hub; 1g covers concurrent remote sessions on a homelab.
     cpu_shares: 512
+    cpus: "0.75"
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped

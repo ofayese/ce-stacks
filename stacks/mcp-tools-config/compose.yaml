@@ -8,6 +8,7 @@ services:
     container_name: mcp-tools-compose-placeholder
     mem_limit: 16m
     cpu_shares: 64
+    cpus: "0.1"
     security_opt:
       - no-new-privileges:true
     command: ["true"]

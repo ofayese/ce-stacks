@@ -10,6 +10,20 @@ Production Docker stack infrastructure for a Synology DS723+ NAS running DSM 7.3
 - **Network model**: All service ports bind to `10.0.1.15` (LAN IP) — no `0.0.0.0` bindings
 - **Compose format**: `compose.yaml` throughout (no `docker-compose.yml`)
 
+## Host Profile
+
+Live target NAS: **`otsorundscore`** (DSM 7.3.2-86009 U3, DS723+, AMD Ryzen R1600, 32 GB, Cool mode, CPU-only). Authoritative spec:
+
+- [`docs/host-profile-otsorundscore.md`](./docs/host-profile-otsorundscore.md) — identity, hardware, derived budgets
+- [`docs/dsm-732-runtime-quirks.md`](./docs/dsm-732-runtime-quirks.md) — Container Manager / BTRFS / Cool-mode operational quirks
+
+Two linters enforce host-profile rules in CI (chained from `scripts/compose-validate.sh` and `scripts/verify-repo-layout.sh`):
+
+| Linter | Rule | Override |
+|---|---|---|
+| `scripts/lint-rfc1918.sh` | Every bridge `subnet:` must live inside `10/8`, `172.16/12`, or `192.168/16`. | — |
+| `scripts/lint-host-budget.sh` | Σ `mem_limit` across all stacks ≤ `HOST_MEM_BUDGET_MB` (default 32 000 MB = physical RAM ceiling). | `HOST_MEM_BUDGET_MB=26000 bash scripts/lint-host-budget.sh` for stricter "leave headroom for DSM" mode. |
+
 ## Directory Layout
 
 ```
@@ -38,7 +52,7 @@ ce-stacks/
 │   └── archives/            # Retired stacks (kept for reference)
 │
 ├── scripts/                 # Operational scripts
-│   ├── portainer-start.sh   # Portainer CE RC startup script
+│   ├── dockhand-sync.sh     # Re-sync dockhand/ → /volume2/docker/dockhand
 │   ├── compose-validate.sh  # Validate all compose.yaml files
 │   ├── verify-repo-layout.sh # Check repo structure invariants
 │   ├── init-nas.sh          # First-boot NAS initialisation
@@ -101,7 +115,7 @@ bash /volume2/docker/ce-stacks/scripts/compose-validate.sh
 (Then continue with Dockhand installation steps below.)
 
 ```bash
-sudo cp /volume2/docker/ce-stacks/dockhand/dockhand-start.sh /usr/local/etc/rc.d/dockhand.sh
+sudo cp /volume2/docker/ce-stacks/dockhand/scripts/dockhand-start.sh /usr/local/etc/rc.d/dockhand.sh
 sudo chmod +x /usr/local/etc/rc.d/dockhand.sh
 sudo /usr/local/etc/rc.d/dockhand.sh
 ```
@@ -109,6 +123,8 @@ sudo /usr/local/etc/rc.d/dockhand.sh
 Dockhand will be available at `http://10.0.1.15:3866` after health check passes (60s).
 
 **First-time setup**: See [`dockhand/README.md`](./dockhand/README.md) for UI initialization and git webhook configuration.
+
+**DSM boot persistence**: DSM 7.3 does **not** auto-execute `/usr/local/etc/rc.d/*.sh` on reboot. To make Dockhand start automatically, follow [`dockhand/docs/DSM_BOOT_PERSISTENCE.md`](./dockhand/docs/DSM_BOOT_PERSISTENCE.md) to create a DSM Task Scheduler "Boot-up" task.
 
 ### 3. Initialize Dockhand
 
@@ -118,7 +134,7 @@ Access the web UI at `http://10.0.1.15:3866` and:
 2. Add Docker environment (Settings > Environments > +Add: "DS723", Unix socket)
 3. Register git webhook (Settings > Webhooks) for auto-sync on repo push
 
-See [`stacks/dockhand/README.md`](./stacks/dockhand/README.md) for detailed steps.
+See [`dockhand/README.md`](./dockhand/README.md) for detailed steps.
 
 ### 4. Import Stacks
 
@@ -183,7 +199,7 @@ Refer to the "Pre-Deployment Setup" section for commands and validation steps.
 
 Dockhand lifecycle is managed exclusively by the RC script — not by a compose stack.
 
-- **Script**: `scripts/dockhand-start.sh` → installed at `/usr/local/etc/rc.d/dockhand.sh`
+- **Script**: `dockhand/scripts/dockhand-start.sh` → installed at `/usr/local/etc/rc.d/dockhand.sh`
 - **Image**: `fnsys/dockhand:latest` (git-backed Compose orchestration)
 - **Port**: `10.0.1.15:3866` (HTTP WebUI)
 - **Data**: `/volume2/docker/dockhand` (outside this repo)
@@ -204,6 +220,11 @@ Dockhand lifecycle is managed exclusively by the RC script — not by a compose 
 - All `.env` files are excluded from git (see `.gitignore`)
 - The `stacks/acme-sh/data/`, `stacks/ollama/data/`, and `stacks/github-desktop/config/ssl/` directories are gitignored - they contain runtime certificates, private keys, and SSH identity material
 - Database Watchtower exemptions prevent accidental major-version upgrades that would corrupt data directories
+
+## Architecture & Design
+
+- [`solution-architect.md`](./solution-architect.md) — agent role description used to produce design plans for this repo.
+- [`implementation_plan.md`](./implementation_plan.md) — current active plan reconciling dockhand path/config drift.
 
 ## License
 

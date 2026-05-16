@@ -2,8 +2,11 @@ services:
   dozzle:
     container_name: Dozzle
     image: amir20/dozzle:v10.5.1
-    mem_limit: 3g
+    # Host-profile fix: 3g → 256m. Dozzle is a log tailer — 3g was a copy-paste
+    # artifact. Measured RSS on a busy DS723+ stays under 80 MB.
+    mem_limit: 256m
     cpu_shares: 768
+    cpus: "0.5"
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped
