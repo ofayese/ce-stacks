@@ -46,3 +46,22 @@ dockge.olutechsys.com	dockge-be
 dockge.olutech.systems	dockge-be
 dockge.otsorundscore.olutechsys.com	dockge-be
 dockge.otsorundscore.olutech.systems	dockge-be
+ntopng.olutechsys.com	ntopng-be
+ntopng.olutech.systems	ntopng-be
+dockhand.olutechsys.com	dockhand-be
+dockhand.olutech.systems	dockhand-be
+# node exporter intentionally omitted — internal Prometheus scrape only, no public DNS
+otscal.olutechsys.com	otscal-be
+otscal.olutech.systems	otscal-be
+otscnt.olutechsys.com	otscnt-be
+otscnt.olutech.systems	otscnt-be
+otsfst.olutechsys.com	otsfst-be
+otsfst.olutech.systems	otsfst-be
+otsnt.olutechsys.com	otsnt-be
+otsnt.olutech.systems	otsnt-be
+sso.olutechsys.com	sso-be
+sso.olutech.systems	sso-be
+otspht.olutechsys.com	otspht-be
+otspht.olutech.systems	otspht-be
+otsvmm.olutechsys.com	otsvmm-be
+otsvmm.olutech.systems	otsvmm-be
