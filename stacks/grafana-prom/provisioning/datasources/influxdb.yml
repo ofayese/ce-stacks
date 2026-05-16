@@ -4,8 +4,10 @@
 # InfluxDB is queried via the NAS host IP (proxy access) because InfluxDB
 # is a separate stack with no shared Docker network with grafana-prom.
 #
-# INFLUXDB_GRAFANA_PASSWORD is injected from the Grafana container environment.
-# Set it in stacks/grafana-prom/.env — keep in sync with stacks/influxdb/.env.
+# Password is read from a secret file mounted into the Grafana container:
+#   secrets/influxdb_grafana_password.txt → /run/secrets/influxdb_grafana_password
+# $__file{} is the Grafana ≥8 secret-file interpolation syntax (no env var needed).
+# The file must match INFLUXDB_GRAFANA_PASSWORD in stacks/influxdb/.env.
 apiVersion: 1
 
 datasources:
@@ -20,7 +22,7 @@ datasources:
     editable: false
     user: grafana
     secureJsonData:
-      password: $INFLUXDB_GRAFANA_PASSWORD
+      password: $__file{/run/secrets/influxdb_grafana_password}
     jsonData:
       httpMode: GET
       timeInterval: "30s"

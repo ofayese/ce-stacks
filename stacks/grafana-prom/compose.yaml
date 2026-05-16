@@ -37,13 +37,14 @@ services:
     volumes:
       - ${STACK_ROOT}/grafana-prom/data/grafana:/var/lib/grafana:rw
       - ${STACK_ROOT}/grafana-prom/provisioning:/etc/grafana/provisioning:ro
+      # Secret file for InfluxDB datasource provisioning.
+      # Create: echo -n '<password>' > secrets/influxdb_grafana_password.txt
+      # Must match INFLUXDB_GRAFANA_PASSWORD in stacks/influxdb/.env.
+      - ${STACK_ROOT}/grafana-prom/secrets/influxdb_grafana_password.txt:/run/secrets/influxdb_grafana_password:ro
     environment:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
       - TZ=America/New_York
-      # Required for InfluxDB datasource provisioning (influxdb.yml uses $INFLUXDB_GRAFANA_PASSWORD).
-      # Keep in sync with stacks/influxdb/.env INFLUXDB_GRAFANA_PASSWORD.
-      - INFLUXDB_GRAFANA_PASSWORD=${INFLUXDB_GRAFANA_PASSWORD}
     restart: unless-stopped
 
   prometheus:
