@@ -9,7 +9,7 @@ Local LLM runtime (`ollama`) + open-webui front-end. CPU-only on this NAS -- no 
 
 ## Startup order
 
-**otsai-webui** and **`ollama-model-init`** wait on **ollama** being **healthy**. Model pulls still use the script's wait loop. Use Portainer or `docker compose up -d` from the stack directory.
+**otsai-webui** and **`ollama-model-init`** wait on **ollama** being **healthy**. Model pulls still use the script's wait loop. Use Dockhand or `docker compose up -d` from the stack directory.
 
 ## Volumes
 

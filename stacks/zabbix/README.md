@@ -33,7 +33,7 @@ Copy `.env.example` to `.env` and set `POSTGRES_PASSWORD` to a strong value. `ST
 
 ## Startup order
 
-**Postgres -> zabbix-server -> zabbix-web** via **`condition: service_healthy`**. After `git pull`, use **`docker compose up -d`** from this directory. Use Portainer or `docker compose up -d` from the stack directory.
+**Postgres -> zabbix-server -> zabbix-web** via **`condition: service_healthy`**. After `git pull`, use **`docker compose up -d`** from this directory. Use Dockhand or `docker compose up -d` from the stack directory.
 
 ## Health
 

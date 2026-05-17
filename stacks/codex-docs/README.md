@@ -9,7 +9,7 @@ Internal documentation hub powered by codex.team's [codex.docs](https://github.c
 
 ## Startup order
 
-**codex-docs** waits on **mongodb** being **healthy**. Use Portainer or `docker compose up -d` from the stack directory.
+**codex-docs** waits on **mongodb** being **healthy**. Use Dockhand or `docker compose up -d` from the stack directory.
 
 ## Required env (`.env`)
 

@@ -36,7 +36,7 @@ hideVersion: true
 layout:
   Infrastructure:
     style: row
-    columns: 4 # Portainer, Portainer Agent, Dockhand, Watchtower, GitHub Desktop
+    columns: 3 # Dockhand, Watchtower, GitHub Desktop
   Management:
     style: row
     columns: 4 # Adminer, phpMyAdmin, DSM, Grafana, Alertmanager, Zabbix, Remotely, PSU, API Bridge

@@ -103,20 +103,7 @@ Expected output:
 
 If you see warnings, see [Troubleshooting](#troubleshooting) below.
 
-### 2. Add Portainer API Key (For Dashboard Widget)
-
-1. Open Portainer at https://10.0.1.15:9443
-2. Click your profile icon -> **My Account**
-3. Scroll to **Access Tokens** -> **Create token**
-4. Copy the token
-5. In `stacks/homepage/.env` (not committed), set `PORTAINER_API_KEY=<token>` -- the Portainer widget reads `key: ${PORTAINER_API_KEY}` from `config/services.yaml`.
-6. Confirm `env: 1` matches your environment ID (Portainer -> Endpoints -> note the ID next to your edge agent)
-7. Restart Homepage:
-   ```bash
-   docker compose -f compose.yaml restart
-   ```
-
-### 3. Optional: Set Weather Location
+### 2. Optional: Set Weather Location
 
 The OpenMeteo widget auto-detects your location but can be precise. To set manually:
 
@@ -174,8 +161,8 @@ Homepage displays **live container status** (green = running, red = stopped) by 
 
 3. **Service Mapping** (in `config/services.yaml`):
    ```yaml
-   - Portainer:
-       container: portainer # Must match compose.yaml exactly
+   - Dockhand:
+       container: Dockhand # Must match compose.yaml exactly
        server: my-docker # References the socket above
    ```
 
@@ -245,27 +232,6 @@ docker exec Homepage test -r /var/run/docker.sock && echo "Readable" || echo "No
 2. Check Synology Container Manager logs: DSM -> Container Manager -> Docker Daemon -> Log
 3. Try restarting the Docker daemon: DSM -> Control Panel -> Services -> Docker (stop, then start)
 4. Run `verify-integration.sh` for detailed diagnostics
-
-### Portainer Widget Not Showing Metrics
-
-**Symptom:** Portainer service appears but widget area is blank.
-
-**Possible causes:**
-
-- API key not set or incorrect
-- Environment ID (`env:`) doesn't match Portainer configuration
-- Portainer HTTPS certificate issue
-
-**Fix:**
-
-1. Verify API key in `config/services.yaml` (see [Post-Deployment Setup](#post-deployment-setup) step 2)
-2. Confirm environment ID:
-   ```bash
-   # In Portainer UI: Endpoints -> find your edge agent -> note the number (e.g., 1)
-   # Update services.yaml: env: 1
-   ```
-3. If using HTTPS, ensure the certificate is valid (Portainer should auto-generate)
-4. Restart Homepage: `docker compose -f compose.yaml restart`
 
 ### Adding a New Service Doesn't Appear
 
@@ -361,7 +327,6 @@ Homepage uses port **7575** because your existing stacks occupy:
 - 8889 (OpenResume)
 - 8892-8896 (Dozzle, Adminer, phpMyAdmin, CodexDocs, IT-Tools)
 - 8377, 8379 (Code-Server, phpMyAdmin-dev/CodeServerPMA -- 8379 avoids conflict with db-tools/PhpMyAdmin on 8378)
-- 9000-9001, 9443 (Portainer, Portainer Agent)
 - 11434 (Ollama)
 - 3866 (Dockhand host port)
 - 3307 (MySQL dev)

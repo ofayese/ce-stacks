@@ -74,12 +74,6 @@ DESCRIPTIONS = {
 
 # -- Bare-metal / RC-script services (not in any compose.yaml) -----------------
 BARE_METAL = [
-    {"stack": "portainer", "service": "portainer-ce",
-     "hp": 9443, "cp": 9443,
-     "desc": "Portainer CE - Docker management WebUI (HTTPS)"},
-    {"stack": "portainer", "service": "portainer-api",
-     "hp": 9000, "cp": 9000,
-     "desc": "Portainer CE - HTTP API"},
     {"stack": "dockhand", "service": "dockhand",
      "hp": 3866, "cp": 3000,
      "desc": "Dockhand - git-backed compose stack manager UI"},
@@ -166,8 +160,8 @@ lines += [
     "**TCP-only services** (MySQL on 3307, Zabbix server on 10051) do not serve HTTP -",
     "connect with a native client or tunneled TCP.",
     "",
-    "**Portainer** and **Dockhand** are managed by RC scripts (`/usr/local/etc/rc.d/`) and",
-    "have no `compose.yaml`. They are included here for completeness.",
+    "**Dockhand** is managed by an RC script (`/usr/local/etc/rc.d/dockhand.sh`) and",
+    "has no `compose.yaml`. It is included here for completeness.",
     "",
     "**Cloudflare Tunnel** (`cloudflared`, SynoCommunity package) exposes selected services",
     "publicly. All ingress rules must point to `http://10.0.1.15:PORT` - never `localhost`.",

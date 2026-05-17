@@ -17,7 +17,7 @@
 #
 # ORGANIZATION
 # Services are grouped by function:
-#   - Infrastructure:  Docker management (Portainer, Dockhand, etc.)
+#   - Infrastructure:  Docker management (Dockhand, Watchtower, GitHub Desktop)
 #   - Management:      Monitoring & admin (Dozzle, Adminer, phpMyAdmin)
 #   - Development:     Code editors, databases (Code-Server, MySQL, PostgreSQL)
 #   - Productivity:    Documentation & tools (Codex Docs, OpenResume)
@@ -27,33 +27,6 @@
 # ============================================================================
 
 - Infrastructure:
-    - Portainer:
-        # Portainer runs as a system container outside ce-stacks (no compose.yaml in repo).
-        # Container name verified at runtime: docker ps --filter name=portainer
-        icon: portainer.png
-        href: https://10.0.1.15:9443/
-        description: Docker management UI & remote agent orchestration
-        server: my-docker
-        container: portainer
-        siteMonitor: http://10.0.1.15:9000/
-        widget:
-          type: portainer
-          url: https://10.0.1.15:9443
-          env: 1 # Portainer environment ID (verify in Portainer -> Endpoints)
-          # Set PORTAINER_API_KEY in stacks/homepage/.env (gitignored)
-          # Generate: Portainer -> Account Settings -> Access Tokens -> Add
-          key: ${PORTAINER_API_KEY}
-
-    - Portainer Agent:
-        # Portainer Agent runs as a system container outside ce-stacks (no compose.yaml in repo).
-        icon: portainer.png
-        href: https://10.0.1.15:9001/
-        description: Edge agent for remote orchestration
-        server: my-docker
-        container: portainer_agent
-        # siteMonitor omitted: agent uses mTLS -- HTTP probe returns
-        # HTTP/1.0 400 -> HPE_CLOSED_CONNECTION in Homepage logs.
-
     - Dockhand:
         # Container name from: dockhand/compose.yaml (service: dockhand)
         icon: docker.png

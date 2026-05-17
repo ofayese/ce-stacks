@@ -17,13 +17,13 @@
 - Synology:
     - DSM:
         - abbr: DSM
-          href: https://10.0.1.15:5001/
+          href: https://10.0.1.15:5010/
     - Package Center:
         - abbr: PKG
-          href: https://10.0.1.15:5001/?launchApp=SYNO.SDS.PackageCenter
+          href: https://10.0.1.15:5010/?launchApp=SYNO.SDS.PackageCenter
     - File Station:
         - abbr: FS
-          href: https://10.0.1.15:5001/?launchApp=SYNO.SDS.FileStation
+          href: https://10.0.1.15:5010/?launchApp=SYNO.SDS.FileStation
 
 - Cloud & DNS:
     - Cloudflare Dashboard:

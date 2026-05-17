@@ -4,7 +4,7 @@ Synology-oriented **Grafana** + **Prometheus** + exporters (`node-exporter`, `sn
 
 ## Startup order
 
-**prometheus** starts after **node-exporter**, **snmp-exporter**, and **cadvisor** are **healthy**. Use Portainer or `docker compose up -d` from the stack directory.
+**prometheus** starts after **node-exporter**, **snmp-exporter**, and **cadvisor** are **healthy**. Use Dockhand or `docker compose up -d` from the stack directory.
 
 ## Ports (defaults)
 
