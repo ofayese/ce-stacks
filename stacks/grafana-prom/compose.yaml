@@ -263,20 +263,10 @@ services:
       options:
         max-size: 10m
         max-file: "3"
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "wget",
-          "--no-verbose",
-          "--tries=1",
-          "--spider",
-          "http://127.0.0.1:9586/metrics"
-        ]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
+    # No healthcheck: mindflavor image is a minimal Rust binary with no wget/curl.
+    # Liveness is monitored by Prometheus via the WireGuardTunnelDown alert
+    # (up{job="wireguard"} == 0 for > 2m fires critical). No compose depends_on
+    # references this service as service_healthy, so removing it is safe.
     labels:
       - com.centurylinklabs.watchtower.enable=true
 
