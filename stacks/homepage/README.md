@@ -360,7 +360,7 @@ Homepage uses port **7575** because your existing stacks occupy:
 - 8888 (SearXNG)
 - 8889 (OpenResume)
 - 8892–8896 (Dozzle, Adminer, phpMyAdmin, CodexDocs, IT-Tools)
-- 8377–8378 (Code-Server, phpMyAdmin-dev)
+- 8377, 8379 (Code-Server, phpMyAdmin-dev/CodeServerPMA — 8379 avoids conflict with db-tools/PhpMyAdmin on 8378)
 - 9000–9001, 9443 (Portainer, Portainer Agent)
 - 11434 (Ollama)
 - 3866 (Dockhand host port)

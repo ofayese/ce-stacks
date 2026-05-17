@@ -14,7 +14,7 @@ services:
         max-file: "3"
     restart: unless-stopped
     ports:
-      - 10.0.1.15:7575:3000
+      - "${NAS_IP:-10.0.1.15}:${HOMEPAGE_PORT:-7575}:3000"
     volumes:
       - ${STACK_ROOT}/homepage/config:/app/config:rw
       - ${STACK_ROOT}/homepage/data:/app/public/icons:rw
@@ -25,9 +25,10 @@ services:
     environment:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
-      - TZ=America/New_York
-      # Allow access from the Synology LAN IP and your domain
-      - HOMEPAGE_ALLOWED_HOSTS=10.0.1.15:7575,otsorundscore.olutechsys.com,otsorundscore.olutech.systems
+      - TZ=${TIMEZONE:-America/New_York}
+      # Allow access from the Synology LAN IP and your domain.
+      # Set HOMEPAGE_ALLOWED_HOSTS in .env; include every hostname/IP used to access the UI.
+      - HOMEPAGE_ALLOWED_HOSTS=${HOMEPAGE_ALLOWED_HOSTS:-10.0.1.15:7575}
     # Healthcheck type B: own binary probe (image ships CLI tool for this)
     healthcheck:
       test:

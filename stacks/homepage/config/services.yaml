@@ -100,12 +100,14 @@
 
     - phpMyAdmin (Code-Server):
         # Container name from: code-server/compose.yaml (service: phpmyadmin)
+        # Targets code-server's dev MySQL sidecar (port 3307 internal) on host port 8379.
+        # Use Adminer (port 8895) for native MariaDB/PostgreSQL instead.
         icon: phpmyadmin.png
-        href: http://10.0.1.15:8378/
+        href: http://10.0.1.15:8379/
         description: MySQL admin for Code-Server dev database (port 3307)
         server: my-docker
         container: CodeServerPMA
-        siteMonitor: http://10.0.1.15:8378/
+        siteMonitor: http://10.0.1.15:8379/
 
     - Synology DSM:
         icon: synology.png
@@ -189,18 +191,18 @@
         container: CodeServerDB
 
     - MariaDB:
-        # Container name from: databases/compose.yaml (service: mariadb)
+        # stacks/databases is archived — MariaDB is now a Synology native package.
+        # No Docker container → no server:/container: integration (would always show offline).
+        # Connect via DSM → Package Center, or use Adminer/phpMyAdmin at db-tools.
         icon: mariadb.png
-        description: Shared application database (MariaDB LTS)
-        server: my-docker
-        container: MariaDB
+        href: http://10.0.1.15:8895/
+        description: Shared application database (MariaDB LTS — Synology native package, port 3306)
 
     - PostgreSQL:
-        # Container name from: databases/compose.yaml (service: postgres)
+        # stacks/databases is archived — PostgreSQL is now a Synology native package.
+        # No Docker container → no server:/container: integration (would always show offline).
         icon: postgres.png
-        description: Shared application database (PostgreSQL 16)
-        server: my-docker
-        container: PostgreSQL
+        description: Shared application database (PostgreSQL 16 — Synology native package, port 5432)
 
 - Productivity:
     - Codex Docs:
@@ -245,7 +247,7 @@
         href: http://10.0.1.15:11434/
         description: Local LLM API server (inference engine)
         server: my-docker
-        container: otsai-server
+        container: otsai
         siteMonitor: http://10.0.1.15:11434/
 
 - Search & Tools:

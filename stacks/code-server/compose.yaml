@@ -136,7 +136,9 @@ services:
         max-file: "3"
     restart: unless-stopped
     ports:
-      - 10.0.1.15:8378:80
+      # 8379: avoids port conflict with db-tools/PhpMyAdmin (10.0.1.15:8378 → native MariaDB).
+      # CodeServerPMA targets the code-server MySQL sidecar (port 3307 internal).
+      - 10.0.1.15:8379:80
     volumes:
       - ${STACK_ROOT}/code-server/config/phpmyadmin:/etc/phpmyadmin:rw
       - ${STACK_ROOT}/code-server/data/phpmyadmin_sessions:/sessions:rw

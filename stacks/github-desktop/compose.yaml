@@ -29,11 +29,7 @@ services:
       retries: 3
       start_period: 90s
     ports:
-      - mode: ingress
-        host_ip: 10.0.1.15
-        target: 3001
-        published: "3405"
-        protocol: tcp
+      - "${NAS_IP:-10.0.1.15}:${GITHUB_DESKTOP_PORT:-3405}:3001"
     volumes:
       - ${STACK_ROOT}/github-desktop/config:/config:rw
     environment:
@@ -41,8 +37,8 @@ services:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
       - PIXELFLUX_WAYLAND=0
-      - CUSTOM_USER=${GITHUB_DESKTOP_USER:?set GITHUB_DESKTOP_USER in .env}
-      - PASSWORD=${GITHUB_DESKTOP_PASSWORD:?set GITHUB_DESKTOP_PASSWORD in .env}
+      - CUSTOM_USER=${GITHUB_DESKTOP_USER}
+      - PASSWORD=${GITHUB_DESKTOP_PASSWORD}
       - TITLE=GitHub Desktop
     restart: unless-stopped
     logging:

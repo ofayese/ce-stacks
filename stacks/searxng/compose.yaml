@@ -19,7 +19,7 @@ services:
     environment:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
-      - TZ=America/New_York
+      - TZ=${TZ:-America/New_York}
     healthcheck:
       test:
         - CMD
@@ -37,6 +37,7 @@ services:
       - com.centurylinklabs.watchtower.enable=false
     networks:
       - searxng-net
+
   searxng:
     container_name: SearXNG
     image: searxng/searxng:2026.4.29-cba0cffa8
@@ -50,17 +51,17 @@ services:
       - no-new-privileges:true
     restart: unless-stopped
     ports:
-      - 10.0.1.15:8888:8080
+      - "10.0.1.15:8888:8080"
     volumes:
       - ${STACK_ROOT}/searxng/config:/etc/searxng:rw
     environment:
-      - PUID=${PUID:-0}
-      - PGID=${PGID:-0}
-      - SEARXNG_BASE_URL=https://search.otsorundscore.olutechsys.com/
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - SEARXNG_BASE_URL=${SEARXNG_BASE_URL}
       - SEARXNG_REDIS_URL=redis://redis:6379/0
-      - UWSGI_WORKERS=4
-      - UWSGI_THREADS=4
-      - TZ=America/New_York
+      - UWSGI_WORKERS=${UWSGI_WORKERS}
+      - UWSGI_THREADS=${UWSGI_THREADS}
+      - TZ=${TZ}
     healthcheck:
       # searxng uWSGI listens on 8080; /healthz is not available — probe root path.
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/"]
@@ -86,6 +87,7 @@ services:
       - com.centurylinklabs.watchtower.enable=true
     networks:
       - searxng-net
+
 networks:
   searxng-net:
     name: searxng-net

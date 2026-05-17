@@ -47,6 +47,8 @@ services:
       - PGID=${PGID:-0}
       - TZ=${TIMEZONE:-America/New_York}
     restart: unless-stopped
+    labels:
+      - com.centurylinklabs.watchtower.enable=false
 
   prometheus:
     image: prom/prometheus:v3.11.3
@@ -93,6 +95,8 @@ services:
     ports:
       - "${NAS_IP:-10.0.1.15}:${PROMETHEUS_PORT:-9090}:9090"
     restart: unless-stopped
+    labels:
+      - com.centurylinklabs.watchtower.enable=false
     depends_on:
       snmp-exporter:
         condition: service_healthy
@@ -144,6 +148,8 @@ services:
     volumes:
       - ${STACK_ROOT}/grafana-prom/snmp.yml:/etc/snmp_exporter/snmp.yml:ro
     restart: unless-stopped
+    labels:
+      - com.centurylinklabs.watchtower.enable=false
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.52.1
@@ -166,6 +172,22 @@ services:
       - /:/rootfs:ro
       - /var/run:/var/run:ro
       - /sys:/sys:ro
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8080/healthz"
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    labels:
+      - com.centurylinklabs.watchtower.enable=false
 
   alertmanager:
     image: prom/alertmanager:v0.28.1

@@ -23,7 +23,7 @@
 #
 # Manifest exhaustiveness (BSD-safe; no grep -oP):
 #   diff <(grep -E '^\s*"[^"]+:' scripts/init-nas.sh | sed -E 's/^[[:space:]]*"([^"]+):.*/\1/' | sort -u) \
-#        <(ls stacks/ | grep -vE '^portainer$|^agents_gateway_data$|^it-tools$|^mcp-tools-config$|^openresume$|^watchtower$|^docker-model-runner$' | sort)
+#        <(ls stacks/ | grep -vE '^portainer$|^agents_gateway_data$|^db-tools$|^it-tools$|^mcp-tools-config$|^openresume$|^watchtower$|^docker-model-runner$' | sort)
 # Left: unique stack names from STACK_MANIFEST (sort -u: traefik-ots / traefik-mft each listed twice for config+data).
 # Right: stack dirs excluding MANIFEST_EXEMPT (same as grep -vE list). _haproxy stays on both sides.
 
@@ -84,6 +84,7 @@ STACK_MANIFEST=(
 	# ── data only ─────────────────────────────────────────────────────
 	"acme-sh:data"
 	"dozzle:data"
+	"influxdb:data"
 	# ollama: data/ollama (model storage) and data/open-webui must exist as subdirs.
 	"ollama:data/ollama,data/open-webui"
 	# remotely: SQLite DB + generated agent installers/download payloads
@@ -95,9 +96,9 @@ STACK_MANIFEST=(
 	"homepage:data,config"
 	"searxng:data,config"
 	"synology-api-bridge:data"
-	# grafana-prom: data/grafana and data/prometheus must exist as subdirs before deploy.
-	# Synology does not auto-create leaf bind-mount paths.
-	"grafana-prom:data/grafana,data/prometheus,config"
+	# grafana-prom: data/grafana, data/prometheus, and data/alertmanager must exist as
+	# subdirs before deploy. Synology does not auto-create leaf bind-mount paths.
+	"grafana-prom:data/grafana,data/prometheus,data/alertmanager,config"
 
 	# ── data,db ───────────────────────────────────────────────────────
 	"codex-docs:data,db"
@@ -130,6 +131,7 @@ STACK_MANIFEST=(
 # shellcheck disable=SC2034
 MANIFEST_EXEMPT=(
 	"agents_gateway_data" # docker.sock only
+	"db-tools"            # stateless (Adminer) — no volumes
 	"it-tools"            # no volumes
 	"mcp-tools-config"    # catalog only
 	"openresume"          # no volumes
