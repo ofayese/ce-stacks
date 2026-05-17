@@ -29,6 +29,13 @@ services:
       # Allow access from the Synology LAN IP and your domain.
       # Set HOMEPAGE_ALLOWED_HOSTS in .env; include every hostname/IP used to access the UI.
       - HOMEPAGE_ALLOWED_HOSTS=${HOMEPAGE_ALLOWED_HOSTS:-10.0.1.15:7575}
+      # Widget credentials: homepage substitutes ${VAR} in config/services.yaml using
+      # container environment. These must be passed here; set values in .env.
+      - GRAFANA_USERNAME=${GRAFANA_USERNAME:-}
+      - GRAFANA_PASSWORD=${GRAFANA_PASSWORD:-}
+      - WATCHTOWER_BEARER_TOKEN=${WATCHTOWER_BEARER_TOKEN:-}
+      - ZABBIX_USERNAME=${ZABBIX_USERNAME:-}
+      - ZABBIX_PASSWORD=${ZABBIX_PASSWORD:-}
     # Healthcheck type B: own binary probe (image ships CLI tool for this)
     healthcheck:
       test:
