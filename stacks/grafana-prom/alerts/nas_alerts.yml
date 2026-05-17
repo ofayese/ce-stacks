@@ -192,9 +192,10 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "WireGuard peer {{ $labels.name | default ($labels.public_key | trunc 8) }}... has not reconnected"
+          summary: >-
+            WireGuard peer {{ if $labels.name }}{{ $labels.name }}{{ else }}{{ printf "%.8s" $labels.public_key }}...{{ end }} has not reconnected
           description: >-
-            Peer {{ $labels.public_key }} (name: {{ $labels.name | default "unnamed" }}) on interface
+            Peer {{ $labels.public_key }} (name: {{ if $labels.name }}{{ $labels.name }}{{ else }}unnamed{{ end }}) on interface
             {{ $labels.interface }} last handshake was {{ $value | humanizeDuration }} ago.
             The peer may be offline, behind a restrictive NAT, or have a config mismatch.
             Run `wg show {{ $labels.interface }}` on the NAS to inspect current state.
@@ -207,7 +208,8 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "WireGuard peer {{ $labels.name | default ($labels.public_key | trunc 8) }}... has never connected"
+          summary: >-
+            WireGuard peer {{ if $labels.name }}{{ $labels.name }}{{ else }}{{ printf "%.8s" $labels.public_key }}...{{ end }} has never connected
           description: >-
             Peer {{ $labels.public_key }} on interface {{ $labels.interface }} shows handshake epoch = 0.
             The peer has not completed a handshake since the interface came up.
