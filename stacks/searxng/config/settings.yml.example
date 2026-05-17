@@ -1,4 +1,4 @@
-# SearXNG settings — copy to settings.yml beside this file on the NAS:
+# SearXNG settings -- copy to settings.yml beside this file on the NAS:
 #   cp config/settings.yml.example config/settings.yml
 # then set server.secret_key (required):
 #   openssl rand -hex 32

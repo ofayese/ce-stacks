@@ -1,5 +1,5 @@
 # stacks/remotely/.gitignore
-# Runtime data — never commit
+# Runtime data -- never commit
 data/
 data/**
 .env

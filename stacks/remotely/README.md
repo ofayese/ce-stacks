@@ -2,7 +2,7 @@
 
 Remote IT support platform providing remote control, remote scripting, and a rich
 auto-complete shell for maximising IT support efficiency. Both the service and
-remote-control components use **outgoing** WebSocket connections over SSL/TLS —
+remote-control components use **outgoing** WebSocket connections over SSL/TLS --
 no inbound firewall ports are required beyond the web UI.
 
 ## Services
@@ -14,7 +14,7 @@ no inbound firewall ports are required beyond the web UI.
 ## Prerequisites
 
 - HAProxy or DSM Reverse Proxy serving HTTPS for the public URL
-- **WebSocket enabled** in the reverse proxy (see below — required for remote sessions)
+- **WebSocket enabled** in the reverse proxy (see below -- required for remote sessions)
 
 ## WebSocket requirement (critical)
 
@@ -22,13 +22,13 @@ Remotely uses SignalR over WebSocket for both the management plane and remote co
 sessions. Without WebSocket support in the reverse proxy, sessions will fail silently
 once an HTTPS connection is established.
 
-**HAProxy:** Add `timeout tunnel 1h` in the `defaults` section (already set in `stacks/_haproxy/haproxy.cfg`) and ensure the backend entry uses `option http-server-close` — no extra WebSocket headers are needed at the HAProxy layer for this service.
+**HAProxy:** Add `timeout tunnel 1h` in the `defaults` section (already set in `stacks/_haproxy/haproxy.cfg`) and ensure the backend entry uses `option http-server-close` -- no extra WebSocket headers are needed at the HAProxy layer for this service.
 
 **DSM Reverse Proxy (alternative):**
 
-1. Control Panel → Login Portal → Advanced → Reverse Proxy
-2. Select the Remotely proxy rule → Edit
-3. Custom Header tab → Create → select **WebSocket**
+1. Control Panel -> Login Portal -> Advanced -> Reverse Proxy
+2. Select the Remotely proxy rule -> Edit
+3. Custom Header tab -> Create -> select **WebSocket**
    (auto-adds `Upgrade: websocket` and `Connection: Upgrade` headers)
 4. Save
 
@@ -37,7 +37,7 @@ once an HTTPS connection is established.
 | Variable               | Required | Default                                         | Description                                   |
 | ---------------------- | -------- | ----------------------------------------------- | --------------------------------------------- |
 | `REMOTELY_SERVER_URL`  | Yes      | `https://remotely.otsorundscore.olutechsys.com` | Public HTTPS URL for agent download links     |
-| `REMOTELY_KNOWN_PROXY` | Yes      | `10.0.1.15`                                     | Reverse proxy LAN IP — trusts X-Forwarded-For |
+| `REMOTELY_KNOWN_PROXY` | Yes      | `10.0.1.15`                                     | Reverse proxy LAN IP -- trusts X-Forwarded-For |
 | `TZ`                   | No       | `America/New_York`                              | Timezone for log timestamps                   |
 
 ## Port reference
@@ -62,12 +62,12 @@ Navigate to `http://10.0.1.15:5371` (or your HTTPS proxy URL).
 The **first account registered is automatically granted Admin**.
 Register immediately after deploy to secure the instance.
 
-Go to **Organization** → **Settings** → set **Server URL** to match `REMOTELY_SERVER_URL`.
+Go to **Organization** -> **Settings** -> set **Server URL** to match `REMOTELY_SERVER_URL`.
 This is used to build agent installer download links.
 
 ## Health meaning
 
-The healthcheck probes `http://localhost:5000/` — a 200 response confirms the
+The healthcheck probes `http://localhost:5000/` -- a 200 response confirms the
 ASP.NET Core host is up and accepting requests.
 
 ## Image pinning
@@ -107,4 +107,4 @@ remotely.otsorundscore.olutechsys.com	remotely-be
 remotely.otsorundscore.olutech.systems	remotely-be
 ```
 
-After editing: validate with `haproxy -c`, then restart HAProxy via **DSM → Package Center → HAProxy → Action → Restart**.
+After editing: validate with `haproxy -c`, then restart HAProxy via **DSM -> Package Center -> HAProxy -> Action -> Restart**.

@@ -4,15 +4,15 @@
 #
 # OVERVIEW
 # Each service below uses:
-#   server: my-docker       → References the socket in docker.yaml
-#   container: ContainerName → Must match compose.yaml exactly (CASE-SENSITIVE)
+#   server: my-docker       -> References the socket in docker.yaml
+#   container: ContainerName -> Must match compose.yaml exactly (CASE-SENSITIVE)
 #
 # The 'container:' value is critical. If it doesn't match the actual
 # container_name: in the compose file, the status indicator (green/red dot)
 # won't appear.
 #
 # SEE ALSO
-# For the authoritative mapping of service → container → compose file,
+# For the authoritative mapping of service -> container -> compose file,
 # refer to CONTAINER_MAPPING.md (in this directory).
 #
 # ORGANIZATION
@@ -39,9 +39,9 @@
         widget:
           type: portainer
           url: https://10.0.1.15:9443
-          env: 1 # Portainer environment ID (verify in Portainer → Endpoints)
+          env: 1 # Portainer environment ID (verify in Portainer -> Endpoints)
           # Set PORTAINER_API_KEY in stacks/homepage/.env (gitignored)
-          # Generate: Portainer → Account Settings → Access Tokens → Add
+          # Generate: Portainer -> Account Settings -> Access Tokens -> Add
           key: ${PORTAINER_API_KEY}
 
     - Portainer Agent:
@@ -51,8 +51,8 @@
         description: Edge agent for remote orchestration
         server: my-docker
         container: portainer_agent
-        # siteMonitor omitted: agent uses mTLS — HTTP probe returns
-        # HTTP/1.0 400 → HPE_CLOSED_CONNECTION in Homepage logs.
+        # siteMonitor omitted: agent uses mTLS -- HTTP probe returns
+        # HTTP/1.0 400 -> HPE_CLOSED_CONNECTION in Homepage logs.
 
     - Dockhand:
         # Container name from: dockhand/compose.yaml (service: dockhand)
@@ -133,7 +133,7 @@
         # Container name from: grafana-prom/compose.yaml (service: alertmanager)
         icon: prometheus.png
         href: http://10.0.1.15:9093/
-        description: Prometheus alert routing → Discord
+        description: Prometheus alert routing -> Discord
         server: my-docker
         container: Alertmanager
         siteMonitor: http://10.0.1.15:9093/
@@ -151,7 +151,7 @@
         # Container name from: remotely/compose.yaml (service: remotely)
         icon: rdp.png
         href: http://10.0.1.15:5371/
-        description: Remote support — screen share & scripting
+        description: Remote support -- screen share & scripting
         server: my-docker
         container: remotely
         siteMonitor: http://10.0.1.15:5371/
@@ -167,7 +167,7 @@
 
     - Synology API Bridge:
         # Container name from: synology-api-bridge/compose.yaml (service: synology-api-bridge)
-        # Internal FastAPI shim — no user-facing UI; status indicator only.
+        # Internal FastAPI shim -- no user-facing UI; status indicator only.
         icon: api.png
         description: Internal DSM HTTP shim (FastAPI) for stack automation
         server: my-docker
@@ -191,18 +191,18 @@
         container: CodeServerDB
 
     - MariaDB:
-        # stacks/databases is archived — MariaDB is now a Synology native package.
-        # No Docker container → no server:/container: integration (would always show offline).
-        # Connect via DSM → Package Center, or use Adminer/phpMyAdmin at db-tools.
+        # stacks/databases is archived -- MariaDB is now a Synology native package.
+        # No Docker container -> no server:/container: integration (would always show offline).
+        # Connect via DSM -> Package Center, or use Adminer/phpMyAdmin at db-tools.
         icon: mariadb.png
         href: http://10.0.1.15:8895/
-        description: Shared application database (MariaDB LTS — Synology native package, port 3306)
+        description: Shared application database (MariaDB LTS -- Synology native package, port 3306)
 
     - PostgreSQL:
-        # stacks/databases is archived — PostgreSQL is now a Synology native package.
-        # No Docker container → no server:/container: integration (would always show offline).
+        # stacks/databases is archived -- PostgreSQL is now a Synology native package.
+        # No Docker container -> no server:/container: integration (would always show offline).
         icon: postgres.png
-        description: Shared application database (PostgreSQL 16 — Synology native package, port 5432)
+        description: Shared application database (PostgreSQL 16 -- Synology native package, port 5432)
 
 - Productivity:
     - Codex Docs:
@@ -234,7 +234,7 @@
         # Container name from: ollama/compose.yaml (service: open-webui)
         icon: open-webui.png
         href: http://10.0.1.15:8893/
-        description: olutechsys AI — Chat interface to local LLMs
+        description: olutechsys AI -- Chat interface to local LLMs
         server: my-docker
         container: otsai-webui
         siteMonitor: http://10.0.1.15:8893/

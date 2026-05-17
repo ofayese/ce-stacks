@@ -1,4 +1,4 @@
-# Homepage — DS723+ Docker Dashboard
+# Homepage -- DS723+ Docker Dashboard
 
 A customizable, real-time dashboard for the olutechsys homelab infrastructure. Automatically mirrors container status for stacks deployed under `${STACK_ROOT}`.
 
@@ -51,24 +51,24 @@ Once running, Homepage will be available at:
 
 ```
 homepage/
-├── compose.yaml              # Container definition + socket mount
-├── README.md                 # This file
-├── CONTAINER_MAPPING.md      # Service → Container cross-reference (new)
-├── verify-integration.sh      # Socket validation script (new)
-└── config/
-    ├── docker.yaml           # Socket reference (explained below)
-    ├── services.yaml         # 20+ services across 6 categories
-    ├── settings.yaml         # Theme, layout, DS723+ optimization
-    ├── widgets.yaml          # Dashboard gauges, datetime, weather
-    ├── bookmarks.yaml        # Quick links to external tools/docs
-    ├── kubernetes.yaml       # Disabled (Synology single-node only)
-    ├── custom.css            # Optional CSS overrides
-    └── custom.js             # Optional JavaScript customizations
++--- compose.yaml              # Container definition + socket mount
++--- README.md                 # This file
++--- CONTAINER_MAPPING.md      # Service -> Container cross-reference (new)
++--- verify-integration.sh      # Socket validation script (new)
++--- config/
+    +--- docker.yaml           # Socket reference (explained below)
+    +--- services.yaml         # 20+ services across 6 categories
+    +--- settings.yaml         # Theme, layout, DS723+ optimization
+    +--- widgets.yaml          # Dashboard gauges, datetime, weather
+    +--- bookmarks.yaml        # Quick links to external tools/docs
+    +--- kubernetes.yaml       # Disabled (Synology single-node only)
+    +--- custom.css            # Optional CSS overrides
+    +--- custom.js             # Optional JavaScript customizations
 ```
 
 | File                              | Purpose                                                                                                                                                                   |
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `compose.yaml`                    | Container definition. Exposes 7575 → 3000, mounts config and Docker socket (read-only).                                                                                   |
+| `compose.yaml`                    | Container definition. Exposes 7575 -> 3000, mounts config and Docker socket (read-only).                                                                                   |
 | `config/services.yaml`            | 20 services grouped into 6 categories: Infrastructure, Management, Development, Productivity, AI, Search & Tools.                                                         |
 | `config/docker.yaml`              | Single `my-docker:` socket entry enabling container status monitoring. See [Socket Integration Explained](#how-the-docker-socket-integration-works-synology-ds723) below. |
 | `config/settings.yaml`            | Theme (dark/light), color scheme, layout optimization for DS723+ (4-column infrastructure sections).                                                                      |
@@ -95,10 +95,10 @@ bash verify-integration.sh
 Expected output:
 
 ```
-✓ Homepage container is running
-✓ Docker socket mounted: /var/run/docker.sock
-✓ Socket is readable from inside container
-✓ 20 services configured, 20 containers found
+[OK] Homepage container is running
+[OK] Docker socket mounted: /var/run/docker.sock
+[OK] Socket is readable from inside container
+[OK] 20 services configured, 20 containers found
 ```
 
 If you see warnings, see [Troubleshooting](#troubleshooting) below.
@@ -106,11 +106,11 @@ If you see warnings, see [Troubleshooting](#troubleshooting) below.
 ### 2. Add Portainer API Key (For Dashboard Widget)
 
 1. Open Portainer at https://10.0.1.15:9443
-2. Click your profile icon → **My Account**
-3. Scroll to **Access Tokens** → **Create token**
+2. Click your profile icon -> **My Account**
+3. Scroll to **Access Tokens** -> **Create token**
 4. Copy the token
-5. In `stacks/homepage/.env` (not committed), set `PORTAINER_API_KEY=<token>` — the Portainer widget reads `key: ${PORTAINER_API_KEY}` from `config/services.yaml`.
-6. Confirm `env: 1` matches your environment ID (Portainer → Endpoints → note the ID next to your edge agent)
+5. In `stacks/homepage/.env` (not committed), set `PORTAINER_API_KEY=<token>` -- the Portainer widget reads `key: ${PORTAINER_API_KEY}` from `config/services.yaml`.
+6. Confirm `env: 1` matches your environment ID (Portainer -> Endpoints -> note the ID next to your edge agent)
 7. Restart Homepage:
    ```bash
    docker compose -f compose.yaml restart
@@ -242,8 +242,8 @@ docker exec Homepage test -r /var/run/docker.sock && echo "Readable" || echo "No
 **Fix:**
 
 1. Ensure `compose.yaml` includes the socket mount (it should)
-2. Check Synology Container Manager logs: DSM → Container Manager → Docker Daemon → Log
-3. Try restarting the Docker daemon: DSM → Control Panel → Services → Docker (stop, then start)
+2. Check Synology Container Manager logs: DSM -> Container Manager -> Docker Daemon -> Log
+3. Try restarting the Docker daemon: DSM -> Control Panel -> Services -> Docker (stop, then start)
 4. Run `verify-integration.sh` for detailed diagnostics
 
 ### Portainer Widget Not Showing Metrics
@@ -261,7 +261,7 @@ docker exec Homepage test -r /var/run/docker.sock && echo "Readable" || echo "No
 1. Verify API key in `config/services.yaml` (see [Post-Deployment Setup](#post-deployment-setup) step 2)
 2. Confirm environment ID:
    ```bash
-   # In Portainer UI: Endpoints → find your edge agent → note the number (e.g., 1)
+   # In Portainer UI: Endpoints -> find your edge agent -> note the number (e.g., 1)
    # Update services.yaml: env: 1
    ```
 3. If using HTTPS, ensure the certificate is valid (Portainer should auto-generate)
@@ -276,7 +276,7 @@ docker exec Homepage test -r /var/run/docker.sock && echo "Readable" || echo "No
 1. Verify the container is running: `docker ps | grep my-new-service`
 2. Verify the `container:` name matches exactly (case-sensitive)
 3. Check the new service is on the same Docker network: `docker inspect my-new-service | grep -A5 NetworkSettings`
-4. Run `verify-integration.sh` — it lists all configured vs. running containers
+4. Run `verify-integration.sh` -- it lists all configured vs. running containers
 
 **Fix:**
 
@@ -317,7 +317,7 @@ docker exec Homepage test -r /var/run/docker.sock && echo "Readable" || echo "No
    docker exec Homepage wget -qO- https://api.open-meteo.com/v1/forecast\?latitude\=0\&longitude\=0 | head -20
    ```
 2. Temporarily disable optional widgets in `config/widgets.yaml` (comment out `openmeteo`, etc.)
-3. Check Synology's DNS settings (DSM → Control Panel → Network)
+3. Check Synology's DNS settings (DSM -> Control Panel -> Network)
 4. Review container logs: `docker logs Homepage | tail -50`
 
 ---
@@ -359,9 +359,9 @@ Homepage uses port **7575** because your existing stacks occupy:
 
 - 8888 (SearXNG)
 - 8889 (OpenResume)
-- 8892–8896 (Dozzle, Adminer, phpMyAdmin, CodexDocs, IT-Tools)
-- 8377, 8379 (Code-Server, phpMyAdmin-dev/CodeServerPMA — 8379 avoids conflict with db-tools/PhpMyAdmin on 8378)
-- 9000–9001, 9443 (Portainer, Portainer Agent)
+- 8892-8896 (Dozzle, Adminer, phpMyAdmin, CodexDocs, IT-Tools)
+- 8377, 8379 (Code-Server, phpMyAdmin-dev/CodeServerPMA -- 8379 avoids conflict with db-tools/PhpMyAdmin on 8378)
+- 9000-9001, 9443 (Portainer, Portainer Agent)
 - 11434 (Ollama)
 - 3866 (Dockhand host port)
 - 3307 (MySQL dev)

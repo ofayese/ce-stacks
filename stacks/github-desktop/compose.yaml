@@ -4,13 +4,13 @@ services:
     container_name: github-desktop
     hostname: github-desktop
     shm_size: 1g
-    # Host-profile fix: 2g → 1536m. KasmVNC + Electron(GitHub Desktop) RSS ~700 MB idle.
+    # Host-profile fix: 2g -> 1536m. KasmVNC + Electron(GitHub Desktop) RSS ~700 MB idle.
     mem_limit: 1536m
     cpu_shares: 512
     # cpus: removed - Synology DS723+ kernel lacks CFS scheduler cgroup (NanoCPUs unsupported)
     security_opt:
       # KasmVNC mounts tmpfs and requires unconfined seccomp profile.
-      # See docs/dsm-732-runtime-quirks.md §4 — do not remove this line.
+      # See docs/dsm-732-runtime-quirks.md S.4 -- do not remove this line.
       - seccomp:unconfined
       - no-new-privileges:true
     cap_add:
@@ -59,6 +59,6 @@ networks:
     driver: bridge
     ipam:
       config:
-        # Subnet registry: 172.20.0.0/24 allocated to github-desktop-net (see README.md → Network Subnets)
+        # Subnet registry: 172.20.0.0/24 allocated to github-desktop-net (see README.md -> Network Subnets)
         - subnet: 172.20.0.0/24
           gateway: 172.20.0.1

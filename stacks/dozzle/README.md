@@ -4,7 +4,7 @@ Real-time Docker log viewer. Reads the host `docker.sock` (`:ro`) and streams co
 
 ## Service
 
-- **dozzle** (8892) — log viewer; auth via `users.yml` (mounted into `/data/users.yml`)
+- **dozzle** (8892) -- log viewer; auth via `users.yml` (mounted into `/data/users.yml`)
 
 ## Auth
 
@@ -26,7 +26,7 @@ This stack's worker is the **cross-cutting log-visibility owner**. The `logging:
 
 ## Security note
 
-`docker.sock` is mounted read-only — Dozzle enumerates and streams logs but cannot exec into containers or modify state.
+`docker.sock` is mounted read-only -- Dozzle enumerates and streams logs but cannot exec into containers or modify state.
 
 ## Rollback
 

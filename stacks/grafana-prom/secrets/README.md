@@ -4,8 +4,8 @@
 
 Single-line bearer token shared by:
 
-- **Fleet Watchtower** (`watchtower/compose.yaml`) — `WATCHTOWER_HTTP_API_TOKEN` via Docker secret (file contents = token).
-- **Prometheus** (`grafana-prom/docker-compose.yml`) — `bearer_token_file` for the `watchtower` scrape job in `prom.yml`.
+- **Fleet Watchtower** (`watchtower/compose.yaml`) -- `WATCHTOWER_HTTP_API_TOKEN` via Docker secret (file contents = token).
+- **Prometheus** (`grafana-prom/docker-compose.yml`) -- `bearer_token_file` for the `watchtower` scrape job in `prom.yml`.
 
 Create on the NAS (never commit this file):
 
@@ -20,7 +20,7 @@ Then redeploy Watchtower and the `grafana-prom` stack. Prometheus scrapes `http:
 
 Read-only InfluxDB password for the `grafana` user. Used by the Grafana datasource
 provisioning file (`provisioning/datasources/influxdb.yml`) via Grafana's
-`$__file{}` secret interpolation — no env var required.
+`$__file{}` secret interpolation -- no env var required.
 
 This password must match `INFLUXDB_GRAFANA_PASSWORD` in `stacks/influxdb/.env`
 (which creates the `grafana` read-only user in InfluxDB on first start).
@@ -43,9 +43,9 @@ docker compose restart grafana
 ## `discord_webhook_url.txt`
 
 Discord webhook URL for Alertmanager notifications. Used by
-`alertmanager.yml` via `webhook_url_file` — no env var required.
+`alertmanager.yml` via `webhook_url_file` -- no env var required.
 
-Get the URL from: Discord server → Settings → Integrations → Webhooks → Copy Webhook URL
+Get the URL from: Discord server -> Settings -> Integrations -> Webhooks -> Copy Webhook URL
 
 Create on the NAS (never commit this file):
 

@@ -6,7 +6,7 @@ services:
     image: ironmansoftware/universal@sha256:069b858b0f010d522144745ac918cc12c8ea022d516f011fe7e2596efc3a03c4
     # Tag at publish time: 2026.1.6-ubuntu-24.04 (linux/amd64). Re-resolve digest on upgrade.
     restart: unless-stopped
-    # Host-profile fix: 2g → 1g. PSU + LiteDB working set on this NAS is ~400 MB.
+    # Host-profile fix: 2g -> 1g. PSU + LiteDB working set on this NAS is ~400 MB.
     mem_limit: 1g
     cpu_shares: 512
     # cpus: removed - Synology DS723+ kernel lacks CFS scheduler cgroup (NanoCPUs unsupported)
@@ -45,7 +45,7 @@ services:
       - PSU_SAFE_MODE_WEBHOOK_URL=${PSU_SAFE_MODE_WEBHOOK_URL:-}
       - PSU_SAFE_MODE_DISCORD_WEBHOOK=${PSU_SAFE_MODE_DISCORD_WEBHOOK:-}
       - PSU_NAS_ALERT_WEBHOOK_TOKEN=${PSU_NAS_ALERT_WEBHOOK_TOKEN:-}
-      # Host SSH (optional — see stacks/psu-ots/NAS_HOST_SSH_SETUP.md)
+      # Host SSH (optional -- see stacks/psu-ots/NAS_HOST_SSH_SETUP.md)
       - NAS_HOST_IP=${NAS_HOST_IP:-}
       - NAS_SSH_USER=${NAS_SSH_USER:-}
       - SSH_KEY_PATH=${SSH_KEY_PATH:-}
@@ -74,7 +74,7 @@ services:
       - ${STACK_ROOT}/psu-ots/data:/data:rw
       # Optional: mount read-only private key for host SSH remediation (chmod 600 on host; never commit keys)
       - ${STACK_ROOT}/psu-ots/keys:/ssh-keys:ro
-      # Repo root (parent of stacks/) for git status + scripts — same as ${NAS_REPO_ROOT} when set in .env
+      # Repo root (parent of stacks/) for git status + scripts -- same as ${NAS_REPO_ROOT} when set in .env
       - ${NAS_REPO_ROOT:-${STACK_ROOT}/..}:/nas-repo:ro
       - ${ACME_CERT_ROOT:-/volume2/certs/acme}:/certs/acme:ro
     healthcheck:

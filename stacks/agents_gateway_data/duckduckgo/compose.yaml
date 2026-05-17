@@ -15,14 +15,14 @@ services:
         max-size: "10m"
         max-file: "3"
     restart: unless-stopped
-    # Host 8812 → container 8811 (parity with root compose.yaml)
+    # Host 8812 -> container 8811 (parity with root compose.yaml)
     ports:
       - 10.0.1.15:8812:8811
     volumes:
       # /var/run socket context
-      # Host-profile fix: dropped :rw → :ro (parity with ../compose.yaml).
+      # Host-profile fix: dropped :rw -> :ro (parity with ../compose.yaml).
       - /var/run/docker.sock:/var/run/docker.sock:ro
-    # Healthcheck type: A — HTTP /health probe (same as root compose.yaml)
+    # Healthcheck type: A -- HTTP /health probe (same as root compose.yaml)
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8811/health"]
       interval: 30s

@@ -1,6 +1,6 @@
-# agents_gateway_data — MCP gateway (DuckDuckGo)
+# agents_gateway_data -- MCP gateway (DuckDuckGo)
 
-**Default:** run **`compose.yaml`** in this directory only. The alternate layout under **`duckduckgo/compose.yaml`** is for a nested sample — do **not** run both stacks on the same host (**8812**) without changing ports.
+**Default:** run **`compose.yaml`** in this directory only. The alternate layout under **`duckduckgo/compose.yaml`** is for a nested sample -- do **not** run both stacks on the same host (**8812**) without changing ports.
 
 Experimental **Docker MCP Gateway** wiring for DuckDuckGo search MCP. Uses the host Docker API.
 
@@ -8,7 +8,7 @@ Experimental **Docker MCP Gateway** wiring for DuckDuckGo search MCP. Uses the h
 
 | Host (default) | Service            |
 | -------------- | ------------------ |
-| `8812` → `8811` | `mcp-gateway` HTTP (host **8812**, container **8811**) |
+| `8812` -> `8811` | `mcp-gateway` HTTP (host **8812**, container **8811**) |
 
 ## Volumes
 
@@ -28,11 +28,11 @@ Images pull from Docker Hub / GHCR; outbound **HTTPS (443)** required. No extra 
 
 ## Healthcheck
 
-> Probe type: **A** — HTTP GET `/health` on container port **8811** (healthcheck runs inside the container; host publishes **8812**).
+> Probe type: **A** -- HTTP GET `/health` on container port **8811** (healthcheck runs inside the container; host publishes **8812**).
 > Source: [docker/mcp-gateway upstream health example](https://raw.githubusercontent.com/docker/mcp-gateway/main/examples/health/compose.yaml).
 > If the image is upgraded and the health endpoint changes, update the `healthcheck.test` line in `compose.yaml` accordingly.
 
 ## Related compose
 
-- Root [`compose.yaml`](./compose.yaml) — primary stack file to deploy.
-- [`duckduckgo/compose.yaml`](./duckduckgo/compose.yaml) — alternate layout; avoid running both on the same host port.
+- Root [`compose.yaml`](./compose.yaml) -- primary stack file to deploy.
+- [`duckduckgo/compose.yaml`](./duckduckgo/compose.yaml) -- alternate layout; avoid running both on the same host port.

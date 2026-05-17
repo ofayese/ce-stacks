@@ -219,7 +219,7 @@ MAX_HEALTH_RETRIES=30
 while [ $HEALTH_RETRIES -lt $MAX_HEALTH_RETRIES ]; do
     HEALTH=$($DOCKER inspect -f '{{.State.Health.Status}}' "$NAME" 2>/dev/null || echo "none")
     if [ "$HEALTH" = "healthy" ]; then
-        echo "dockhand-start: ${NAME} is healthy ✓"
+        echo "dockhand-start: ${NAME} is healthy [OK]"
         echo "dockhand-start: Access Dockhand at http://${DOCKHAND_BIND_IP}:${DOCKHAND_PORT_HOST}"
         break
     elif [ "$HEALTH" = "starting" ]; then

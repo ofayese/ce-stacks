@@ -233,7 +233,7 @@ if (Get-Command New-PSUEndpoint -ErrorAction SilentlyContinue) {
         # inventory.py (hive toolchain) removed. Live analysis unavailable;
         # only pre-cached reports (analyzer-latest.json) are served by this endpoint.
         if (Get-Command New-PSUApiResponse -ErrorAction SilentlyContinue) {
-            return (New-PSUApiResponse -StatusCode 404 -Body '{"error":"live analysis unavailable — no cached report found"}' -ContentType "application/json")
+            return (New-PSUApiResponse -StatusCode 404 -Body '{"error":"live analysis unavailable -- no cached report found"}' -ContentType "application/json")
         }
         return '{"error":"live analysis unavailable"}'
     }

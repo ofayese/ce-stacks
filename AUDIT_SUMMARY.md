@@ -2,11 +2,11 @@
 
 **Audit Date**: 2026-05-13  
 **Status**: 11 Issues Found - Actionable Fixes Provided  
-**Repo Health**: 7.7/10 → 9.5/10 (after fixes)
+**Repo Health**: 7.7/10 -> 9.5/10 (after fixes)
 
 ---
 
-## 📋 Quick Reference
+## [list] Quick Reference
 
 | Document | Purpose | Read Time |
 | --- | --- | --- |
@@ -16,7 +16,7 @@
 
 ---
 
-## 🎯 Critical Issues (Fix Before Dockhand)
+## [target] Critical Issues (Fix Before Dockhand)
 
 ### 1. Missing ce-internal Network
 
@@ -38,7 +38,7 @@
 
 ---
 
-## 🔐 Security Issues (High Priority)
+## [secure] Security Issues (High Priority)
 
 ### 4. Missing no-new-privileges (1 stack)
 
@@ -53,33 +53,33 @@
 
 ---
 
-## 📊 Repo Health Scorecard
+## [chart] Repo Health Scorecard
 
 ```
-Structure:          9/10 ✓ (well-organized)
-Security:           7/10 → 9/10 (needs 2 stacks fixed)
-Documentation:      7/10 → 9/10 (needs network registry)
-Validation:         6/10 → 10/10 (needs .env files)
-Completeness:       8/10 → 10/10 (all ready when fixed)
-Git Cleanliness:    9/10 ✓ (no exposed secrets)
-─────────────────────────────
-OVERALL:            7.7/10 → 9.5/10
+Structure:          9/10 [OK] (well-organized)
+Security:           7/10 -> 9/10 (needs 2 stacks fixed)
+Documentation:      7/10 -> 9/10 (needs network registry)
+Validation:         6/10 -> 10/10 (needs .env files)
+Completeness:       8/10 -> 10/10 (all ready when fixed)
+Git Cleanliness:    9/10 [OK] (no exposed secrets)
+-----------------------------
+OVERALL:            7.7/10 -> 9.5/10
 ```
 
 ---
 
-## ✅ Passing Audits
+## [OK] Passing Audits
 
-- ✓ All 20 stacks have health checks
-- ✓ No secrets in git
-- ✓ .gitignore properly configured
-- ✓ Network design solid (19 subnets allocated)
-- ✓ Watchtower labels present (database protection)
-- ✓ Log rotation configured
+- [OK] All 20 stacks have health checks
+- [OK] No secrets in git
+- [OK] .gitignore properly configured
+- [OK] Network design solid (19 subnets allocated)
+- [OK] Watchtower labels present (database protection)
+- [OK] Log rotation configured
 
 ---
 
-## 🚀 Fix Timeline
+## [deploy] Fix Timeline
 
 | Phase | Items | Time | Can Skip? |
 | --- | --- | --- | --- |
@@ -91,7 +91,7 @@ OVERALL:            7.7/10 → 9.5/10
 
 ---
 
-## 📝 Implementation Steps
+## [note] Implementation Steps
 
 ### Today (5 minutes)
 
@@ -114,7 +114,7 @@ OVERALL:            7.7/10 → 9.5/10
 
 ---
 
-## 📌 Most Important Fixes
+## [pin] Most Important Fixes
 
 ### #1 (Blocking Everything)
 
@@ -149,21 +149,21 @@ security_opt:
 
 ---
 
-## 🎓 Key Learnings
+## [docs] Key Learnings
 
 The repo has:
 
-- ✓ Excellent structure and organization
-- ✓ Good security practices overall
-- ✓ Proper git hygiene
-- ✗ Missing operational setup (networks, env files)
-- ✗ A few security gaps (2 stacks)
+- [OK] Excellent structure and organization
+- [OK] Good security practices overall
+- [OK] Proper git hygiene
+- [FAIL] Missing operational setup (networks, env files)
+- [FAIL] A few security gaps (2 stacks)
 
 **Root Cause**: Repo is well-designed but missing initial setup documentation. After fixes, it will be production-ready.
 
 ---
 
-## 📚 Related Documents
+## [books] Related Documents
 
 - `AUDIT_REPORT.md` - Full findings with evidence
 - `QUICK_FIX_CHECKLIST.md` - Executable fixes
@@ -172,7 +172,7 @@ The repo has:
 
 ---
 
-## ❓ FAQ
+## [?] FAQ
 
 **Q: Can I deploy Dockhand without fixing these?**  
 A: No. The ce-internal network must exist, and .env files are required.
@@ -191,7 +191,7 @@ A: Partially. PHASE 1 & 2 have scripts. PHASE 3 requires manual edits.
 
 ---
 
-## ✨ Success Criteria
+## * Success Criteria
 
 After completing fixes:
 
@@ -207,7 +207,7 @@ After completing fixes:
 
 ---
 
-## 🎯 What's Next?
+## [target] What's Next?
 
 1. **Now**: Read detailed reports
 2. **Today/Tomorrow**: Execute PHASE 1 & 2 fixes
@@ -216,7 +216,7 @@ After completing fixes:
 
 ---
 
-## 📞 Support
+## [phone] Support
 
 All fixes are documented with:
 

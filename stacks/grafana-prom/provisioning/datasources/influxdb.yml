@@ -1,13 +1,13 @@
-# Grafana datasource provisioning — InfluxDB (ntopng time-series)
+# Grafana datasource provisioning -- InfluxDB (ntopng time-series)
 # Auto-provisioned on Grafana startup; no manual UI steps required.
 #
 # Both Grafana and InfluxDB are attached to the ce-internal network, so
 # Grafana reaches InfluxDB by container hostname (influxdb:8086) rather than
-# the host LAN IP — host-IP routing from bridge networks is unreliable on Synology DSM.
+# the host LAN IP -- host-IP routing from bridge networks is unreliable on Synology DSM.
 #
 # Password is read from a secret file mounted into the Grafana container:
-#   secrets/influxdb_grafana_password.txt → /run/secrets/influxdb_grafana_password
-# $__file{} is the Grafana ≥8 secret-file interpolation syntax (no env var needed).
+#   secrets/influxdb_grafana_password.txt -> /run/secrets/influxdb_grafana_password
+# $__file{} is the Grafana >=8 secret-file interpolation syntax (no env var needed).
 # The file must match INFLUXDB_GRAFANA_PASSWORD in stacks/influxdb/.env.
 apiVersion: 1
 

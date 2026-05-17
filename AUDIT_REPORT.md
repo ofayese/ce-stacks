@@ -12,11 +12,11 @@ reconciliation pass tracked in [`implementation_plan.md`](./implementation_plan.
 
 | Issue | Status | Notes |
 |---|---|---|
-| #1 Invalid Compose Files | ✅ Process fix in place | `scripts/init-nas.sh` (Section 7) materializes missing `.env` files from `.env.example` before any `docker compose` run. Operators must still populate real values. |
-| #2 Missing .env Files (19/20) | ✅ Process fix in place | Same as above — `scripts/bootstrap-env.sh --apply` (invoked from `init-nas.sh`) creates the .env files; values remain operator-supplied. |
-| #3 ce-internal Network Missing | ✅ Self-healing | `dockhand/scripts/dockhand-start.sh` now calls `ensure_ce_internal()` at boot; `scripts/init-nas.sh` also creates it. |
-| #9 Stale Dockhand path references | ✅ Closed | All `stacks/dockhand/*`, `dockhand/dockhand-start.sh`, and `dockhand/health-check-fix.sh` references corrected; Watchtower label aligned to `enable=false`. |
-| #10 Solution-Architect link in README | ✅ Closed | Added "Architecture & Design" section to `README.md`. |
+| #1 Invalid Compose Files | [OK] Process fix in place | `scripts/init-nas.sh` (Section 7) materializes missing `.env` files from `.env.example` before any `docker compose` run. Operators must still populate real values. |
+| #2 Missing .env Files (19/20) | [OK] Process fix in place | Same as above -- `scripts/bootstrap-env.sh --apply` (invoked from `init-nas.sh`) creates the .env files; values remain operator-supplied. |
+| #3 ce-internal Network Missing | [OK] Self-healing | `dockhand/scripts/dockhand-start.sh` now calls `ensure_ce_internal()` at boot; `scripts/init-nas.sh` also creates it. |
+| #9 Stale Dockhand path references | [OK] Closed | All `stacks/dockhand/*`, `dockhand/dockhand-start.sh`, and `dockhand/health-check-fix.sh` references corrected; Watchtower label aligned to `enable=false`. |
+| #10 Solution-Architect link in README | [OK] Closed | Added "Architecture & Design" section to `README.md`. |
 
 Remaining audit items (security_opt additions, PUID/PGID env additions, the
 HAProxy doc section, subnet-registry table, etc.) are unrelated to the
@@ -32,7 +32,7 @@ The ce-stacks repository is **well-structured** with solid patterns, but has **1
 
 ## Issues by Priority
 
-### 🔴 CRITICAL (Blocks Dockhand Deployment)
+### [RED] CRITICAL (Blocks Dockhand Deployment)
 
 #### Issue #1: Invalid Compose Files (3 stacks)
 
@@ -106,10 +106,10 @@ done
 
 **External Network References**:
 
-- `databases` → `ce-internal` (external: true)
-- `ollama` → `ce-internal` (external: true)
-- `grafana-prom` → `ce-internal` (external: true)
-- `synology-api-bridge` → `ce-internal` (external: true)
+- `databases` -> `ce-internal` (external: true)
+- `ollama` -> `ce-internal` (external: true)
+- `grafana-prom` -> `ce-internal` (external: true)
+- `synology-api-bridge` -> `ce-internal` (external: true)
 
 **Impact**: Stacks won't start without the backbone `ce-internal` network.
 
@@ -128,7 +128,7 @@ docker network create \
 
 ---
 
-### 🟠 HIGH (Impacts Security & Operations)
+### [ORANGE] HIGH (Impacts Security & Operations)
 
 #### Issue #4: Missing Security Options
 
@@ -175,11 +175,11 @@ environment:
 **Severity**: HIGH  
 **Affected Stacks**: `ollama` (missing health check but performs health check in compose)
 
-Wait, re-check: Actually ALL 20 stacks HAVE health checks. ✓ **NO ISSUE HERE**
+Wait, re-check: Actually ALL 20 stacks HAVE health checks. [OK] **NO ISSUE HERE**
 
 ---
 
-### 🟡 MEDIUM (Operational Concerns)
+### [YELLOW] MEDIUM (Operational Concerns)
 
 #### Issue #7: Network Subnet Proliferation (19 subnets)
 
@@ -224,7 +224,7 @@ Wait, re-check: Actually ALL 20 stacks HAVE health checks. ✓ **NO ISSUE HERE**
 
 ---
 
-### 🟢 LOW (Documentation & Maintainability)
+### [GREEN] LOW (Documentation & Maintainability)
 
 #### Issue #9: Dockhand Documentation Missing Network Setup
 
@@ -295,7 +295,7 @@ volumes:
 | 3 | ce-internal network not created | CRITICAL | 4+ | 5 min |
 | 4 | Missing security options | HIGH | 2 | 10 min |
 | 5 | Missing PUID/PGID | HIGH | 2 | 10 min |
-| 6 | Health checks | ✓ PASS | - | - |
+| 6 | Health checks | [OK] PASS | - | - |
 | 7 | Network subnet registry | MEDIUM | All | 15 min |
 | 8 | HAProxy documentation | MEDIUM | 1 | 5 min |
 | 9 | Dockhand docs missing network setup | LOW | - | 5 min |
@@ -336,12 +336,12 @@ volumes:
 ## Git Status Check
 
 ```
-✓ No accidentally committed secrets
-✓ .gitignore properly excludes .env files
-✓ Private keys excluded (.key, .pem files)
-✓ Runtime data directories ignored
-⚠️  stacks/grafana-prom/secrets/README.md (tracked - just metadata)
-⚠️  stacks/psu-ots/keys/.gitignore (tracked - just metadata)
+[OK] No accidentally committed secrets
+[OK] .gitignore properly excludes .env files
+[OK] Private keys excluded (.key, .pem files)
+[OK] Runtime data directories ignored
+[WARN]  stacks/grafana-prom/secrets/README.md (tracked - just metadata)
+[WARN]  stacks/psu-ots/keys/.gitignore (tracked - just metadata)
 ```
 
 Status: **CLEAN** - No exposed secrets.

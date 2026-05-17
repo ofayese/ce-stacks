@@ -13,10 +13,10 @@
 # - socket: /var/run/docker.sock is the INTERNAL path (not the host path)
 #
 # WHY THIS APPROACH?
-# • Direct socket access: No proxy overhead, no extra containers needed
-# • Safe on single-node Synology: Socket is confined to your NAS
-# • Read-only mount: Homepage cannot modify containers, only observe them
-# • Simplicity: Fewer moving parts = easier to maintain
+# * Direct socket access: No proxy overhead, no extra containers needed
+# * Safe on single-node Synology: Socket is confined to your NAS
+# * Read-only mount: Homepage cannot modify containers, only observe them
+# * Simplicity: Fewer moving parts = easier to maintain
 #
 # WHY NOT A DOCKER SOCKET PROXY?
 # On larger deployments (e.g., Kubernetes clusters), a proxy like
@@ -24,11 +24,11 @@
 # single-NAS homelab, this is unnecessary complexity.
 #
 # SYNOLOGY SPECIFICS
-# • Mount point in compose.yaml: /var/run/docker.sock:/var/run/docker.sock:ro
+# * Mount point in compose.yaml: /var/run/docker.sock:/var/run/docker.sock:ro
 #   - :ro = read-only (essential for security)
-# • Repo default PUID:PGID = 0:0 (root) on Synology per README.md → Key Conventions; override in compose env if needed.
-# • All services in this stack use label com.centurylinklabs.watchtower.enable=true
-# • Compose uses each stack’s default project network (user-defined bridge), not Docker’s literal bridge network.
+# * Repo default PUID:PGID = 0:0 (root) on Synology per README.md -> Key Conventions; override in compose env if needed.
+# * All services in this stack use label com.centurylinklabs.watchtower.enable=true
+# * Compose uses each stack's default project network (user-defined bridge), not Docker's literal bridge network.
 #
 # REFERENCE
 # Marius Hosting (Synology Docker expert):

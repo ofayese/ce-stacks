@@ -4,64 +4,64 @@ Production Docker stack infrastructure for a Synology DS723+ NAS running DSM 7.3
 
 ## Architecture Overview
 
-- **NAS**: Synology DS723+ · DSM 7.3 · Docker Engine via Container Manager
+- **NAS**: Synology DS723+ . DSM 7.3 . Docker Engine via Container Manager
 - **Stack root**: `/volume2/docker/ce-stacks`
 - **Dockhand data**: `/volume2/docker/dockhand` (outside stack root, persists across repo resets)
-- **Network model**: All service ports bind to `10.0.1.15` (LAN IP) — no `0.0.0.0` bindings
+- **Network model**: All service ports bind to `10.0.1.15` (LAN IP) -- no `0.0.0.0` bindings
 - **Compose format**: `compose.yaml` throughout (no `docker-compose.yml`)
 
 ## Host Profile
 
 Live target NAS: **`otsorundscore`** (DSM 7.3.2-86009 U3, DS723+, AMD Ryzen R1600, 32 GB, Cool mode, CPU-only). Authoritative spec:
 
-- [`docs/host-profile-otsorundscore.md`](./docs/host-profile-otsorundscore.md) — identity, hardware, derived budgets
-- [`docs/dsm-732-runtime-quirks.md`](./docs/dsm-732-runtime-quirks.md) — Container Manager / BTRFS / Cool-mode operational quirks
+- [`docs/host-profile-otsorundscore.md`](./docs/host-profile-otsorundscore.md) -- identity, hardware, derived budgets
+- [`docs/dsm-732-runtime-quirks.md`](./docs/dsm-732-runtime-quirks.md) -- Container Manager / BTRFS / Cool-mode operational quirks
 
 Two linters enforce host-profile rules in CI (chained from `scripts/compose-validate.sh` and `scripts/verify-repo-layout.sh`):
 
 | Linter | Rule | Override |
 |---|---|---|
-| `scripts/lint-rfc1918.sh` | Every bridge `subnet:` must live inside `10/8`, `172.16/12`, or `192.168/16`. | — |
-| `scripts/lint-host-budget.sh` | Σ `mem_limit` across all stacks ≤ `HOST_MEM_BUDGET_MB` (default 32 000 MB = physical RAM ceiling). | `HOST_MEM_BUDGET_MB=26000 bash scripts/lint-host-budget.sh` for stricter "leave headroom for DSM" mode. |
+| `scripts/lint-rfc1918.sh` | Every bridge `subnet:` must live inside `10/8`, `172.16/12`, or `192.168/16`. | -- |
+| `scripts/lint-host-budget.sh` | Sum `mem_limit` across all stacks <= `HOST_MEM_BUDGET_MB` (default 32 000 MB = physical RAM ceiling). | `HOST_MEM_BUDGET_MB=26000 bash scripts/lint-host-budget.sh` for stricter "leave headroom for DSM" mode. |
 
 ## Directory Layout
 
 ```
 ce-stacks/
-├── stacks/                  # One subdirectory per stack
-│   ├── _haproxy/            # HAProxy reverse proxy (bare-metal, not compose)
-│   ├── acme-sh/             # Let's Encrypt certificate automation
-│   ├── agents_gateway_data/ # AI agent gateway + DuckDuckGo search
-│   ├── code-server/         # VS Code in the browser
-│   ├── codex-docs/          # Documentation platform
-│   ├── databases/           # Shared database services
-│   ├── dozzle/              # Docker log viewer
-│   ├── github-desktop/      # GitHub Desktop (containerised)
-│   ├── grafana-prom/        # Grafana + Prometheus monitoring
-│   ├── homepage/            # Dashboard / service portal
-│   ├── it-tools/            # IT utility toolkit
-│   ├── mcp-tools-config/    # MCP tool configuration
-│   ├── ollama/              # Local LLM inference (Ollama)
-│   ├── openresume/          # Resume builder
-│   ├── psu-ots/             # PSU OTS application
-│   ├── remotely/            # Remote desktop / support
-│   ├── searxng/             # Privacy-respecting metasearch
-│   ├── synology-api-bridge/ # Internal DSM HTTP shim (FastAPI)
-│   ├── watchtower/          # Automated image update management
-│   ├── zabbix/              # Infrastructure monitoring
-│   └── archives/            # Retired stacks (kept for reference)
-│
-├── scripts/                 # Operational scripts
-│   ├── dockhand-sync.sh     # Re-sync dockhand/ → /volume2/docker/dockhand
-│   ├── compose-validate.sh  # Validate all compose.yaml files
-│   ├── verify-repo-layout.sh # Check repo structure invariants
-│   ├── init-nas.sh          # First-boot NAS initialisation
-│   ├── nas-reset.sh         # Factory-reset helper
-│   ├── fix-permissions.sh   # Repair bind-mount ownership
-│   ├── restore-env.sh       # Restore .env from .env.example
-│   └── maintenance/         # Scheduled maintenance scripts
-│
-└── docs/                    # (planned) Architecture and runbook docs
++--- stacks/                  # One subdirectory per stack
+|   +--- _haproxy/            # HAProxy reverse proxy (bare-metal, not compose)
+|   +--- acme-sh/             # Let's Encrypt certificate automation
+|   +--- agents_gateway_data/ # AI agent gateway + DuckDuckGo search
+|   +--- code-server/         # VS Code in the browser
+|   +--- codex-docs/          # Documentation platform
+|   +--- databases/           # Shared database services
+|   +--- dozzle/              # Docker log viewer
+|   +--- github-desktop/      # GitHub Desktop (containerised)
+|   +--- grafana-prom/        # Grafana + Prometheus monitoring
+|   +--- homepage/            # Dashboard / service portal
+|   +--- it-tools/            # IT utility toolkit
+|   +--- mcp-tools-config/    # MCP tool configuration
+|   +--- ollama/              # Local LLM inference (Ollama)
+|   +--- openresume/          # Resume builder
+|   +--- psu-ots/             # PSU OTS application
+|   +--- remotely/            # Remote desktop / support
+|   +--- searxng/             # Privacy-respecting metasearch
+|   +--- synology-api-bridge/ # Internal DSM HTTP shim (FastAPI)
+|   +--- watchtower/          # Automated image update management
+|   +--- zabbix/              # Infrastructure monitoring
+|   +--- archives/            # Retired stacks (kept for reference)
+|
++--- scripts/                 # Operational scripts
+|   +--- dockhand-sync.sh     # Re-sync dockhand/ -> /volume2/docker/dockhand
+|   +--- compose-validate.sh  # Validate all compose.yaml files
+|   +--- verify-repo-layout.sh # Check repo structure invariants
+|   +--- init-nas.sh          # First-boot NAS initialisation
+|   +--- nas-reset.sh         # Factory-reset helper
+|   +--- fix-permissions.sh   # Repair bind-mount ownership
+|   +--- restore-env.sh       # Restore .env from .env.example
+|   +--- maintenance/         # Scheduled maintenance scripts
+|
++--- docs/                    # (planned) Architecture and runbook docs
 ```
 
 ## Getting Started
@@ -104,7 +104,7 @@ for stack in acme-sh agents_gateway_data code-server databases dozzle \
 done
 ```
 
-Edit each `.env` with actual values (passwords, API keys) — do not commit `.env` files to git.
+Edit each `.env` with actual values (passwords, API keys) -- do not commit `.env` files to git.
 
 3. Validate all compose files prior to import:
 
@@ -140,8 +140,8 @@ See [`dockhand/README.md`](./dockhand/README.md) for detailed steps.
 
 Dockhand auto-imports stacks from your ce-stacks repo via:
 
-- **Git webhook**: Push to repo → Dockhand auto-deploys (recommended)
-- **Manual upload**: Dockhand UI → Stacks → Create Stack → Upload compose.yaml
+- **Git webhook**: Push to repo -> Dockhand auto-deploys (recommended)
+- **Manual upload**: Dockhand UI -> Stacks -> Create Stack -> Upload compose.yaml
 
 For each stack, populate `.env` from `.env.example` before deployment.
 
@@ -157,7 +157,7 @@ bash /volume2/docker/ce-stacks/scripts/verify-repo-layout.sh
 | Convention | Detail |
 |---|---|
 | Compose filename | Always `compose.yaml` (never `docker-compose.yml`) |
-| Port bindings | `10.0.1.15:HOST_PORT:CONTAINER_PORT` — LAN-only |
+| Port bindings | `10.0.1.15:HOST_PORT:CONTAINER_PORT` -- LAN-only |
 | UID/GID | Default `PUID=0 / PGID=0` for Synology bind-mount ownership |
 | Database images | Version-pinned; `watchtower.enable=false` label to prevent auto-upgrade |
 | Floating tags | Prohibited for stateful services; pinned semver required |
@@ -189,7 +189,7 @@ The Docker default bridge `172.17.0.0/16` is reserved and must not be re-used.
 
 **Important**: `ce-internal` is the only external (pre-created) network and must be created manually before importing stacks.
 
-- `ce-internal` (172.26.0.0/24) — External backbone network shared by: agents_gateway_data, databases, grafana-prom, ollama, synology-api-bridge. Create it once on the NAS using `docker network create` (see Pre-Deployment Setup).
+- `ce-internal` (172.26.0.0/24) -- External backbone network shared by: agents_gateway_data, databases, grafana-prom, ollama, synology-api-bridge. Create it once on the NAS using `docker network create` (see Pre-Deployment Setup).
 
 - All other networks listed above are created by their respective stacks at `docker compose up` time (internal to the stack) and do not require manual creation.
 
@@ -197,9 +197,9 @@ Refer to the "Pre-Deployment Setup" section for commands and validation steps.
 
 ## Dockhand Details
 
-Dockhand lifecycle is managed exclusively by the RC script — not by a compose stack.
+Dockhand lifecycle is managed exclusively by the RC script -- not by a compose stack.
 
-- **Script**: `dockhand/scripts/dockhand-start.sh` → installed at `/usr/local/etc/rc.d/dockhand.sh`
+- **Script**: `dockhand/scripts/dockhand-start.sh` -> installed at `/usr/local/etc/rc.d/dockhand.sh`
 - **Image**: `fnsys/dockhand:latest` (git-backed Compose orchestration)
 - **Port**: `10.0.1.15:3866` (HTTP WebUI)
 - **Data**: `/volume2/docker/dockhand` (outside this repo)
@@ -212,8 +212,8 @@ Dockhand lifecycle is managed exclusively by the RC script — not by a compose 
 - **Stack root**: `/volume2/docker/ce-stacks`
 - **User home**: `/volume1/homes/laolufayese` (remains on volume1)
 - **HAProxy**: installed at `/usr/local/etc/haproxy/` via `@appstore/haproxy` (volume1)
-- Reverse proxy timeouts: set to 600s in DSM → Application Portal to avoid WebSocket drops
-- Stacks using HTTPS backends: configure DSM proxy as HTTPS→HTTPS to avoid 400 Bad Request
+- Reverse proxy timeouts: set to 600s in DSM -> Application Portal to avoid WebSocket drops
+- Stacks using HTTPS backends: configure DSM proxy as HTTPS->HTTPS to avoid 400 Bad Request
 
 ## Security Notes
 
@@ -223,8 +223,8 @@ Dockhand lifecycle is managed exclusively by the RC script — not by a compose 
 
 ## Architecture & Design
 
-- [`solution-architect.md`](./solution-architect.md) — agent role description used to produce design plans for this repo.
-- [`implementation_plan.md`](./implementation_plan.md) — current active plan reconciling dockhand path/config drift.
+- [`solution-architect.md`](./solution-architect.md) -- agent role description used to produce design plans for this repo.
+- [`implementation_plan.md`](./implementation_plan.md) -- current active plan reconciling dockhand path/config drift.
 
 ## License
 

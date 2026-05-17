@@ -14,8 +14,8 @@ Error: Cannot connect to host 10.0.1.15:11434 ssl:default [Connect call failed (
 
 **Solution**: Both services now use the same `ollama-net` bridge network
 
-- Ollama: `network_mode: host` → `networks: [ollama-net]` with `ports: [10.0.1.15:11434:11434]`
-- Open WebUI: `OLLAMA_BASE_URL=http://10.0.1.15:11434` → `OLLAMA_BASE_URL=http://otsai-server:11434`
+- Ollama: `network_mode: host` -> `networks: [ollama-net]` with `ports: [10.0.1.15:11434:11434]`
+- Open WebUI: `OLLAMA_BASE_URL=http://10.0.1.15:11434` -> `OLLAMA_BASE_URL=http://otsai-server:11434`
 
 ---
 

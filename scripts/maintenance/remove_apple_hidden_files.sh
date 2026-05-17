@@ -2,21 +2,21 @@
 # Remove Apple SMB / Finder metadata files under operator-chosen paths.
 # Safe-by-default: DRY_RUN=1 (no deletes). Use Task Scheduler only after dry-run review.
 #
-# Always removes DSM Search indexer junk under each scan root — directories named @eaDir and files
-# *@SynoEAStream / *@SynoResource — including under Docker stack bind mounts (most stacks have no .git).
+# Always removes DSM Search indexer junk under each scan root -- directories named @eaDir and files
+# *@SynoEAStream / *@SynoResource -- including under Docker stack bind mounts (most stacks have no .git).
 # Under .git/refs the same junk breaks git (e.g. fatal: bad object refs/.../@eaDir/...). Disable DSM
 # indexing on /volume2/docker for a permanent fix.
 #
 # Concepts adapted (not verbatim) from hwdbk/synology-scripts:
 #   - ea-file-bundle-handling: stray @SynoEAStream/@SynoResource files whose primary path no longer exists
-#     are removable clutter (cleanup_SynoFiles-style parent check only — no xattr/binary tooling).
+#     are removable clutter (cleanup_SynoFiles-style parent check only -- no xattr/binary tooling).
 #   - mac-nfd-conversion: Mac vs Synology UTF-8 normalization can make sibling paths disagree if Samba
-#     "Mac compatibility" / NFD handling is off — pair-based ._ cleanup may skip stubs until names align.
+#     "Mac compatibility" / NFD handling is off -- pair-based ._ cleanup may skip stubs until names align.
 #
 # Usage:
-#   Single tree (repo NAS root — one find covers stacks/*, .git/refs, and all bind data):
+#   Single tree (repo NAS root -- one find covers stacks/*, .git/refs, and all bind data):
 #     DRY_RUN=1 APPLE_CLEANUP_ROOT=/volume2/docker/ce-stacks bash scripts/maintenance/remove_apple_hidden_files.sh
-#   Every stack folder only (.../stacks/<name>/ each as root — does NOT walk the repo .git or files
+#   Every stack folder only (.../stacks/<name>/ each as root -- does NOT walk the repo .git or files
 #   directly under the repo root outside stacks/; use APPLE_CLEANUP_ROOT for that):
 #     DRY_RUN=1 APPLE_CLEANUP_STACKS_ROOT=/volume2/docker/ce-stacks/stacks bash scripts/maintenance/remove_apple_hidden_files.sh
 #   Both (e.g. git corruption at repo root plus per-stack pass; repo root walk also covers stacks, stacks pass is redundant):
@@ -41,21 +41,21 @@ APPLE_CLEANUP_STRAY_SYNO_SIDECARS="${APPLE_CLEANUP_STRAY_SYNO_SIDECARS:-0}"
 
 usage() {
 	cat <<'USAGE'
-remove_apple_hidden_files.sh — prune .DS_Store, paired/small ._* stubs, .AppleDouble dirs; optional stray Syno sidecars
+remove_apple_hidden_files.sh -- prune .DS_Store, paired/small ._* stubs, .AppleDouble dirs; optional stray Syno sidecars
 
-  DRY_RUN=1|0           default 1 — print actions only
+  DRY_RUN=1|0           default 1 -- print actions only
   APPLE_CLEANUP_ROOT   single directory root (optional if PATHS_FILE or STACKS_ROOT set)
-  APPLE_CLEANUP_STACKS_ROOT  parent of stack dirs — each .../stacks/<child>/ is scanned only (not the repo .git root)
+  APPLE_CLEANUP_STACKS_ROOT  parent of stack dirs -- each .../stacks/<child>/ is scanned only (not the repo .git root)
   APPLE_CLEANUP_PATHS_FILE  file with one absolute path per line
   MAX_DOT_UNDERSCORE_BYTES  default 65536 (find -size -Nc)
-  APPLE_CLEANUP_ORPHAN_DOT_UNDERSCORE  default 0 — set 1 to delete tiny orphan ._ when sibling missing
-  APPLE_CLEANUP_STRAY_SYNO_SIDECARS    default 0 — set 1 to delete stray @SynoEAStream/@SynoResource (parent missing)
+  APPLE_CLEANUP_ORPHAN_DOT_UNDERSCORE  default 0 -- set 1 to delete tiny orphan ._ when sibling missing
+  APPLE_CLEANUP_STRAY_SYNO_SIDECARS    default 0 -- set 1 to delete stray @SynoEAStream/@SynoResource (parent missing)
 
 Prunes descent into: .git, node_modules, @eaDir for .DS_Store / ._ / .AppleDouble passes (those passes do not delete @eaDir).
 Always removes every @eaDir directory tree and *@SynoEAStream / *@SynoResource files anywhere under each root (stacks, repo, .git/refs).
 Stray Syno pass (opt-in) walks trees (prune .git/node_modules) for sidecar files whose primary path does not exist.
 
-No compiled helpers required — pure bash + find (no find -delete).
+No compiled helpers required -- pure bash + find (no find -delete).
 USAGE
 }
 
@@ -125,7 +125,7 @@ delete_dir() {
 	rm -rf -- "${d}"
 }
 
-# Primary path for .../@eaDir/<name>@SynoEAStream or .../@eaDir/<name>@SynoResource → .../<name>
+# Primary path for .../@eaDir/<name>@SynoEAStream or .../@eaDir/<name>@SynoResource -> .../<name>
 syno_sidecar_to_primary() {
 	local f="$1"
 	local p="${f/@eaDir\/}"

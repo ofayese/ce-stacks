@@ -9,7 +9,7 @@
 #   4. Seed per-stack .env files from .env.example (via bootstrap-env.sh --apply)
 #   5. Fix bind-mount ownership (fix-permissions.sh, root only)
 #   6. Create the ce-internal Docker backbone network (idempotent)
-#   7. Sync REPO_ROOT/dockhand/ → /volume2/docker/dockhand/ (merge, never overwrites .env/data/secrets)
+#   7. Sync REPO_ROOT/dockhand/ -> /volume2/docker/dockhand/ (merge, never overwrites .env/data/secrets)
 #
 # PREFERRED - run as your admin user (no sudo):
 #   bash scripts/init-nas.sh
@@ -19,7 +19,7 @@
 #   sudo bash scripts/init-nas.sh
 #   (dockhand sync files are re-owned back to $SUDO_USER automatically)
 #
-# Re-run after every git pull — fully idempotent.
+# Re-run after every git pull -- fully idempotent.
 #
 # Manifest exhaustiveness (BSD-safe; no grep -oP):
 #   diff <(grep -E '^\s*"[^"]+:' scripts/init-nas.sh | sed -E 's/^[[:space:]]*"([^"]+):.*/\1/' | sort -u) \
@@ -39,7 +39,7 @@ REAL_USER="${SUDO_USER:-${USER:-$(id -un)}}"
 REAL_GROUP="$(id -gn "${REAL_USER}" 2>/dev/null || echo "${REAL_USER}")"
 [[ "${1:-}" == "--list-expected-dirs" ]] && LIST_ONLY=1
 
-# ── 1. Resolve repo root and STACK_ROOT ──────────────────────────────
+# -- 1. Resolve repo root and STACK_ROOT ------------------------------
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 REPO_ENV="${REPO_ROOT}/.env"
@@ -74,14 +74,14 @@ fi
 # Format: "stack-name:sub1[,sub2]" - keep aligned with compose bind mounts under ${STACK_ROOT}/<stack>/...
 STACK_MANIFEST=(
 	# Sub-folder rules:
-	#   data   → default for all stacks with host bind mounts
-	#   db     → add only when a DB engine has its own host bind mount
-	#   config → add only when a non-db service writes runtime config
+	#   data   -> default for all stacks with host bind mounts
+	#   db     -> add only when a DB engine has its own host bind mount
+	#   config -> add only when a non-db service writes runtime config
 	# Never add a folder speculatively.
 	# portainer: OPERATOR EXCEPTION - exempt from this manifest.
 	#   State path fixed at /volume2/docker/portainer in compose.yaml (outside STACK_ROOT).
 
-	# ── data only ─────────────────────────────────────────────────────
+	# -- data only -----------------------------------------------------
 	"acme-sh:data"
 	"dozzle:data"
 	"influxdb:data"
@@ -90,7 +90,7 @@ STACK_MANIFEST=(
 	# remotely: SQLite DB + generated agent installers/download payloads
 	"remotely:data"
 
-	# ── data,config ───────────────────────────────────────────────────
+	# -- data,config ---------------------------------------------------
 	"code-server:data,config"
 	"github-desktop:config" # KasmVNC GUI - /config only, no data dir
 	"homepage:data,config"
@@ -100,7 +100,7 @@ STACK_MANIFEST=(
 	# subdirs before deploy. Synology does not auto-create leaf bind-mount paths.
 	"grafana-prom:data/grafana,data/prometheus,data/alertmanager,config"
 
-	# ── data,db ───────────────────────────────────────────────────────
+	# -- data,db -------------------------------------------------------
 	"codex-docs:data,db"
 	# databases: mariadb + postgres engine data dirs both under db/ (no separate app data layer).
 	# Subdirs db/mariadb and db/postgres must exist before deploy: Synology Docker (Container
@@ -108,7 +108,7 @@ STACK_MANIFEST=(
 	# "Bind mount failed: '<path>' does not exist". mkdir -p handles slashes here.
 	"databases:db/mariadb,db/postgres"
 	"zabbix:data,db"
-	# ── Omit (no ${STACK_ROOT} dirs in manifest) - audit trail only ───
+	# -- Omit (no ${STACK_ROOT} dirs in manifest) - audit trail only ---
 	# agents_gateway_data: docker.sock only - no ${STACK_ROOT} dirs needed.
 	# docker-model-runner: no host volume binds.
 	# it-tools: no volumes.
@@ -117,7 +117,7 @@ STACK_MANIFEST=(
 	# watchtower: docker.sock only - no ${STACK_ROOT} dirs needed.
 	#   Absent from manifest intentionally. Listed here for audit trail.
 
-	# ── New stacks: add entry here before first deploy ─────────────────
+	# -- New stacks: add entry here before first deploy -----------------
 	"psu-ots:data"
 	# HAProxy bind-mount assets (certs + host map); not a Docker compose stack - see stacks/_haproxy/README.txt
 	"_haproxy:certs,maps"
@@ -131,7 +131,7 @@ STACK_MANIFEST=(
 # shellcheck disable=SC2034
 MANIFEST_EXEMPT=(
 	"agents_gateway_data" # docker.sock only
-	"db-tools"            # stateless (Adminer) — no volumes
+	"db-tools"            # stateless (Adminer) -- no volumes
 	"it-tools"            # no volumes
 	"mcp-tools-config"    # catalog only
 	"openresume"          # no volumes
@@ -139,7 +139,7 @@ MANIFEST_EXEMPT=(
 	"docker-model-runner" # no host volume binds
 )
 
-# ── Manifest-derived expected directory list ─────────────────────────
+# -- Manifest-derived expected directory list -------------------------
 # Usage: bash scripts/init-nas.sh --list-expected-dirs
 # Prints paths init-nas.sh would create under STACK_ROOT, without mkdir or .env writes.
 if [[ "${LIST_ONLY}" -eq 1 ]]; then
@@ -159,7 +159,7 @@ if [[ "${LIST_ONLY}" -eq 1 ]]; then
 	exit 0
 fi
 
-# ── --if-changed: skip if init-nas.sh itself has not changed ─────────
+# -- --if-changed: skip if init-nas.sh itself has not changed ---------
 # Hash is written only after a successful full init (end of script).
 if [[ "${1:-}" == "--if-changed" ]]; then
 	HASH_FILE="${REPO_ROOT}/.manifest-hash"
@@ -192,7 +192,7 @@ replace_stack_root_in_file() {
 	mv "${tmp}" "${target}"
 }
 
-# ── 2. Write STACK_ROOT into repo-root .env ───────────────────────────
+# -- 2. Write STACK_ROOT into repo-root .env ---------------------------
 if [[ -f "${REPO_ENV}" ]]; then
 	if grep -q '^STACK_ROOT=' "${REPO_ENV}" 2>/dev/null; then
 		replace_stack_root_in_file "${REPO_ENV}"
@@ -224,7 +224,7 @@ for kv in "PUID=0" "PGID=0"; do
 	fi
 done
 
-# ── 3. Create volume directories for all stacks ───────────────────────
+# -- 3. Create volume directories for all stacks -----------------------
 echo ""
 echo "Creating volume directories under ${STACK_ROOT} ..."
 
@@ -243,11 +243,11 @@ for entry in "${STACK_MANIFEST[@]}"; do
 		[[ -z "${folder}" ]] && continue
 		dir="${STACK_ROOT}/${stack}/${folder}"
 		mkdir -p "${dir}"
-		echo "  ✓ staged: ${dir}"
+		echo "  [OK] staged: ${dir}"
 	done
 done
 
-# ── 4. Seed per-stack .env files from .env.example ───────────────────
+# -- 4. Seed per-stack .env files from .env.example -------------------
 # Delegates to bootstrap-env.sh so the logic stays in one place.
 # --apply skips any stack that already has a .env (idempotent / safe to re-run).
 # Operators must still edit each .env with real credentials before deploying.
@@ -257,10 +257,10 @@ BOOTSTRAP_SCRIPT="${SCRIPT_DIR}/bootstrap-env.sh"
 if [[ -f "${BOOTSTRAP_SCRIPT}" ]]; then
 	bash "${BOOTSTRAP_SCRIPT}" --apply
 else
-	echo "  WARN: ${BOOTSTRAP_SCRIPT} not found — skipping .env seeding" >&2
+	echo "  WARN: ${BOOTSTRAP_SCRIPT} not found -- skipping .env seeding" >&2
 fi
 
-# ── 5. Run fix-permissions.sh ─────────────────────────────────────────
+# -- 5. Run fix-permissions.sh -----------------------------------------
 echo ""
 echo "Fixing permissions ..."
 if [[ "$(id -u)" -eq 0 ]]; then
@@ -269,28 +269,28 @@ else
 	echo "WARN: not root; run: sudo bash ${SCRIPT_DIR}/fix-permissions.sh ${STACK_ROOT}" >&2
 fi
 
-# ── 6. Create shared Docker networks ──────────────────────────────────
+# -- 6. Create shared Docker networks ----------------------------------
 # ce-internal: cross-stack backbone used by grafana-prom, databases,
 #              ollama, and synology-api-bridge. Idempotent.
 echo ""
 echo "Creating shared Docker networks ..."
 if [[ -x "${DOCKER}" ]]; then
 	if "${DOCKER}" network inspect ce-internal &>/dev/null; then
-		echo "  ✓ ce-internal already exists - skipping"
+		echo "  [OK] ce-internal already exists - skipping"
 	else
 		"${DOCKER}" network create \
 			--driver bridge \
 			--subnet 172.26.0.0/24 \
 			--gateway 172.26.0.1 \
 			ce-internal
-		echo "  ✓ created: ce-internal (172.26.0.0/24)"
+		echo "  [OK] created: ce-internal (172.26.0.0/24)"
 	fi
 else
 	echo "  WARN: docker not found at ${DOCKER} - create manually after Docker starts:"
 	echo "    /usr/local/bin/docker network create --driver bridge --subnet 172.26.0.0/24 --gateway 172.26.0.1 ce-internal"
 fi
 
-# ── 7. Sync dockhand repo dir → /volume2/docker/dockhand ──────────────
+# -- 7. Sync dockhand repo dir -> /volume2/docker/dockhand --------------
 # Dockhand lives inside the repo (REPO_ROOT/dockhand/) but must run from
 # /volume2/docker/dockhand/ because Dockhand/Container Manager uses that fixed
 # path as its working directory.
@@ -304,7 +304,7 @@ fi
 #   data/         - runtime state (job history, DB, etc.)
 #   secrets/      - Docker secret files
 echo ""
-echo "Syncing dockhand repo → /volume2/docker/dockhand ..."
+echo "Syncing dockhand repo -> /volume2/docker/dockhand ..."
 
 DOCKHAND_SRC="${REPO_ROOT}/dockhand"
 DOCKHAND_DST="/volume2/docker/dockhand"
@@ -322,7 +322,7 @@ else
 			--exclude='secrets/' \
 			"${DOCKHAND_SRC}/" \
 			"${DOCKHAND_DST}/"
-		echo "  ✓ rsync complete (protected: .env, data/, secrets/)"
+		echo "  [OK] rsync complete (protected: .env, data/, secrets/)"
 	else
 		# rsync not available - manual merge with cp -n (no-clobber) for protected files
 		# and forced copy for everything else.
@@ -334,7 +334,7 @@ else
 					# Protected - copy only if destination doesn't yet exist
 					if [[ ! -e "${DOCKHAND_DST}/${name}" ]]; then
 						cp -r "${item}" "${DOCKHAND_DST}/${name}"
-						echo "  ✓ seeded (new):  ${DOCKHAND_DST}/${name}"
+						echo "  [OK] seeded (new):  ${DOCKHAND_DST}/${name}"
 					else
 						echo "  skip (protected): ${DOCKHAND_DST}/${name}"
 					fi
@@ -342,7 +342,7 @@ else
 				*)
 					# Repo-owned file - always sync
 					cp -r "${item}" "${DOCKHAND_DST}/${name}"
-					echo "  ✓ updated: ${DOCKHAND_DST}/${name}"
+					echo "  [OK] updated: ${DOCKHAND_DST}/${name}"
 					;;
 			esac
 		done
@@ -351,7 +351,7 @@ else
 	# Ensure .env exists at destination (seed from .env.example if not yet present)
 	if [[ ! -f "${DOCKHAND_DST}/.env" && -f "${DOCKHAND_SRC}/.env.example" ]]; then
 		cp "${DOCKHAND_SRC}/.env.example" "${DOCKHAND_DST}/.env"
-		echo "  ✓ seeded .env from .env.example - edit ${DOCKHAND_DST}/.env before starting"
+		echo "  [OK] seeded .env from .env.example - edit ${DOCKHAND_DST}/.env before starting"
 	fi
 
 	# When run via sudo, the files above were written as root. Re-own them back to
@@ -364,7 +364,7 @@ else
 			! -name 'data' \
 			! -name 'secrets' \
 			-exec chown -R "${REAL_USER}:${REAL_GROUP}" {} +
-		echo "  ✓ ownership restored to ${REAL_USER}:${REAL_GROUP} (repo-owned files only)"
+		echo "  [OK] ownership restored to ${REAL_USER}:${REAL_GROUP} (repo-owned files only)"
 	fi
 
 	echo "  src: ${DOCKHAND_SRC}"
@@ -372,13 +372,13 @@ else
 fi
 
 echo ""
-echo "────────────────────────────────────────"
+echo "----------------------------------------"
 echo "Init complete."
 echo "STACK_ROOT = ${STACK_ROOT}"
 echo "Now open Dockhand/Container Manager and deploy your stacks."
-echo "────────────────────────────────────────"
+echo "----------------------------------------"
 
-# ── Write hash after successful full init (--if-changed runs only) ───
+# -- Write hash after successful full init (--if-changed runs only) ---
 if [[ "${IF_CHANGED_MODE:-0}" -eq 1 ]]; then
 	echo "${CURRENT_HASH}" >"${HASH_FILE}"
 	echo "init-nas.sh: hash updated for next --if-changed run."

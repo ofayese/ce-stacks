@@ -18,9 +18,9 @@ Environment:
   BUNDLE_SPECS            Optional "profile:out.pem" space-separated list. Default:
                             wildcard:olutechsys.com.pem otsorundscore:otsorundscore.olutechsys.com.pem misfitsds:misfitsds.olutechsys.com.pem
   ACME_PROFILE            Optional - when set and BUNDLE_SPECS is empty, builds one bundle:
-                            wildcard      → olutechsys.com.pem
-                            otsorundscore → otsorundscore.olutechsys.com.pem
-                            misfitsds     → misfitsds.olutechsys.com.pem
+                            wildcard      -> olutechsys.com.pem
+                            otsorundscore -> otsorundscore.olutechsys.com.pem
+                            misfitsds     -> misfitsds.olutechsys.com.pem
   HAPROXY_BIN             Default /volume1/@appstore/haproxy/sbin/haproxy (Synology package); must exist for -c
   HAPROXY_USER            Default sc-haproxy - owner applied to deployed PEM bundles
   HAPROXY_GROUP           Default synocommunity - group applied to deployed PEM bundles
@@ -143,4 +143,4 @@ if [[ "${DO_HAPROXY_CHECK}" -eq 1 ]]; then
 fi
 
 # HAProxy does not auto-reload on cert change.
-# After this script completes: restart HAProxy via DSM → Package Center → HAProxy → Action → Restart
+# After this script completes: restart HAProxy via DSM -> Package Center -> HAProxy -> Action -> Restart

@@ -5,10 +5,10 @@ services:
     # PINNED: floating :latest is dangerous on a stateful model store. Refresh
     # this digest manually after testing on a non-prod host; this also gates
     # Watchtower from auto-pulling (mid-pull restart corrupts model blobs).
-    # To refresh: docker pull ollama/ollama:0.4.7 ; docker inspect …
+    # To refresh: docker pull ollama/ollama:0.4.7 ; docker inspect ...
     image: ollama/ollama:0.4.7
-    # Host-profile fix (otsorundscore, 32 GB / 2c): lowered 14g → 10g, reservation
-    # 8g → 6g. 7B-Q4 models RSS ~5–6 GB; 10g leaves 4 GB KV cache headroom and
+    # Host-profile fix (otsorundscore, 32 GB / 2c): lowered 14g -> 10g, reservation
+    # 8g -> 6g. 7B-Q4 models RSS ~5-6 GB; 10g leaves 4 GB KV cache headroom and
     # recovers 4 GB for DSM + other stacks on this 2-core CPU-only host.
     mem_limit: 10g
     mem_reservation: 6g
@@ -55,7 +55,7 @@ services:
       - TZ=America/New_York
     labels:
       # Pinned to a fixed semver tag (see image: above). Watchtower MUST NOT
-      # auto-pull — a mid-pull restart corrupts the model store under /root/.ollama.
+      # auto-pull -- a mid-pull restart corrupts the model store under /root/.ollama.
       - com.centurylinklabs.watchtower.enable=false
     # Healthcheck: ollama binary self-probe via CMD (curl not in image).
     healthcheck:
@@ -71,7 +71,7 @@ services:
   open-webui:
     container_name: otsai-webui
     image: ghcr.io/open-webui/open-webui:v0.9.5
-    # Host-profile fix: 2g → 1g. Open-WebUI is a Node/Python web UI; 1g covers
+    # Host-profile fix: 2g -> 1g. Open-WebUI is a Node/Python web UI; 1g covers
     # SSE streaming + RAG indexing without competing with the ollama serve container.
     mem_limit: 1g
     cpu_shares: 768

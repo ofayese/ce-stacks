@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    NAS compliance jobs for PowerShell Universal (Phase 2 — fire-and-forget).
+    NAS compliance jobs for PowerShell Universal (Phase 2 -- fire-and-forget).
 
 .DESCRIPTION
     Each Invoke-PSUJob_* queues a background job that writes one timestamped JSON file
@@ -693,7 +693,7 @@ function Invoke-PSUJob_AutoRemediation {
         }
         function Send-PSUSafeModeWebhookAlerts {
             param([string]$Reason, [string]$Detail)
-            $msg = "PSU Safe Mode: $Reason — $Detail"
+            $msg = "PSU Safe Mode: $Reason -- $Detail"
             $urls = @($env:PSU_SAFE_MODE_WEBHOOK_URL, $env:PSU_SAFE_MODE_DISCORD_WEBHOOK) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
             foreach ($url in $urls) {
                 try {
@@ -777,7 +777,7 @@ function Invoke-PSUJob_AutoRemediation {
         if ($env:PSU_SAFE_MODE_ENABLED -eq "1" -and $hwSig.degraded) {
             $obj.safeMode.triggered = $true
             $obj.safeMode.hardwareReasons = @($hwSig.reasons)
-            $obj.actions += "Safe Mode: hardware degradation detected — stopping configured stacks and capturing manifest."
+            $obj.actions += "Safe Mode: hardware degradation detected -- stopping configured stacks and capturing manifest."
             $obj.safeMode.emergencyBackupManifest = @(Get-EmergencyBackupManifestEntries -RepoPath $Repo)
             Send-PSUSafeModeWebhookAlerts -Reason "hardware_degraded" -Detail (($hwSig.reasons | Out-String).Trim())
             if ($sshOk -and -not [string]::IsNullOrWhiteSpace($hostStacksRoot)) {
@@ -805,7 +805,7 @@ cd "$d" && /usr/local/bin/docker compose -f "$f" stop
             }
             else {
                 $obj.safeMode.stoppedStacks = @()
-                $obj.safeMode.note = "SSH or NAS_HOST_STACKS_ROOT not configured — stacks not stopped remotely."
+                $obj.safeMode.note = "SSH or NAS_HOST_STACKS_ROOT not configured -- stacks not stopped remotely."
             }
             if ($env:PSU_SAFE_MODE_QUEUE_BACKUP -ne "0" -and -not [string]::IsNullOrWhiteSpace($GalleryInit) -and (Test-Path -LiteralPath $GalleryInit)) {
                 $dj = Join-Path ([System.IO.Path]::GetDirectoryName($GalleryInit)) "nas-jobs.ps1"
@@ -951,7 +951,7 @@ cd "$d" && /usr/local/bin/docker compose -f "$f" pull && /usr/local/bin/docker c
 
         $obj.diskPressure = @(Test-NasHealthDiskPressure -JsonText $nasRaw -ThresholdPct $thresh)
         if ($obj.diskPressure.Count -gt 0) {
-            $obj.actions += "Disk use at or above ${thresh}% on one or more mounts — review nas-health report; reclaim space on the NAS host."
+            $obj.actions += "Disk use at or above ${thresh}% on one or more mounts -- review nas-health report; reclaim space on the NAS host."
             if ($env:PSU_REMEDIATION_DOCKER_PRUNE -eq "1") {
                 if (-not $sshOk) {
                     $obj.dockerPrune = @{ skipped = "PSU_REMEDIATION_DOCKER_PRUNE=1 requires SSH (NAS_HOST_IP, NAS_SSH_USER, SSH_KEY_PATH); in-container docker is not used." }
@@ -1025,7 +1025,7 @@ function Invoke-PSUJob_GitOpsSync {
             return
         }
         if (-not (Test-Path -LiteralPath (Join-Path $Repo ".git"))) {
-            $obj.actions += "No .git at repo root — bind ${Repo} from a git checkout (not a bare export)."
+            $obj.actions += "No .git at repo root -- bind ${Repo} from a git checkout (not a bare export)."
             $obj.galleryModulesLoaded = @($galLoaded)
             ($obj | ConvertTo-Json -Depth 6) | Set-Content -LiteralPath $OutPath -Encoding UTF8
             return
@@ -1055,7 +1055,7 @@ function Invoke-PSUJob_GitOpsSync {
         }
 
         if ($env:PSU_GITOPS_AUTO_COMMIT -ne "1") {
-            $obj.actions += "Drift detected; set PSU_GITOPS_AUTO_COMMIT=1 (and optional PSU_GITOPS_AUTO_PUSH=1) to auto-commit. Never store PATs in git — use ~/.netrc, git credential helper, or SSH keys on the NAS host."
+            $obj.actions += "Drift detected; set PSU_GITOPS_AUTO_COMMIT=1 (and optional PSU_GITOPS_AUTO_PUSH=1) to auto-commit. Never store PATs in git -- use ~/.netrc, git credential helper, or SSH keys on the NAS host."
             $obj.galleryModulesLoaded = @($galLoaded)
             ($obj | ConvertTo-Json -Depth 6) | Set-Content -LiteralPath $OutPath -Encoding UTF8
             return
@@ -1074,7 +1074,7 @@ function Invoke-PSUJob_GitOpsSync {
             $null = & git -C $Repo add -u 2>&1
             $null = & git -C $Repo diff --staged --quiet 2>$null
             if ($LASTEXITCODE -eq 0) {
-                $obj.actions += "No staged changes after git add -u (untracked files are ignored — use host git or widen policy intentionally)."
+                $obj.actions += "No staged changes after git add -u (untracked files are ignored -- use host git or widen policy intentionally)."
                 $obj.galleryModulesLoaded = @($galLoaded)
                 ($obj | ConvertTo-Json -Depth 8) | Set-Content -LiteralPath $OutPath -Encoding UTF8
                 return

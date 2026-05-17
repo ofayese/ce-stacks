@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# bootstrap-env.sh - copy .env.example → .env for every stack that has one.
+# bootstrap-env.sh - copy .env.example -> .env for every stack that has one.
 #
 # USAGE:
 #   bash scripts/bootstrap-env.sh            # dry-run (show what would be copied)
@@ -16,7 +16,7 @@
 
 set -euo pipefail
 
-# ── locate repo root ──────────────────────────────────────────────────────────
+# -- locate repo root ----------------------------------------------------------
 _script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="${_script_dir}"
 while [[ ! -f "${ROOT}/README.md" && "${ROOT}" != "/" ]]; do
@@ -27,7 +27,7 @@ done
     exit 1
 }
 
-# ── parse flags ───────────────────────────────────────────────────────────────
+# -- parse flags ---------------------------------------------------------------
 DRY_RUN=true
 FORCE=false
 for arg in "$@"; do
@@ -45,7 +45,7 @@ for arg in "$@"; do
     esac
 done
 
-# ── collect all .env.example files ───────────────────────────────────────────
+# -- collect all .env.example files -------------------------------------------
 # Looks in stacks/*/ and the repo root-level dockhand/ directory.
 mapfile -t EXAMPLES < <(find "${ROOT}/stacks" "${ROOT}/dockhand" \
     -maxdepth 2 -name ".env.example" 2>/dev/null | sort)
@@ -55,7 +55,7 @@ if [[ ${#EXAMPLES[@]} -eq 0 ]]; then
     exit 0
 fi
 
-# ── header ────────────────────────────────────────────────────────────────────
+# -- header --------------------------------------------------------------------
 if $DRY_RUN; then
     echo "=== bootstrap-env.sh - DRY RUN (pass --apply to execute) ==="
 else
@@ -86,15 +86,15 @@ for example in "${EXAMPLES[@]}"; do
     else
         if $DRY_RUN; then
             if [[ -f "$target" ]]; then
-                echo "  COPY  ${rel_target}  ← ${stack}/.env.example  [would overwrite]"
+                echo "  COPY  ${rel_target}  <- ${stack}/.env.example  [would overwrite]"
             else
-                echo "  COPY  ${rel_target}  ← ${stack}/.env.example"
+                echo "  COPY  ${rel_target}  <- ${stack}/.env.example"
             fi
             WOULD_COPY=$((WOULD_COPY + 1))
         else
             cp "$example" "$target"
             if [[ -f "$target" ]]; then
-                echo "  ✓     ${rel_target}"
+                echo "  [OK]     ${rel_target}"
             fi
             COPIED=$((COPIED + 1))
         fi
@@ -103,7 +103,7 @@ done
 
 echo ""
 
-# ── summary ───────────────────────────────────────────────────────────────────
+# -- summary -------------------------------------------------------------------
 if $DRY_RUN; then
     echo "Dry-run complete: ${WOULD_COPY} would be copied, ${WOULD_SKIP} would be skipped."
     echo "Run with --apply to execute, or --force to overwrite existing files."

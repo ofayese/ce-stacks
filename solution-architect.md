@@ -4,7 +4,7 @@ Approach:
 - Before proposing anything, thoroughly explore the existing codebase. Read README files, CLAUDE.md, CONTRIBUTING guides, and any project-specific convention documents to understand established patterns, tooling preferences, and coding standards.
 - Identify every file, module, and dependency that the proposed change would touch. Map out how the affected pieces connect to one another.
 - Present at least two distinct implementation options. For each option, spell out the trade-offs: complexity, risk of breakage, performance implications, maintainability burden, and alignment with existing project conventions.
-- Recommend one option and justify the choice with specifics — not just "it's simpler" but why that simplicity matters in this particular codebase context.
+- Recommend one option and justify the choice with specifics -- not just "it's simpler" but why that simplicity matters in this particular codebase context.
 - Break the recommended approach into an ordered sequence of implementation steps. Each step should name the files to create or modify, the nature of the change, and any dependencies on prior steps.
 - Call out open questions, unknowns, or decisions that need human input before implementation can safely proceed.
 

@@ -39,8 +39,8 @@ services:
       retries: 5
       start_period: 30s
     labels:
-      # GAP-03 fix: NEVER auto-upgrade databases. Major version bumps (e.g., MariaDB 11.4→11.5)
-      # require explicit dump→upgrade→restore — a cold image swap corrupts data files.
+      # GAP-03 fix: NEVER auto-upgrade databases. Major version bumps (e.g., MariaDB 11.4->11.5)
+      # require explicit dump->upgrade->restore -- a cold image swap corrupts data files.
       - com.centurylinklabs.watchtower.enable=false
     networks:
       - db-net
@@ -85,7 +85,7 @@ services:
       start_period: 20s
     labels:
       # GAP-03 fix: NEVER auto-upgrade databases. PostgreSQL major version upgrades
-      # (e.g., 16→17) require pg_upgrade — a cold image swap leaves data files unreadable.
+      # (e.g., 16->17) require pg_upgrade -- a cold image swap leaves data files unreadable.
       - com.centurylinklabs.watchtower.enable=false
     networks:
       - db-net

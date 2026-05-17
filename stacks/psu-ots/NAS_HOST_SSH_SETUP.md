@@ -41,7 +41,7 @@ ssh -i psu_remediation_key -p 28 username@nasip '/usr/local/bin/docker info >/de
 chmod 600 /volume2/docker/ce-stacks/stacks/psu-ots/keys/psu_remediation_key
 ```
 
-1. Compose mounts **`${STACK_ROOT}/psu-ots/keys` → `/ssh-keys:ro`**. Set in **`stacks/psu-ots/.env`**:
+1. Compose mounts **`${STACK_ROOT}/psu-ots/keys` -> `/ssh-keys:ro`**. Set in **`stacks/psu-ots/.env`**:
 
 - `SSH_KEY_PATH=/ssh-keys/psu_remediation_key`
 
@@ -49,7 +49,7 @@ The **`keys/`** directory is gitignored except for **`keys/.gitignore`** - **nev
 
 ### Option B - PSU secret / variable
 
-Store the private key material as a **Secret** in PSU (Platform → Variables), copy it into a file from a one-shot automation, and point **`SSH_KEY_PATH`** at that path. Prefer **0600** permissions and a RAM-backed path if your threat model requires it.
+Store the private key material as a **Secret** in PSU (Platform -> Variables), copy it into a file from a one-shot automation, and point **`SSH_KEY_PATH`** at that path. Prefer **0600** permissions and a RAM-backed path if your threat model requires it.
 
 ## 4. Container environment
 
@@ -71,8 +71,8 @@ Optional:
 ## 5. Enable remediation flags
 
 - **`PSU_REMEDIATION_ENABLED=1`**
-- Disk pressure + **`PSU_REMEDIATION_DOCKER_PRUNE=1`** → remote **`docker image prune -a -f`**
-- Floating tags in latest **image-drift** report + **`PSU_ALLOW_STACK_RESTART=1`** → remote **`docker compose pull` + `up -d`** per stack
+- Disk pressure + **`PSU_REMEDIATION_DOCKER_PRUNE=1`** -> remote **`docker image prune -a -f`**
+- Floating tags in latest **image-drift** report + **`PSU_ALLOW_STACK_RESTART=1`** -> remote **`docker compose pull` + `up -d`** per stack
 
 Recreate PSU after editing **`.env`**:
 

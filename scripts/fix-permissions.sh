@@ -37,7 +37,7 @@ fi
 echo "Resetting ownership and permissions under ${STACKS_ROOT} ..."
 
 while IFS= read -r -d '' stack_dir; do
-	echo "  → ${stack_dir}"
+	echo "  -> ${stack_dir}"
 	chown -R 0:0 "${stack_dir}"
 	find "${stack_dir}" -type d -exec chmod 755 {} \;
 	find "${stack_dir}" -type f -exec chmod 644 {} \;

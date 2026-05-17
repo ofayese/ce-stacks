@@ -4,7 +4,7 @@ services:
     image: synology-api-bridge:local
     container_name: SynologyApiBridge
     # NOTE(DSM 7.3): build: . above. First deploy MUST come from SSH, not Container
-    # Manager UI — see docs/dsm-732-runtime-quirks.md §1.
+    # Manager UI -- see docs/dsm-732-runtime-quirks.md S.1.
     #   cd /volume2/docker/ce-stacks/stacks/synology-api-bridge
     #   sudo /usr/local/bin/docker compose build && sudo /usr/local/bin/docker compose up -d
     restart: unless-stopped
@@ -28,7 +28,7 @@ services:
     ports:
       - "${NAS_IP:-10.0.1.15}:8780:8000"
     labels:
-      # Local build — never auto-update via Watchtower.
+      # Local build -- never auto-update via Watchtower.
       - com.centurylinklabs.watchtower.enable=false
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5)"]

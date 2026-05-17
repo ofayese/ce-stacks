@@ -21,10 +21,10 @@ scrape_configs:
       - targets: ["10.0.1.15:9100"]
 
   # ntopng metrics flow through InfluxDB, not Prometheus scrape.
-  # ntopng → InfluxDB 1.8 (10.0.1.15:8086) → Grafana (InfluxDB-ntopng datasource)
+  # ntopng -> InfluxDB 1.8 (10.0.1.15:8086) -> Grafana (InfluxDB-ntopng datasource)
   # See stacks/influxdb/ for setup and stacks/grafana-prom/provisioning/datasources/influxdb.yml.
   #
-  # ntopng ≥5.6 (Community) does expose a Prometheus endpoint, but it requires
+  # ntopng >=5.6 (Community) does expose a Prometheus endpoint, but it requires
   # basic auth and a non-standard path. To enable it, uncomment and configure:
   #
   # - job_name: "ntopng"

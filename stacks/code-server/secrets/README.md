@@ -22,7 +22,7 @@ chmod 600 stacks/code-server/secrets/*.txt
 
 ## Security notes
 
-- Never commit these files — they are in `.gitignore`
+- Never commit these files -- they are in `.gitignore`
 - `init-secrets.sh` writes the values to `/var/run/s6/container_environment/`
   which s6-overlay exports into the running process. They do **not** appear in
   `docker inspect CodeServer` Env output.

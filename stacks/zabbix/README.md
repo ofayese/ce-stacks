@@ -33,7 +33,7 @@ Copy `.env.example` to `.env` and set `POSTGRES_PASSWORD` to a strong value. `ST
 
 ## Startup order
 
-**Postgres → zabbix-server → zabbix-web** via **`condition: service_healthy`**. After `git pull`, use **`docker compose up -d`** from this directory. Use Portainer or `docker compose up -d` from the stack directory.
+**Postgres -> zabbix-server -> zabbix-web** via **`condition: service_healthy`**. After `git pull`, use **`docker compose up -d`** from this directory. Use Portainer or `docker compose up -d` from the stack directory.
 
 ## Health
 
@@ -57,10 +57,10 @@ Label `com.centurylinklabs.watchtower.enable=true` on long-running services. Pin
 
 ## Operator notes
 
-- Default Zabbix UI login after first boot: **Admin** / **zabbix** — change immediately.
+- Default Zabbix UI login after first boot: **Admin** / **zabbix** -- change immediately.
 - For Synology SNMPv3 + community template steps, see the proposal doc.
 
-## SNMPv3 (NAS hardware — no agent)
+## SNMPv3 (NAS hardware -- no agent)
 
 Synology **SNMPv3** + the DiskStation template is the primary path for NAS disks, RAID, temperature, fans, UPS, network, and volume usage. Zabbix Server **polls UDP 161** on the NAS. See the proposal doc for DSM steps.
 
@@ -74,8 +74,8 @@ The Synology DiskStation SNMPv3 template monitors disk health, RAID/storage pool
 
 The **zabbix-server** service publishes port **10051** on the NAS host. Any agent running **natively on DSM** can reach the server at:
 
-- **`127.0.0.1:10051`** — active checks (agent pushes toward the server / trapper).
-- **`127.0.0.1:10050`** — passive checks (server polls the agent on the NAS), once the native agent listens on 10050.
+- **`127.0.0.1:10051`** -- active checks (agent pushes toward the server / trapper).
+- **`127.0.0.1:10050`** -- passive checks (server polls the agent on the NAS), once the native agent listens on 10050.
 
 No Docker network membership is required for the native agent.
 
@@ -86,11 +86,11 @@ No Docker network membership is required for the native agent.
 
 Both can be used together.
 
-### Option 1 — SynoCommunity Zabbix Agent (recommended for OS-level)
+### Option 1 -- SynoCommunity Zabbix Agent (recommended for OS-level)
 
 Installs on DSM. Adds process monitoring, log tails, and custom user parameters that SNMP does not cover. Reports to the **same** Zabbix Server container on this NAS.
 
-#### Before you start — NAS hostname
+#### Before you start -- NAS hostname
 
 The agent should use **dynamic hostname detection** (`HostnameItem=system.hostname`) so the reported name matches DSM. You need that exact string for the **Host name** field in Zabbix UI.
 
@@ -109,13 +109,13 @@ After initial setup, if DSM is renamed the agent picks up the new hostname autom
 3. Edit `/var/packages/zabbix-agent/target/etc/zabbix_agentd.conf` (path may vary by package version):
 
    ```text
-   # Passive — server polls this agent
+   # Passive -- server polls this agent
    Server=127.0.0.1
 
-   # Active — agent connects to Zabbix Server container (port required)
+   # Active -- agent connects to Zabbix Server container (port required)
    ServerActive=127.0.0.1:10051
 
-   # Dynamic hostname — do NOT also set Hostname= (Hostname wins and disables HostnameItem)
+   # Dynamic hostname -- do NOT also set Hostname= (Hostname wins and disables HostnameItem)
    HostnameItem=system.hostname
 
    RefreshActiveChecks=120
@@ -125,7 +125,7 @@ After initial setup, if DSM is renamed the agent picks up the new hostname autom
 
 #### Zabbix UI
 
-5. **Configuration → Hosts → Create host**
+5. **Configuration -> Hosts -> Create host**
 
    - **Host name:** must match `hostname` on the NAS **byte-for-byte**.
    - **Visible name:** any label you like.
@@ -136,14 +136,14 @@ After initial setup, if DSM is renamed the agent picks up the new hostname autom
 
 #### Verify active checks
 
-**Monitoring → Latest data** — active items show as **Zabbix agent (active)**. If items stay empty after a few minutes:
+**Monitoring -> Latest data** -- active items show as **Zabbix agent (active)**. If items stay empty after a few minutes:
 
 - Confirm **no** duplicate `Hostname=` line.
 - Confirm UI **Host name** matches `hostname`.
 - Confirm `zabbix-server` publishes **`10051:10051`** in `compose.yaml`.
 - Inspect `/var/packages/zabbix-agent/target/var/zabbix_agentd.log` (path may vary).
 
-### Option 2 — Docker Zabbix Agent2 (Docker metrics only)
+### Option 2 -- Docker Zabbix Agent2 (Docker metrics only)
 
 The **`zabbix-agent2`** service is **commented out** in `compose.yaml`. Enable only if you need **per-container** CPU/memory/status in Zabbix. It does **not** replace SNMPv3 or the native agent for NAS health.
 
@@ -154,7 +154,7 @@ Uncomment only after reading the warnings in `compose.yaml` and documenting **pr
 | Goal                         | Method                      | Agent on NAS?   |
 | ---------------------------- | --------------------------- | --------------- |
 | Disks, RAID, temp, UPS, NICs | SNMPv3 template             | No              |
-| Processes, logs, scripts     | SynoCommunity agent → 10051 | Yes (native)    |
+| Processes, logs, scripts     | SynoCommunity agent -> 10051 | Yes (native)    |
 | Docker container metrics     | Docker Agent2 (privileged)  | Yes (container) |
 
 ## Backup
@@ -162,5 +162,5 @@ Uncomment only after reading the warnings in `compose.yaml` and documenting **pr
 | Directory                     | Hyper Backup      | Method                                                           |
 | ----------------------------- | ----------------- | ---------------------------------------------------------------- |
 | `${STACK_ROOT}/zabbix/data`   | Include           | File copy                                                        |
-| `${STACK_ROOT}/zabbix/db`     | **Exclude**       | Postgres dump (via `docker exec` → vendor tools)                 |
+| `${STACK_ROOT}/zabbix/db`     | **Exclude**       | Postgres dump (via `docker exec` -> vendor tools)                 |
 | `${STACK_ROOT}/zabbix/config` | Include (if used) | File copy                                                        |

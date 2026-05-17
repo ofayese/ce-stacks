@@ -1,4 +1,4 @@
-"""Internal-only DSM HTTP helper — allowlisted APIs only; strict timeouts; no generic DSM proxy."""
+"""Internal-only DSM HTTP helper -- allowlisted APIs only; strict timeouts; no generic DSM proxy."""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ DSM_BASE_URL = os.environ.get("DSM_BASE_URL", "").rstrip("/")
 HTTP_TIMEOUT = float(os.environ.get("DSM_HTTP_TIMEOUT_SECONDS", "5.0"))
 EXPECTED_SECRET = os.environ.get("BRIDGE_SHARED_SECRET", "")
 
-# Fixed Synology Web API tuples (api, method, version) — no user-controlled api/method/version.
+# Fixed Synology Web API tuples (api, method, version) -- no user-controlled api/method/version.
 _SYNO_API_INFO = ("SYNO.API.Info", "query", "1")
 
 
@@ -82,5 +82,5 @@ class FileStationListRequest(BaseModel):
 async def v1_file_station_list(_body: FileStationListRequest) -> dict[str, str]:
     raise HTTPException(
         status_code=501,
-        detail="SYNO.FileStation not implemented in v1 — extend with session auth and allowlisted methods only.",
+        detail="SYNO.FileStation not implemented in v1 -- extend with session auth and allowlisted methods only.",
     )

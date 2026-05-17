@@ -7,15 +7,15 @@ This repository has been updated to support **Dockhand** as the primary Docker s
 ### New Files
 
 - **`dockhand/`** - Dockhand stack configuration and migration tooling (repo root, NOT under `stacks/`)
-  - `compose.yaml` — Reference compose definition (managed by RC script in production)
-  - `scripts/dockhand-start.sh` — RC script for DSM startup (copy to `/usr/local/etc/rc.d/dockhand.sh`)
-  - `docs/MIGRATION.md` — Detailed step-by-step migration guide
-  - `README.md` — Dockhand configuration and troubleshooting
-  - `.env.example` — Environment variable reference
+  - `compose.yaml` -- Reference compose definition (managed by RC script in production)
+  - `scripts/dockhand-start.sh` -- RC script for DSM startup (copy to `/usr/local/etc/rc.d/dockhand.sh`)
+  - `docs/MIGRATION.md` -- Detailed step-by-step migration guide
+  - `README.md` -- Dockhand configuration and troubleshooting
+  - `.env.example` -- Environment variable reference
 
 ### Updated Files
 
-- **`README.md`** — Main repo documentation updated to reference Dockhand
+- **`README.md`** -- Main repo documentation updated to reference Dockhand
   - Changed from Portainer CE to Dockhand
   - Updated deployment and setup instructions
   - Added links to Dockhand-specific documentation
@@ -49,18 +49,18 @@ See **`/volume2/docker/dockhand/docs/MIGRATION.md`** for detailed, step-by-step 
 
 ## Key Advantages
 
-✅ **Git-backed deployments** — Auto-sync stacks on repo push via webhooks  
-✅ **Modern UI** — SvelteKit 5 frontend (faster than Portainer's Angular)  
-✅ **Lighter footprint** — Bun runtime vs Go (better for resource-constrained NAS)  
-✅ **Privacy-focused** — Wolfi OS base, minimal supply chain  
-✅ **OIDC support** — Enterprise-grade authentication  
+[OK] **Git-backed deployments** -- Auto-sync stacks on repo push via webhooks  
+[OK] **Modern UI** -- SvelteKit 5 frontend (faster than Portainer's Angular)  
+[OK] **Lighter footprint** -- Bun runtime vs Go (better for resource-constrained NAS)  
+[OK] **Privacy-focused** -- Wolfi OS base, minimal supply chain  
+[OK] **OIDC support** -- Enterprise-grade authentication  
 
 ## Important Notes
 
 - **All stacks continue running** during migration (containers are independent of orchestrator)
-- **Data is preserved** — All volumes and persistent data remain intact
-- **Rollback available** — Dockhand is just the UI; stopping it (`docker stop dockhand && docker rm dockhand`) does not affect running stacks.
-- **Validation provided** — Scripts to test label passthrough, watchtower compliance, socket access
+- **Data is preserved** -- All volumes and persistent data remain intact
+- **Rollback available** -- Dockhand is just the UI; stopping it (`docker stop dockhand && docker rm dockhand`) does not affect running stacks.
+- **Validation provided** -- Scripts to test label passthrough, watchtower compliance, socket access
 
 ## Reference
 

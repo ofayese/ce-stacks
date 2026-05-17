@@ -225,7 +225,7 @@ docker network connect ce-internal dockhand
 # Try: 15 or 20 seconds
 
 # In RC script (dockhand-start.sh):
-# --health-timeout=10s  → change to 20s
+# --health-timeout=10s  -> change to 20s
 ```
 
 ---

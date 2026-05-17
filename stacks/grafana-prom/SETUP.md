@@ -27,8 +27,8 @@ This Docker Compose stack provides complete monitoring for Synology NAS using Gr
    - Use credentials from snmp.yml
 
 3. **Configure firewall rules** (if enabled):
-   - Allow traffic on ports: **3340** (Grafana), **9090** (Prometheus), **9116** (SNMP exporter relay), **9100** (node exporter), **8080** (cAdvisor), and **UDP 161** from the Prometheus container host to **each Synology SNMP target** (see **`prom.yml`** — default **`10.0.1.15`** OTS and **`10.0.1.24`** MFT).
-   - Docker bridge subnets for this stack follow the Docker network subnet registry (e.g. **`grafana-net`**, **`prometheus-net`** under **`172.22.x.0/24`**). **Do not** use **`192.168.x.x`** in compose networks; examples below that used **`192.168.50.0/24`** / **`192.168.51.0/24`** are **non-prod placeholders only** — replace with your LAN CIDRs when opening the host firewall to admins.
+   - Allow traffic on ports: **3340** (Grafana), **9090** (Prometheus), **9116** (SNMP exporter relay), **9100** (node exporter), **8080** (cAdvisor), and **UDP 161** from the Prometheus container host to **each Synology SNMP target** (see **`prom.yml`** -- default **`10.0.1.15`** OTS and **`10.0.1.24`** MFT).
+   - Docker bridge subnets for this stack follow the Docker network subnet registry (e.g. **`grafana-net`**, **`prometheus-net`** under **`172.22.x.0/24`**). **Do not** use **`192.168.x.x`** in compose networks; examples below that used **`192.168.50.0/24`** / **`192.168.51.0/24`** are **non-prod placeholders only** -- replace with your LAN CIDRs when opening the host firewall to admins.
 
 ## Setup Instructions
 
@@ -43,10 +43,10 @@ TIMEZONE=America/New_York   # IANA TZ
 NAS_IP=10.0.1.15            # Management LAN IP for SNMP targets
 ```
 
-SNMP targets live in **`prom.yml`** (this repo ships **SNMPv3-first** via **`snmp.yml`** — treat **SNMPv2c** as legacy/lab-only if you enable it: community strings are trivially sniffable on LANs). After editing, reload the Prometheus container.
+SNMP targets live in **`prom.yml`** (this repo ships **SNMPv3-first** via **`snmp.yml`** -- treat **SNMPv2c** as legacy/lab-only if you enable it: community strings are trivially sniffable on LANs). After editing, reload the Prometheus container.
 
 ```yaml
-# See stacks/grafana-prom/prom.yml — synology-nas job uses 10.0.1.15:161 and 10.0.1.24:161 with instance labels.
+# See stacks/grafana-prom/prom.yml -- synology-nas job uses 10.0.1.15:161 and 10.0.1.24:161 with instance labels.
 ```
 
 ### Step 2: Create Required Directories
@@ -76,7 +76,7 @@ docker compose ps
 
 ### Step 5: Configure Prometheus Data Source
 
-1. In Grafana: Left sidebar → Connections → Data sources
+1. In Grafana: Left sidebar -> Connections -> Data sources
 2. Click "Add new data source"
 3. Select Prometheus
 4. URL: `http://prometheus-server:9090`
@@ -85,16 +85,16 @@ docker compose ps
 ### Step 6: Import Synology Dashboard
 
 1. Download the dashboard JSON from the Marius Hosting guides
-2. In Grafana: Left sidebar → Dashboards → New → Import
+2. In Grafana: Left sidebar -> Dashboards -> New -> Import
 3. Upload the JSON file or paste its content
 4. Select Prometheus as the data source
 5. Click "Import"
 
 ## Network Configuration
 
-Two isolated networks are created (see **`compose.yaml`** — this stack uses **`172.22.0.0/24`** and **`172.22.1.0/24`** with gateways **`172.22.0.1`** / **`172.22.1.1`**, aligned with the Docker network subnet registry). **Do not** use **`192.168.x.x`** in compose for this fleet.
+Two isolated networks are created (see **`compose.yaml`** -- this stack uses **`172.22.0.0/24`** and **`172.22.1.0/24`** with gateways **`172.22.0.1`** / **`172.22.1.1`**, aligned with the Docker network subnet registry). **Do not** use **`192.168.x.x`** in compose for this fleet.
 
-- `grafana-net`: Grafana ↔ Prometheus
+- `grafana-net`: Grafana <-> Prometheus
 - `prometheus-net`: All exporters and Watchtower
 
 ## Health Checks
@@ -139,14 +139,14 @@ Verify `/var/run/docker.sock` permissions. May need to run with different UID/GI
 
 ## Important Notes
 
-⚠️ **Watchtower will automatically update containers**. This may cause issues if an update has bugs.
-→ Always maintain backups using Hyper Backup.
+[WARN] **Watchtower will automatically update containers**. This may cause issues if an update has bugs.
+-> Always maintain backups using Hyper Backup.
 
-⚠️ **Change the Watchtower API token** in `.env` to something secure before production use.
+[WARN] **Change the Watchtower API token** in `.env` to something secure before production use.
 
-📝 **Memory usage** is controlled with `mem_limit` and `mem_reservation` to prevent resource exhaustion.
+[note] **Memory usage** is controlled with `mem_limit` and `mem_reservation` to prevent resource exhaustion.
 
-🔄 **Update schedule** can be modified in `.env` (`WATCHTOWER_SCHEDULE`) using cron format.
+[refresh] **Update schedule** can be modified in `.env` (`WATCHTOWER_SCHEDULE`) using cron format.
 
 ## Useful Commands
 

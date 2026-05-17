@@ -4,8 +4,8 @@ Privacy-respecting metasearch engine, backed by Valkey (Redis fork) for caching.
 
 ## Services
 
-- **redis** (Valkey) — ephemeral cache (`--save "" --appendonly no` → no on-disk persistence)
-- **searxng** (8888) — uWSGI web frontend; depends on `redis` healthcheck
+- **redis** (Valkey) -- ephemeral cache (`--save "" --appendonly no` -> no on-disk persistence)
+- **searxng** (8888) -- uWSGI web frontend; depends on `redis` healthcheck
 
 ## Startup order
 
@@ -17,7 +17,7 @@ Privacy-respecting metasearch engine, backed by Valkey (Redis fork) for caching.
 
 ## Required state
 
-`/volume2/docker/ce-stacks/stacks/searxng/config/settings.yml` — **not** in git (contains `secret_key`).
+`/volume2/docker/ce-stacks/stacks/searxng/config/settings.yml` -- **not** in git (contains `secret_key`).
 
 1. Copy the template:
    ```bash
@@ -38,7 +38,7 @@ git check-ignore -v searxng/config/settings.yml
 
 ## Capability whitelist
 
-searxng runs with `cap_drop: ALL` and only adds `CHOWN/SETGID/SETUID` — needed for first-run permission fixups. Do not narrow without testing; settings writes will fail otherwise.
+searxng runs with `cap_drop: ALL` and only adds `CHOWN/SETGID/SETUID` -- needed for first-run permission fixups. Do not narrow without testing; settings writes will fail otherwise.
 
 ## Rollback
 

@@ -8,26 +8,26 @@
 ## Directory Layout
 
 ```
-ce-stacks/dockhand/           ← Git-tracked reference (ce-stacks root)
-├── README.md                 ← Overview of Dockhand
-├── STRUCTURE.md              ← This file: directory layout & path map
-├── APPLY_HEALTH_CHECK_FIX.sh ← Automated health check fix script
-├── CHECKLIST.sh              ← Interactive migration checklist
-├── compose.yaml              ← Docker Compose definition
-├── .env.example              ← Environment variable template
-│
-├── scripts/                  ← Executable scripts
-│   ├── dockhand-start.sh     ← RC startup script (install to /usr/local/etc/rc.d/)
-│   ├── dockhand-validate.sh  ← Validation & compliance testing
-│   ├── dockhand-migration.sh ← Migration preparation script
-│   └── health-check-fix.sh   ← Diagnostic script for health checks
-│
-└── docs/                     ← Documentation
-    ├── DEPLOYMENT.md         ← How to copy & deploy to NAS
-    ├── MIGRATION.md          ← 5-step migration guide
-    ├── HEALTH_CHECK_SOLUTION.md    ← Health check issue & fix
-    ├── HEALTH_CHECK_FIX.md         ← Detailed health check analysis
-    └── HEALTH_CHECK_DEBUG.md       ← Comprehensive troubleshooting
+ce-stacks/dockhand/           <- Git-tracked reference (ce-stacks root)
++--- README.md                 <- Overview of Dockhand
++--- STRUCTURE.md              <- This file: directory layout & path map
++--- APPLY_HEALTH_CHECK_FIX.sh <- Automated health check fix script
++--- CHECKLIST.sh              <- Interactive migration checklist
++--- compose.yaml              <- Docker Compose definition
++--- .env.example              <- Environment variable template
+|
++--- scripts/                  <- Executable scripts
+|   +--- dockhand-start.sh     <- RC startup script (install to /usr/local/etc/rc.d/)
+|   +--- dockhand-validate.sh  <- Validation & compliance testing
+|   +--- dockhand-migration.sh <- Migration preparation script
+|   +--- health-check-fix.sh   <- Diagnostic script for health checks
+|
++--- docs/                     <- Documentation
+    +--- DEPLOYMENT.md         <- How to copy & deploy to NAS
+    +--- MIGRATION.md          <- 5-step migration guide
+    +--- HEALTH_CHECK_SOLUTION.md    <- Health check issue & fix
+    +--- HEALTH_CHECK_FIX.md         <- Detailed health check analysis
+    +--- HEALTH_CHECK_DEBUG.md       <- Comprehensive troubleshooting
 ```
 
 ---
@@ -37,29 +37,29 @@ ce-stacks/dockhand/           ← Git-tracked reference (ce-stacks root)
 After copying from the repo, the NAS will have the same structure:
 
 ```
-/volume2/docker/dockhand/     ← Runtime deployment on NAS
-├── README.md
-├── STRUCTURE.md
-├── APPLY_HEALTH_CHECK_FIX.sh
-├── CHECKLIST.sh
-├── compose.yaml
-├── .env.example
-├── db/                       ← Dockhand database (auto-created)
-├── stacks/                   ← Imported stacks metadata (auto-created)
-├── git-repos/                ← Cloned repos (auto-created)
-│
-├── scripts/
-│   ├── dockhand-start.sh
-│   ├── dockhand-validate.sh
-│   ├── dockhand-migration.sh
-│   └── health-check-fix.sh
-│
-└── docs/
-    ├── DEPLOYMENT.md
-    ├── MIGRATION.md
-    ├── HEALTH_CHECK_SOLUTION.md
-    ├── HEALTH_CHECK_FIX.md
-    └── HEALTH_CHECK_DEBUG.md
+/volume2/docker/dockhand/     <- Runtime deployment on NAS
++--- README.md
++--- STRUCTURE.md
++--- APPLY_HEALTH_CHECK_FIX.sh
++--- CHECKLIST.sh
++--- compose.yaml
++--- .env.example
++--- db/                       <- Dockhand database (auto-created)
++--- stacks/                   <- Imported stacks metadata (auto-created)
++--- git-repos/                <- Cloned repos (auto-created)
+|
++--- scripts/
+|   +--- dockhand-start.sh
+|   +--- dockhand-validate.sh
+|   +--- dockhand-migration.sh
+|   +--- health-check-fix.sh
+|
++--- docs/
+    +--- DEPLOYMENT.md
+    +--- MIGRATION.md
+    +--- HEALTH_CHECK_SOLUTION.md
+    +--- HEALTH_CHECK_FIX.md
+    +--- HEALTH_CHECK_DEBUG.md
 ```
 
 ---
@@ -151,12 +151,12 @@ sudo /usr/local/etc/rc.d/dockhand.sh
 
 All scripts now reference `/volume2/docker/dockhand/` when deployed, not relative ce-stacks paths:
 
-✅ `dockhand-start.sh` - Updated source path in header comment  
-✅ `APPLY_HEALTH_CHECK_FIX.sh` - Uses `/volume2/docker/dockhand/scripts/` paths  
-✅ `docs/DEPLOYMENT.md` - References new `scripts/` subdirectory  
-✅ `docs/MIGRATION.md` - References `/volume2/docker/dockhand/scripts/`  
-✅ `docs/HEALTH_CHECK_FIX.md` - References new paths  
-✅ `docs/HEALTH_CHECK_SOLUTION.md` - Updated references  
+[OK] `dockhand-start.sh` - Updated source path in header comment  
+[OK] `APPLY_HEALTH_CHECK_FIX.sh` - Uses `/volume2/docker/dockhand/scripts/` paths  
+[OK] `docs/DEPLOYMENT.md` - References new `scripts/` subdirectory  
+[OK] `docs/MIGRATION.md` - References `/volume2/docker/dockhand/scripts/`  
+[OK] `docs/HEALTH_CHECK_FIX.md` - References new paths  
+[OK] `docs/HEALTH_CHECK_SOLUTION.md` - Updated references  
 
 ---
 
@@ -165,7 +165,7 @@ All scripts now reference `/volume2/docker/dockhand/` when deployed, not relativ
 After installing RC script on NAS:
 
 ```
-/usr/local/etc/rc.d/dockhand.sh → symlink to /volume2/docker/dockhand/scripts/dockhand-start.sh
+/usr/local/etc/rc.d/dockhand.sh -> symlink to /volume2/docker/dockhand/scripts/dockhand-start.sh
 ```
 
 (Or copy if symlinks not preferred on DSM)
@@ -178,7 +178,7 @@ After installing RC script on NAS:
 2. **NAS is runtime**: `/volume2/docker/dockhand/` runs the actual container
 3. **Scripts are portable**: All scripts work when copied to NAS
 4. **Paths are absolute**: No relative paths that break on NAS
-5. **Docs are discoverable**: README → DEPLOYMENT → MIGRATION → HEALTH_CHECK_*
+5. **Docs are discoverable**: README -> DEPLOYMENT -> MIGRATION -> HEALTH_CHECK_*
 
 ---
 

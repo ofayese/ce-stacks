@@ -11,7 +11,7 @@ This document describes the full migration from **Portainer CE** to **Dockhand**
 
 ## Why Migrate to Dockhand?
 
-✅ **Advantages over Portainer CE**:
+[OK] **Advantages over Portainer CE**:
 
 - Native git integration with webhooks (auto-sync on repo push)
 - Modern UI (SvelteKit 5 + Svelte, vs Portainer's Angular)
@@ -20,7 +20,7 @@ This document describes the full migration from **Portainer CE** to **Dockhand**
 - OIDC SSO support (more enterprise-ready auth)
 - Better Compose visual editor
 
-⚠️ **Trade-offs**:
+[WARN] **Trade-offs**:
 
 - Smaller ecosystem (newer product, less battle-tested)
 - No Agent layer (single monolith, no remote environment support for this setup)
@@ -29,11 +29,11 @@ This document describes the full migration from **Portainer CE** to **Dockhand**
 
 ## Prerequisites
 
-- ✅ Synology DSM 7.3 with Docker Engine via Container Manager
-- ✅ `/volume2/docker/ce-stacks` repo cloned
-- ✅ All 20+ stacks currently running under Portainer
-- ✅ Network configured: `ce-internal` bridge exists, services bind to `10.0.1.15`
-- ✅ Sufficient disk space: ~500MB for Dockhand data + backups
+- [OK] Synology DSM 7.3 with Docker Engine via Container Manager
+- [OK] `/volume2/docker/ce-stacks` repo cloned
+- [OK] All 20+ stacks currently running under Portainer
+- [OK] Network configured: `ce-internal` bridge exists, services bind to `10.0.1.15`
+- [OK] Sufficient disk space: ~500MB for Dockhand data + backups
 
 ## Step 1: Pre-Migration Preparation
 
@@ -103,7 +103,7 @@ sudo docker logs dockhand | tail -50
    - Username: `admin` (or your preferred name)
    - Password: (create strong password, 16+ chars)
    - Role: `Administrator`
-4. Toggle **Authentication** from OFF → ON
+4. Toggle **Authentication** from OFF -> ON
 
 ### 3b. Configure local Docker environment
 
@@ -154,7 +154,7 @@ Dockhand can auto-deploy stacks when you push changes to your ce-stacks repo. Th
    - Payload URL: `http://10.0.1.15:3866/webhooks/<your-webhook-key>`
    - Content type: `application/json`
    - Trigger on: `Push events` (select this only)
-   - Active: ✓ checked
+   - Active: [OK] checked
    - Click **Add webhook**
 
 ### 5c. Test webhook (Optional)
@@ -450,11 +450,11 @@ A: Edit the compose.yaml in `/volume2/docker/ce-stacks/stacks/<stack>/`, commit,
 
 ## Next Steps
 
-1. ✅ Deploy Dockhand (Step 1-4, quick)
-2. ✅ Import stacks (Step 6, ~5 min per stack)
-3. ✅ Validate all running (Step 7)
-4. ✅ Monitor for stability (Step 8)
-5. ✅ Commit & document (Step 9)
+1. [OK] Deploy Dockhand (Step 1-4, quick)
+2. [OK] Import stacks (Step 6, ~5 min per stack)
+3. [OK] Validate all running (Step 7)
+4. [OK] Monitor for stability (Step 8)
+5. [OK] Commit & document (Step 9)
 
 ## Support
 

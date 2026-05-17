@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# lint-host-budget.sh — fail if Σ `mem_limit` across stacks/*/compose.yaml
+# lint-host-budget.sh -- fail if Sum `mem_limit` across stacks/*/compose.yaml
 # exceeds the host RAM budget.
 #
 # USAGE:
@@ -8,7 +8,7 @@
 #   bash scripts/lint-host-budget.sh --self-test                 # run unit tests
 #
 # Default budget: 26 624 MB (26 GiB), calibrated for the DS723+ host
-# `otsorundscore`: 32 GB physical − DSM/BTRFS/kernel overhead.
+# `otsorundscore`: 32 GB physical - DSM/BTRFS/kernel overhead.
 #
 # Invoked by scripts/compose-validate.sh after the per-stack `docker compose
 # config` pass, and runnable standalone.
@@ -17,7 +17,7 @@ set -euo pipefail
 
 # Default 32 000 MB = physical RAM on `otsorundscore` (DS723+, 32 GB).
 # Rationale: Docker `mem_limit` is a CGroup memory.max CEILING (lazy, only
-# enforced at allocation), not a reservation. So Σ mem_limit ≤ physical RAM
+# enforced at allocation), not a reservation. So Sum mem_limit <= physical RAM
 # is the absolute-worst-case correctness boundary: if every stack
 # simultaneously approached its cap, the kernel would still have a fighting
 # chance to avoid OOM. Stricter overrides (e.g. 26000 to leave headroom for
@@ -25,7 +25,7 @@ set -euo pipefail
 #   HOST_MEM_BUDGET_MB=26000 bash scripts/lint-host-budget.sh
 BUDGET_MB="${HOST_MEM_BUDGET_MB:-32000}"
 
-# ── parse_mem_to_mb ─────────────────────────────────────────────────
+# -- parse_mem_to_mb -------------------------------------------------
 # Accepts: 128m, 512M, 1g, 14G, 2GB, 256MB, 1024k, 4096b, or a bare integer (assumed bytes).
 # Emits: integer megabytes (floor).
 # Returns 1 if input is empty / malformed.
@@ -37,7 +37,7 @@ parse_mem_to_mb() {
     v="${v%b}"
     local num="${v%[kmgt]*}"
     local unit="${v#"${num}"}"
-    # If $num and $v are equal, no unit was present → assume bytes
+    # If $num and $v are equal, no unit was present -> assume bytes
     if [[ "${num}" == "${v}" ]]; then
         unit="bytes"
     fi
@@ -53,7 +53,7 @@ parse_mem_to_mb() {
     }'
 }
 
-# ── --self-test ──────────────────────────────────────────────────────
+# -- --self-test ------------------------------------------------------
 if [[ "${1:-}" == "--self-test" ]]; then
     pass=0; fail=0
     check() {
@@ -81,7 +81,7 @@ if [[ "${1:-}" == "--self-test" ]]; then
     exit 0
 fi
 
-# ── locate repo root ─────────────────────────────────────────────────
+# -- locate repo root -------------------------------------------------
 _script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="${_script_dir}"
 while [[ ! -f "${ROOT}/README.md" && "${ROOT}" != "/" ]]; do
@@ -93,7 +93,7 @@ done
 }
 STACKS="${ROOT}/stacks"
 
-# ── walk every compose file, sum mem_limit per stack ────────────────
+# -- walk every compose file, sum mem_limit per stack ----------------
 total_mb=0
 declare -a rows=()
 
@@ -102,7 +102,7 @@ while IFS= read -r f; do
     stack="$(basename "$(dirname "${f}")")"
     stack_mb=0
     while IFS= read -r line; do
-        # NOTE: \047 inside sed [...] is literal chars (\047), not octal — use tr.
+        # NOTE: \047 inside sed [...] is literal chars (\047), not octal -- use tr.
         val="$(echo "${line}" | sed -E 's/#.*$//; s/.*mem_limit:[[:space:]]*//' | tr -d $'[:space:]\042\047')"
         [[ -z "${val}" ]] && continue
         mb="$(parse_mem_to_mb "${val}" 2>/dev/null || echo "0")"
@@ -127,4 +127,4 @@ if (( total_mb > BUDGET_MB )); then
     echo "Reduce mem_limit on the largest stacks (top of the list above) or raise HOST_MEM_BUDGET_MB." >&2
     exit 1
 fi
-echo "OK: total mem_limit ${total_mb} MB ≤ budget ${BUDGET_MB} MB."
+echo "OK: total mem_limit ${total_mb} MB <= budget ${BUDGET_MB} MB."

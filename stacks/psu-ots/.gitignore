@@ -1,4 +1,4 @@
-# PSU runtime under data/ — keep versioned PSU Repository tree
+# PSU runtime under data/ -- keep versioned PSU Repository tree
 data/*
 !data/Repository/
 !data/Repository/**

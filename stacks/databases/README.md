@@ -1,4 +1,4 @@
-# databases — REMOVED (migrated to Synology native packages)
+# databases -- REMOVED (migrated to Synology native packages)
 
 This stack has been retired. MariaDB and PostgreSQL are now managed as Synology
 native packages via DSM Package Center, following the same platform-lifecycle
@@ -11,20 +11,20 @@ principle established for HAProxy.
 | MariaDB    | `mariadb:11.4.10` container      | Synology MariaDB package (DSM)          |
 | PostgreSQL | `postgres:16-alpine` container   | Synology PostgreSQL package (DSM)       |
 | Redis      | Not in this stack                | Valkey 8 sidecar in `stacks/searxng/`  |
-| Adminer    | Container (db-net DNS)           | `stacks/db-tools/` → `10.0.1.15:8895` |
-| PhpMyAdmin | Not in this stack                | `stacks/db-tools/` → `10.0.1.15:8378` |
+| Adminer    | Container (db-net DNS)           | `stacks/db-tools/` -> `10.0.1.15:8895` |
+| PhpMyAdmin | Not in this stack                | `stacks/db-tools/` -> `10.0.1.15:8378` |
 
 ## Why native packages
 
-**Platform lifecycle** — Synology services with their own package lifecycle work
+**Platform lifecycle** -- Synology services with their own package lifecycle work
 best when DSM owns the start/stop/restart cycle (same principle as HAProxy).
 Direct Docker management of services that have a native Synology equivalent
 creates state mismatches and prevents Hyper Backup integration.
 
-**Hyper Backup integration** — DSM can snapshot database data natively; no
+**Hyper Backup integration** -- DSM can snapshot database data natively; no
 manual dump scripts required.
 
-**Lower overhead** — database processes run directly on the NAS kernel without
+**Lower overhead** -- database processes run directly on the NAS kernel without
 a container shim layer.
 
 ## Stack-specific databases are NOT affected
@@ -40,7 +40,7 @@ coupled to their stack's `depends_on: service_healthy` chain.
 | MariaDB    | 10.0.1.15 | 3306 |
 | PostgreSQL | 10.0.1.15 | 5432 |
 
-Install via DSM → Package Center → search "MariaDB" / "PostgreSQL" (SynoCommunity).
+Install via DSM -> Package Center -> search "MariaDB" / "PostgreSQL" (SynoCommunity).
 
 ## Data migration (if data exists in containers)
 
@@ -59,5 +59,5 @@ docker compose -f /volume2/docker/ce-stacks/stacks/databases/compose.yaml down -
 
 ## GUI tools
 
-See `stacks/db-tools/` — Adminer and PhpMyAdmin, both pointing at native
+See `stacks/db-tools/` -- Adminer and PhpMyAdmin, both pointing at native
 package databases on `10.0.1.15`.

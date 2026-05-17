@@ -1,7 +1,7 @@
-# Secrets — never commit live credentials
+# Secrets -- never commit live credentials
 .env
 
-# Runtime data — large, transient, OS-generated
+# Runtime data -- large, transient, OS-generated
 config/
 data/
 *.log

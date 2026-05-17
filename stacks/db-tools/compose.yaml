@@ -19,7 +19,7 @@ services:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
       # Point at Synology native package databases (NAS LAN IP).
-      # Adminer supports MariaDB, PostgreSQL, and SQLite in one tool — no phpMyAdmin needed.
+      # Adminer supports MariaDB, PostgreSQL, and SQLite in one tool -- no phpMyAdmin needed.
       - ADMINER_DEFAULT_SERVER=${ADMINER_DEFAULT_SERVER:-10.0.1.15}
       - ADMINER_DESIGN=hydra
       - TZ=${TZ:-America/New_York}
@@ -35,5 +35,5 @@ services:
       start_period: 20s
     labels:
       - com.centurylinklabs.watchtower.enable=true
-  # phpMyAdmin removed — Adminer covers both MariaDB and PostgreSQL in one container.
+  # phpMyAdmin removed -- Adminer covers both MariaDB and PostgreSQL in one container.
   # CodeServerPMA (stacks/code-server, port 8379) handles the code-server MySQL sidecar.

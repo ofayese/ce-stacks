@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# dockhand-sync.sh — re-sync ce-stacks/dockhand/ → /volume2/docker/dockhand/
+# dockhand-sync.sh -- re-sync ce-stacks/dockhand/ -> /volume2/docker/dockhand/
 # =============================================================================
 # Wrapper around the same rsync/cp logic used by scripts/init-nas.sh, scoped
 # to only the dockhand/ subtree. Use this when you've pulled new commits in
@@ -10,7 +10,7 @@
 # Safety:
 #   * Refuses to run unless dockhand/scripts/dockhand-start.sh exists in the
 #     source tree (catches "wrong cwd" mistakes).
-#   * Preserves runtime state — never overwrites:
+#   * Preserves runtime state -- never overwrites:
 #       - /volume2/docker/dockhand/.env
 #       - /volume2/docker/dockhand/data/
 #       - /volume2/docker/dockhand/db/
@@ -21,7 +21,7 @@
 #       - /volume2/docker/dockhand/snapshots/
 #       - /volume2/docker/dockhand/scanner-cache/
 #       - /volume2/docker/dockhand/secrets/
-#   * Idempotent — safe to re-run.
+#   * Idempotent -- safe to re-run.
 #
 # Usage:
 #   bash /volume2/docker/ce-stacks/scripts/dockhand-sync.sh
@@ -73,7 +73,7 @@ mkdir -p "${DST}"
 
 echo "dockhand-sync: source: ${SRC}"
 echo "dockhand-sync: dest:   ${DST}"
-[ "$DRY_RUN" -eq 1 ] && echo "dockhand-sync: DRY RUN — no files will be written"
+[ "$DRY_RUN" -eq 1 ] && echo "dockhand-sync: DRY RUN -- no files will be written"
 
 # ---- Sync --------------------------------------------------------------------
 # Excludes match the runtime/state-bearing paths created by Dockhand itself
@@ -99,7 +99,7 @@ if command -v rsync >/dev/null 2>&1; then
 else
     echo "dockhand-sync: rsync not available; falling back to cp -R"
     if [ "$DRY_RUN" -eq 1 ]; then
-        echo "dockhand-sync: (dry-run) would copy ${SRC}/ → ${DST}/ (no-clobber for protected paths)"
+        echo "dockhand-sync: (dry-run) would copy ${SRC}/ -> ${DST}/ (no-clobber for protected paths)"
     else
         # cp with no-clobber preserves anything already at the destination.
         # We do an `cp -R` then redo with `-n` for the protected runtime dirs.

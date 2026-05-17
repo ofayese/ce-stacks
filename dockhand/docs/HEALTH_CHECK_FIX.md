@@ -8,7 +8,7 @@
 
 ---
 
-## ✅ Fix Applied
+## [OK] Fix Applied
 
 Updated `dockhand/scripts/dockhand-start.sh` health check with:
 
@@ -34,10 +34,10 @@ Updated `dockhand/scripts/dockhand-start.sh` health check with:
 
 **Changes:**
 
-- ✓ Use `wget` instead of `curl` (more likely available in Wolfi OS)
-- ✓ Increased timeout from 10s to 20s
-- ✓ Increased retries from 3 to 5
-- ✓ Doubled startup period from 60s to 120s (Bun needs time to compile/start)
+- [OK] Use `wget` instead of `curl` (more likely available in Wolfi OS)
+- [OK] Increased timeout from 10s to 20s
+- [OK] Increased retries from 3 to 5
+- [OK] Doubled startup period from 60s to 120s (Bun needs time to compile/start)
 
 ---
 
@@ -158,7 +158,7 @@ Or check manually:
 curl -v http://10.0.1.15:3866/health
 
 # 2. Check inside container
-docker exec dockhand wget --quiet --tries=1 --spider http://127.0.0.1:3000/health && echo "✓ Health check works" || echo "✗ Health check failed"
+docker exec dockhand wget --quiet --tries=1 --spider http://127.0.0.1:3000/health && echo "[OK] Health check works" || echo "[FAIL] Health check failed"
 
 # 3. Check logs
 docker logs dockhand | tail -50
@@ -174,9 +174,9 @@ docker exec dockhand ss -tlnp | grep 3000
 
 ## Files Updated
 
-- ✅ `dockhand/scripts/dockhand-start.sh` - Updated health check parameters
-- ✅ `dockhand/docs/HEALTH_CHECK_DEBUG.md` - Created comprehensive debugging guide
-- ✅ `dockhand/scripts/health-check-fix.sh` - Created diagnostic script
+- [OK] `dockhand/scripts/dockhand-start.sh` - Updated health check parameters
+- [OK] `dockhand/docs/HEALTH_CHECK_DEBUG.md` - Created comprehensive debugging guide
+- [OK] `dockhand/scripts/health-check-fix.sh` - Created diagnostic script
 
 ---
 

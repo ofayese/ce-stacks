@@ -1,16 +1,16 @@
 #!/bin/sh
 # =============================================================================
-# [HISTORICAL] Dockhand Migration Script - Portainer → Dockhand helper
+# [HISTORICAL] Dockhand Migration Script - Portainer -> Dockhand helper
 # =============================================================================
 # Retained for reference only. Portainer is no longer part of this topology
 # and this script is NOT part of the current deploy flow. The canonical
 # deployment path is:
 #
-#   1. git clone … /volume2/docker/ce-stacks
+#   1. git clone ... /volume2/docker/ce-stacks
 #   2. bash /volume2/docker/ce-stacks/scripts/init-nas.sh
 #      (or, for Dockhand-only updates) bash scripts/dockhand-sync.sh
 #   3. sudo cp /volume2/docker/dockhand/scripts/dockhand-start.sh \
-#        /usr/local/etc/rc.d/dockhand.sh && sudo chmod +x …
+#        /usr/local/etc/rc.d/dockhand.sh && sudo chmod +x ...
 #   4. sudo /usr/local/etc/rc.d/dockhand.sh
 #
 # Do not run this script on a fresh install. It assumes a live Portainer
@@ -65,10 +65,10 @@ PORTAINER_BACKUP="/tmp/portainer-backup-$(date +%s).tar.gz"
 if [ -d "$PORTAINER_DATA" ]; then
     echo "  Creating backup: $PORTAINER_BACKUP"
     tar -czf "$PORTAINER_BACKUP" -C "$(dirname "$PORTAINER_DATA")" "$(basename "$PORTAINER_DATA")" 2>/dev/null || true
-    echo -e "  ${GREEN}✓ Backup created${NC}"
+    echo -e "  ${GREEN}[OK] Backup created${NC}"
     echo "  To restore: tar -xzf $PORTAINER_BACKUP -C /"
 else
-    echo -e "  ${YELLOW}⚠ Portainer data not found at $PORTAINER_DATA${NC}"
+    echo -e "  ${YELLOW}[WARN] Portainer data not found at $PORTAINER_DATA${NC}"
 fi
 echo ""
 
@@ -93,11 +93,11 @@ for stack_dir in "$STACK_ROOT"/stacks/*/; do
     
     # Validate compose syntax
     if $DOCKER compose -f "$compose_file" config >/dev/null 2>&1; then
-        echo "  ${GREEN}✓${NC} $stack_name"
+        echo "  ${GREEN}[OK]${NC} $stack_name"
         STACKS_TO_MIGRATE+=("$stack_name")
         VALID_STACKS=$((VALID_STACKS + 1))
     else
-        echo "  ${RED}✗${NC} $stack_name (INVALID SYNTAX)"
+        echo "  ${RED}[FAIL]${NC} $stack_name (INVALID SYNTAX)"
         INVALID_STACKS=$((INVALID_STACKS + 1))
     fi
 done
@@ -143,14 +143,14 @@ cat >> "$EXPORT_FILE" << EOF
 }
 EOF
 
-echo -e "  ${GREEN}✓ Export created${NC}: $EXPORT_FILE"
+echo -e "  ${GREEN}[OK] Export created${NC}: $EXPORT_FILE"
 echo ""
 
 # === List Stacks Ready for Migration ===
 echo "[4/5] Stacks ready for migration (${#STACKS_TO_MIGRATE[@]} total):"
 echo ""
 for stack in "${STACKS_TO_MIGRATE[@]}"; do
-    echo "  • $stack"
+    echo "  * $stack"
 done
 echo ""
 
@@ -201,7 +201,7 @@ echo "  [ ] Remove Portainer: docker rm portainer portainer_agent"
 echo "  [ ] Delete Portainer RC script: sudo rm /usr/local/etc/rc.d/portainer.sh"
 echo ""
 
-echo -e "${GREEN}✓ Migration preparation complete${NC}"
+echo -e "${GREEN}[OK] Migration preparation complete${NC}"
 echo ""
 echo "Next steps:"
 echo "  1. Read MIGRATION.md for detailed instructions"

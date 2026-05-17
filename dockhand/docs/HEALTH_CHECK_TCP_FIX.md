@@ -105,18 +105,18 @@ docker inspect dockhand | jq '.State.Health'
 ## Why This Works
 
 The TCP socket check (`exec 3<>/dev/tcp/127.0.0.1/3000`) is:
-- ✅ Built-in to `/bin/sh` (no external tools)
-- ✅ Lightweight (just socket connect)
-- ✅ Fast (5 second timeout vs 20)
-- ✅ Reliable (tests actual port connectivity)
-- ✅ Works in minimal containers
+- [OK] Built-in to `/bin/sh` (no external tools)
+- [OK] Lightweight (just socket connect)
+- [OK] Fast (5 second timeout vs 20)
+- [OK] Reliable (tests actual port connectivity)
+- [OK] Works in minimal containers
 
 ---
 
 ## Files Updated
 
-- ✅ `dockhand/scripts/dockhand-start.sh` - TCP socket health check
-- ✅ `dockhand/compose.yaml` - TCP socket health check
+- [OK] `dockhand/scripts/dockhand-start.sh` - TCP socket health check
+- [OK] `dockhand/compose.yaml` - TCP socket health check
 
 All other scripts and docs automatically use the updated RC script.
 
@@ -128,9 +128,9 @@ To test the health check manually from NAS:
 
 ```bash
 # Test from host
-exec 3<>/dev/tcp/10.0.1.15/3866 && echo "✓ Port accessible" && exec 3>&-
+exec 3<>/dev/tcp/10.0.1.15/3866 && echo "[OK] Port accessible" && exec 3>&-
 
 # Test from inside container
-docker exec dockhand /bin/sh -c 'exec 3<>/dev/tcp/127.0.0.1/3000 && exec 3>&-' && echo "✓ Health check passes"
+docker exec dockhand /bin/sh -c 'exec 3<>/dev/tcp/127.0.0.1/3000 && exec 3>&-' && echo "[OK] Health check passes"
 ```
 

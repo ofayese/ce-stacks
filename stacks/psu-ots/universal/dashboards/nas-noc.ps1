@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    NAS NOC dashboard — JSON from /data/reports; requires PSU Gallery modules by default.
+    NAS NOC dashboard -- JSON from /data/reports; requires PSU Gallery modules by default.
 
 .DESCRIPTION
     Dot-sources Import-PSUGalleryModules.ps1 and calls Import-PSUGalleryModules (strict)
@@ -27,7 +27,7 @@ foreach ($cand in @(
 
 if (-not $script:NASGalleryInitPath) {
     if ($env:PSU_GALLERY_OPTIONAL -eq '1') {
-        Write-Warning "nas-noc.ps1: Import-PSUGalleryModules.ps1 not found — gallery panels will be limited."
+        Write-Warning "nas-noc.ps1: Import-PSUGalleryModules.ps1 not found -- gallery panels will be limited."
     }
     else {
         throw "nas-noc.ps1: Import-PSUGalleryModules.ps1 not found next to dashboards/scripts. Copy universal/ into data/Repository/.universal/."
@@ -139,7 +139,7 @@ function New-NASCompliancePanel {
             elseif (Get-Command New-UDExpansionPanel -ErrorAction SilentlyContinue) {
                 $jsonSnippet = ""
                 try { $jsonSnippet = ($d | ConvertTo-Json -Depth 6 -Compress) } catch { $jsonSnippet = "unavailable" }
-                if ($jsonSnippet.Length -gt 8000) { $jsonSnippet = $jsonSnippet.Substring(0, 8000) + "…" }
+                if ($jsonSnippet.Length -gt 8000) { $jsonSnippet = $jsonSnippet.Substring(0, 8000) + "..." }
                 $extras += New-UDExpansionPanel -Title "Raw JSON (truncated)" -Content {
                     New-UDElement -Tag "pre" -Content { $jsonSnippet }
                 }
@@ -166,20 +166,20 @@ if (Get-Command New-PSUDashboard -ErrorAction SilentlyContinue) {
                 }
             }
             New-UDRow -Columns {
-                New-NASCompliancePanel -Title "Panel A — Image drift" -Prefix "image-drift" -RefreshSec 60
-                New-NASCompliancePanel -Title "Panel B — NAS health" -Prefix "nas-health" -RefreshSec 60
+                New-NASCompliancePanel -Title "Panel A -- Image drift" -Prefix "image-drift" -RefreshSec 60
+                New-NASCompliancePanel -Title "Panel B -- NAS health" -Prefix "nas-health" -RefreshSec 60
             }
             New-UDRow -Columns {
-                New-NASCompliancePanel -Title "Panel C — Ingress" -Prefix "ingress-validator" -RefreshSec 120
-                New-NASCompliancePanel -Title "Panel D — Docker / Stack Manager latency" -Prefix "docker-latency" -RefreshSec 120
+                New-NASCompliancePanel -Title "Panel C -- Ingress" -Prefix "ingress-validator" -RefreshSec 120
+                New-NASCompliancePanel -Title "Panel D -- Docker / Stack Manager latency" -Prefix "docker-latency" -RefreshSec 120
             }
             New-UDRow -Columns {
-                New-NASCompliancePanel -Title "Panel E — PSU self-health" -Prefix "psu-self-health" -RefreshSec 120
-                New-NASCompliancePanel -Title "Panel F — Stack dependencies" -Prefix "stack-dependencies" -RefreshSec 300
+                New-NASCompliancePanel -Title "Panel E -- PSU self-health" -Prefix "psu-self-health" -RefreshSec 120
+                New-NASCompliancePanel -Title "Panel F -- Stack dependencies" -Prefix "stack-dependencies" -RefreshSec 300
             }
             New-UDRow -Columns {
                 New-UDColumn -LargeSize 12 -Content {
-                    New-NASCompliancePanel -Title "Panel G — Security (trivy)" -Prefix "security-scanner" -RefreshSec 3600
+                    New-NASCompliancePanel -Title "Panel G -- Security (trivy)" -Prefix "security-scanner" -RefreshSec 3600
                 }
             }
         }
@@ -189,5 +189,5 @@ if (Get-Command New-PSUDashboard -ErrorAction SilentlyContinue) {
     }
 }
 else {
-    Write-Output "nas-noc.ps1: Universal Dashboard cmdlets not present — use Get-NASLatestReportObject in custom PSU pages."
+    Write-Output "nas-noc.ps1: Universal Dashboard cmdlets not present -- use Get-NASLatestReportObject in custom PSU pages."
 }

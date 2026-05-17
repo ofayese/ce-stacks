@@ -9,9 +9,9 @@
 #
 # WHEN TO USE KUBERNETES
 # Uncomment and configure this file if you:
-# • Deploy services on a Kubernetes cluster
-# • Use K3s, K8s, or similar orchestration platform
-# • Need cross-host service discovery
+# * Deploy services on a Kubernetes cluster
+# * Use K3s, K8s, or similar orchestration platform
+# * Need cross-host service discovery
 #
 # KUBERNETES CONFIGURATION
 # For Kubernetes setup examples, see:

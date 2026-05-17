@@ -4,7 +4,7 @@
 
 Your Dockhand container is **running but marked unhealthy** due to an overly aggressive health check and missing `curl` in the minimal Wolfi OS image.
 
-**Status**: Issue identified and fixed ✅
+**Status**: Issue identified and fixed [OK]
 
 ---
 
@@ -14,10 +14,10 @@ Your Dockhand container is **running but marked unhealthy** due to an overly agg
 
 **Problems**:
 
-1. ❌ Wolfi OS minimal image doesn't include `curl`
-2. ❌ Bun runtime needs 60+ seconds to startup (JIT compilation)
-3. ❌ 60-second startup period is too short
-4. ❌ 10-second timeout is too aggressive
+1. [FAIL] Wolfi OS minimal image doesn't include `curl`
+2. [FAIL] Bun runtime needs 60+ seconds to startup (JIT compilation)
+3. [FAIL] 60-second startup period is too short
+4. [FAIL] 10-second timeout is too aggressive
 
 **Result**: Container marked unhealthy despite being functional
 
@@ -43,10 +43,10 @@ Your Dockhand container is **running but marked unhealthy** due to an overly agg
 
 **Changes**:
 
-- ✅ `curl` → `wget` (available in Wolfi OS)
-- ✅ Timeout: 10s → 20s
-- ✅ Retries: 3 → 5
-- ✅ Startup: 60s → 120s
+- [OK] `curl` -> `wget` (available in Wolfi OS)
+- [OK] Timeout: 10s -> 20s
+- [OK] Retries: 3 -> 5
+- [OK] Startup: 60s -> 120s
 
 ---
 
@@ -94,7 +94,7 @@ curl http://10.0.1.15:3866/health
 bash /volume2/docker/dockhand/scripts/health-check-fix.sh
 
 # Or check manually
-docker exec dockhand wget --quiet --tries=1 --spider http://127.0.0.1:3000/health && echo "✓ Health check works" || echo "✗ Health check failed"
+docker exec dockhand wget --quiet --tries=1 --spider http://127.0.0.1:3000/health && echo "[OK] Health check works" || echo "[FAIL] Health check failed"
 
 # Check logs
 docker logs dockhand | tail -50
@@ -118,13 +118,13 @@ See `dockhand/docs/HEALTH_CHECK_DEBUG.md` for comprehensive troubleshooting:
 
 ### Updated
 
-- ✅ `dockhand/scripts/dockhand-start.sh` - Fixed health check parameters
+- [OK] `dockhand/scripts/dockhand-start.sh` - Fixed health check parameters
 
 ### Created
 
-- ✅ `dockhand/docs/HEALTH_CHECK_FIX.md` - This issue & solution (4.7KB)
-- ✅ `dockhand/docs/HEALTH_CHECK_DEBUG.md` - Troubleshooting guide (8.4KB)
-- ✅ `dockhand/scripts/health-check-fix.sh` - Diagnostic script (3.3KB)
+- [OK] `dockhand/docs/HEALTH_CHECK_FIX.md` - This issue & solution (4.7KB)
+- [OK] `dockhand/docs/HEALTH_CHECK_DEBUG.md` - Troubleshooting guide (8.4KB)
+- [OK] `dockhand/scripts/health-check-fix.sh` - Diagnostic script (3.3KB)
 
 ---
 
@@ -181,7 +181,7 @@ docker inspect dockhand | jq '.State.Health'
 curl -v http://10.0.1.15:3866/health
 
 # 4. Test from inside container
-docker exec dockhand wget --quiet --tries=1 --spider http://127.0.0.1:3000/health && echo "✓ OK" || echo "✗ Failed"
+docker exec dockhand wget --quiet --tries=1 --spider http://127.0.0.1:3000/health && echo "[OK] OK" || echo "[FAIL] Failed"
 
 # 5. Monitor logs
 docker logs -f dockhand

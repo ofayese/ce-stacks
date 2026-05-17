@@ -2,7 +2,7 @@
 
 Material moved out of the live **[`../SETUP.md`](../SETUP.md)** because it duplicates the current flow or documents **legacy per-host `deploy-*.bash`** paths. **Current operator path:** [Deploy acme-sh end-to-end](../SETUP.md#deploy-acme-sh-end-to-end-checklist) and **`../scripts/deploy_certs.sh`**.
 
-Anchor for downstream links: **mTLS bundle section** → heading below (`<a id="mtls-bundle-reference"></a>`).
+Anchor for downstream links: **mTLS bundle section** -> heading below (`<a id="mtls-bundle-reference"></a>`).
 
 ---
 
@@ -46,7 +46,7 @@ sudo docker exec AcmeSh acme.sh --set-notify --notify-hook discord
 Run the relevant script from each device after the cert files appear in
 `/volume1/certs/acme/`. Re-run these whenever you want to push a renewed cert.
 
-### otsorundscore — stage on Mac, upload, apply on NAS
+### otsorundscore -- stage on Mac, upload, apply on NAS
 
 `deploy-otsorundscore.bash` **only builds** `otsorundscore-nas-upload/` under your acme tree
 (e.g. `/Volumes/certs/acme/otsorundscore-nas-upload/`). It does not SSH into the NAS.
@@ -57,13 +57,13 @@ bash /Volumes/certs/acme/deploy-otsorundscore.bash
 
 Zip or copy that folder to the NAS (File Station, `scp`, etc.), then as **root** on
 otsorundscore: copy the staged `dsm-*` and `docker-tls/` PEMs into the DSM and Docker paths
-shown in the script header, merge TLS into `/volume1/​docker/daemon.json`, reload nginx,
+shown in the script header, merge TLS into `/volume1/docker/daemon.json`, reload nginx,
 and restart Container Manager.
 
-**First run only — apply the full Docker daemon config.** The bundled
+**First run only -- apply the full Docker daemon config.** The bundled
 `daemon-tls.json` binds Docker TCP to **`tcp://127.0.0.1:2376` (loopback
-only)** by default — the safe, no-LAN-exposure posture. SSH context
-access (`docker context … ssh://…`) uses the Unix socket on the NAS and
+only)** by default -- the safe, no-LAN-exposure posture. SSH context
+access (`docker context ... ssh://...`) uses the Unix socket on the NAS and
 is unaffected by this bind. **If you actually need narrow LAN TCP** for
 this otsorundscore host (and SSH is not enough), edit `hosts` to
 `tcp://10.0.1.15:2376` **before** merge and pair it with mTLS plus a
@@ -74,23 +74,23 @@ sides of the pipeline.
 
 ```bash
 # On otsorundscore, as root:
-sudo cp -n /volume1/​docker/daemon.json /volume1/​docker/daemon.json.bak
-TMP=$(sudo mktemp /volume1/​docker/.daemon.json.XXXXXX)
+sudo cp -n /volume1/docker/daemon.json /volume1/docker/daemon.json.bak
+TMP=$(sudo mktemp /volume1/docker/.daemon.json.XXXXXX)
 sudo jq -s '.[0] * .[1]' \
-  /volume1/​docker/daemon.json \
+  /volume1/docker/daemon.json \
   /volume1/certs/acme/daemon-tls.json > "${TMP}"
-sudo mv -f "${TMP}" /volume1/​docker/daemon.json
+sudo mv -f "${TMP}" /volume1/docker/daemon.json
 sudo synopkg restart ContainerManager
 ```
 
 If `daemon.json` doesn't exist yet:
 
 ```bash
-sudo install -m 0644 /volume1/certs/acme/daemon-tls.json /volume1/​docker/daemon.json
+sudo install -m 0644 /volume1/certs/acme/daemon-tls.json /volume1/docker/daemon.json
 sudo synopkg restart ContainerManager
 ```
 
-### otsorundscore — Docker mTLS bundle (parallel path, non-destructive)
+### otsorundscore -- Docker mTLS bundle (parallel path, non-destructive)
 
 The TLS-only path above remains valid. For hardened mTLS, use the dedicated
 `docker-mtls/` PKI subtree and mTLS daemon config.
@@ -109,7 +109,7 @@ against the same `MTLS_DIR` / `docker-mtls/` tree. While signing, each script
 acquires an exclusive `mkdir` lock at `docker-mtls/ca/.issue.lock` (portable on
 macOS and Linux); a second process waits up to ~5 minutes, then exits with an
 error instead of corrupting the serial. For batch issuance, run the commands
-**sequentially** in one shell or a script — do not background multiple issue
+**sequentially** in one shell or a script -- do not background multiple issue
 invocations against one CA. The lock and serial bootstrap are implemented in
 `docker-mtls-issue-common.bash` (sourced by both issue scripts).
 
@@ -142,23 +142,23 @@ DOCKER_HOSTNAME=otsorundscore.olutechsys.com \
 ```
 
 1. On otsorundscore (as root), apply mTLS daemon config (atomic temp-file
-   merge — never `jq | tee daemon.json` against the same file):
+   merge -- never `jq | tee daemon.json` against the same file):
 
 ```bash
-mkdir -p /volume1/​docker/mtls
-chmod 0700 /volume1/​docker/mtls
-install -m 0644 /volume1/certs/acme/otsorundscore-nas-upload-mtls/docker-mtls/ca.pem          /volume1/​docker/mtls/ca.pem
-install -m 0644 /volume1/certs/acme/otsorundscore-nas-upload-mtls/docker-mtls/server-cert.pem /volume1/​docker/mtls/server-cert.pem
-install -m 0400 /volume1/certs/acme/otsorundscore-nas-upload-mtls/docker-mtls/server-key.pem  /volume1/​docker/mtls/server-key.pem
+mkdir -p /volume1/docker/mtls
+chmod 0700 /volume1/docker/mtls
+install -m 0644 /volume1/certs/acme/otsorundscore-nas-upload-mtls/docker-mtls/ca.pem          /volume1/docker/mtls/ca.pem
+install -m 0644 /volume1/certs/acme/otsorundscore-nas-upload-mtls/docker-mtls/server-cert.pem /volume1/docker/mtls/server-cert.pem
+install -m 0400 /volume1/certs/acme/otsorundscore-nas-upload-mtls/docker-mtls/server-key.pem  /volume1/docker/mtls/server-key.pem
 
 # docker-daemon-mtls.json updates tls/tlsverify/tlscacert/tlscert/tlskey only.
 # It intentionally does NOT set `hosts`; existing listener values are preserved.
-cp -n /volume1/​docker/daemon.json /volume1/​docker/daemon.json.bak
-TMP=$(mktemp /volume1/​docker/.daemon.json.XXXXXX)
+cp -n /volume1/docker/daemon.json /volume1/docker/daemon.json.bak
+TMP=$(mktemp /volume1/docker/.daemon.json.XXXXXX)
 jq -s '.[0] * .[1]' \
-  /volume1/​docker/daemon.json \
+  /volume1/docker/daemon.json \
   /volume1/certs/acme/otsorundscore-nas-upload-mtls/docker-daemon-mtls.json > "${TMP}"
-mv -f "${TMP}" /volume1/​docker/daemon.json
+mv -f "${TMP}" /volume1/docker/daemon.json
 synopkg restart ContainerManager
 ```
 
@@ -167,11 +167,11 @@ synopkg restart ContainerManager
 > Example to enforce loopback-only:
 >
 > ```bash
-> TMP=$(mktemp /volume1/​docker/.daemon.json.XXXXXX)
+> TMP=$(mktemp /volume1/docker/.daemon.json.XXXXXX)
 > jq -s '.[0] * .[1]' \
->   /volume1/​docker/daemon.json \
+>   /volume1/docker/daemon.json \
 >   /volume1/certs/acme/daemon-mtls.json > "${TMP}"
-> mv -f "${TMP}" /volume1/​docker/daemon.json
+> mv -f "${TMP}" /volume1/docker/daemon.json
 > synopkg restart ContainerManager
 > ```
 >
@@ -180,14 +180,14 @@ synopkg restart ContainerManager
 > (`tcp://10.0.1.15:2376`), only clients holding a cert signed by your
 > lab CA can authenticate; still firewall `:2376` to trusted subnets.
 > Prefer SSH context for admin access whenever possible. misfitsds
-> (`10.0.1.24`) uses `deploy-misfitsds.bash` for DSM certs only — there
+> (`10.0.1.24`) uses `deploy-misfitsds.bash` for DSM certs only -- there
 > is no Docker daemon TLS bundle for misfitsds in this tree unless you
 > add one separately.
 
-### misfitsds — SSH in, provide cert source
+### misfitsds -- SSH in, provide cert source
 
 `deploy-misfitsds.bash` still runs **on misfitsds**. It needs `wildcard/` and
-`misfitsds-sub/` under `SOURCE_DIR` — same layout as on the otsorundscore share or your Mac.
+`misfitsds-sub/` under `SOURCE_DIR` -- same layout as on the otsorundscore share or your Mac.
 See the script header for the **Mac staging flow for otsorundscore** vs **misfitsds**
 options (mount, rsync/scp placeholders).
 
@@ -201,7 +201,7 @@ SOURCE_DIR=/mnt/your-acme-mount/acme bash /volume1/certs/acme/deploy-misfitsds.b
 SOURCE_DIR=/tmp/acme bash /volume1/certs/acme/deploy-misfitsds.bash
 ```
 
-### otsmbpro16 — run on the Mac (NAS already mounted)
+### otsmbpro16 -- run on the Mac (NAS already mounted)
 
 ```bash
 # From the acme directory so default SOURCE_DIR resolves to ./otsmbpro16/
@@ -215,7 +215,7 @@ from `wildcard/chain.pem` (the Docker CLI still opens `ca.pem` when
 
 ```bash
 # If otsorundscore.olutechsys.com is Cloudflare-proxied, public DNS points at CF
-# (172.67.x.x) and :2376 times out — CF does not forward Docker TLS to the NAS.
+# (172.67.x.x) and :2376 times out -- CF does not forward Docker TLS to the NAS.
 #
 # Best fix on the Mac: map the hostname to your NAS LAN IP (cert still matches), e.g.:
 #   sudo sh -c 'echo "YOUR_NAS_LAN_IP otsorundscore.olutechsys.com" >> /etc/hosts'
@@ -270,7 +270,7 @@ mv "$CTX_DIR/cert.pem.bak" "$CTX_DIR/cert.pem"
 mv "$CTX_DIR/key.pem.bak"  "$CTX_DIR/key.pem"
 ```
 
-### hpdevcore — run on the laptop
+### hpdevcore -- run on the laptop
 
 ```bash
 # Mount the NAS share first (adjust server, path, and user for your setup):
@@ -292,6 +292,6 @@ acme.sh renews; schedule that (or a wrapper that uploads) on the machine that mo
 `/Volumes/certs/acme/`, not as an on-NAS cron that assumed the old in-place script.
 
 ```bash
-# Example — Mac launchd/cron after renew: stage bundle (then upload manually or via your automation)
+# Example -- Mac launchd/cron after renew: stage bundle (then upload manually or via your automation)
 0 4 * * * bash /Volumes/certs/acme/deploy-otsorundscore.bash >>"$HOME/certs/deploy-otsorundscore.log" 2>&1
 ```

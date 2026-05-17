@@ -1,4 +1,4 @@
-# NAS operator — strict gallery rollout (psu-ots)
+# NAS operator -- strict gallery rollout (psu-ots)
 
 Run on the **NAS** from the **git repo root** (e.g. `/volume2/docker/ce-stacks`), not only under `stacks/`.
 

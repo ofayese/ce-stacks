@@ -1,4 +1,4 @@
-# Pinned base — re-resolve digest on Python version upgrade.
+# Pinned base -- re-resolve digest on Python version upgrade.
 FROM python:3.12-slim-bookworm@sha256:d193c6f51a7dbd10395d6328de3a7edb0516fb0608ca138036576f574c3e07d2
 
 WORKDIR /app

@@ -1,15 +1,15 @@
 # ollama
 
-Local LLM runtime (`ollama`) + open-webui front-end. CPU-only on this NAS — no GPU.
+Local LLM runtime (`ollama`) + open-webui front-end. CPU-only on this NAS -- no GPU.
 
 ## Services
 
-- **otsai-server** (11434) — Ollama REST API; models persist at `${STACK_ROOT}/ollama/data`
-- **otsai-webui** (8893) — open-webui chat UI; depends on `ollama` healthcheck; app data under `${STACK_ROOT}/ollama/data/open-webui`
+- **otsai-server** (11434) -- Ollama REST API; models persist at `${STACK_ROOT}/ollama/data`
+- **otsai-webui** (8893) -- open-webui chat UI; depends on `ollama` healthcheck; app data under `${STACK_ROOT}/ollama/data/open-webui`
 
 ## Startup order
 
-**otsai-webui** and **`ollama-model-init`** wait on **ollama** being **healthy**. Model pulls still use the script’s wait loop. Use Portainer or `docker compose up -d` from the stack directory.
+**otsai-webui** and **`ollama-model-init`** wait on **ollama** being **healthy**. Model pulls still use the script's wait loop. Use Portainer or `docker compose up -d` from the stack directory.
 
 ## Volumes
 
@@ -27,7 +27,7 @@ Local LLM runtime (`ollama`) + open-webui front-end. CPU-only on this NAS — no
 
 ## Authentication
 
-This stack’s compose wires **local Open WebUI login** (`WEBUI_AUTH=1`) only. For **Google → DSM** (NAS login portal), configure OAuth/OIDC in DSM separately. Optional **SSO inside Open WebUI** (OAuth/OIDC) is configured in the app or via extra env per [Open WebUI SSO](https://docs.openwebui.com/troubleshooting/sso/) — not via tracked compose here.
+This stack's compose wires **local Open WebUI login** (`WEBUI_AUTH=1`) only. For **Google -> DSM** (NAS login portal), configure OAuth/OIDC in DSM separately. Optional **SSO inside Open WebUI** (OAuth/OIDC) is configured in the app or via extra env per [Open WebUI SSO](https://docs.openwebui.com/troubleshooting/sso/) -- not via tracked compose here.
 
 ## Health
 
@@ -36,7 +36,7 @@ This stack’s compose wires **local Open WebUI login** (`WEBUI_AUTH=1`) only. F
 
 ## Models
 
-`DEFAULT_MODELS=phi4:mini,qwen2.5-coder:7b,nomic-embed-text` — CPU-friendly defaults with the embedding model AnythingLLM needs at startup.
+`DEFAULT_MODELS=phi4:mini,qwen2.5-coder:7b,nomic-embed-text` -- CPU-friendly defaults with the embedding model AnythingLLM needs at startup.
 
 The one-shot `ollama-model-init` service pulls tiered models from `.env`:
 

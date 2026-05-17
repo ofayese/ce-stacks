@@ -5,7 +5,7 @@
 set -eu
 
 if [ "${PSU_GALLERY_INSTALL:-0}" = "1" ]; then
-  echo "docker-gallery-entrypoint.sh: PSU_GALLERY_INSTALL=1 — installing gallery modules..."
+  echo "docker-gallery-entrypoint.sh: PSU_GALLERY_INSTALL=1 -- installing gallery modules..."
   pwsh -NoProfile -File /install/Install-PSUGalleryModules.ps1
 fi
 

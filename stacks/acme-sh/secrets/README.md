@@ -26,7 +26,7 @@ chmod 600 stacks/acme-sh/secrets/*.txt
 
 ## Security notes
 
-- Never commit these files — they are in `.gitignore`
+- Never commit these files -- they are in `.gitignore`
 - The `docker-entrypoint.sh` wrapper reads these files and exports them as
   environment variables inside the container process, so they do **not** appear
   in `docker inspect AcmeSh` output

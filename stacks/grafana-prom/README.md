@@ -1,4 +1,4 @@
-# grafana-prom — Grafana + Prometheus stack
+# grafana-prom -- Grafana + Prometheus stack
 
 Synology-oriented **Grafana** + **Prometheus** + exporters (`node-exporter`, `snmp-exporter`, **cAdvisor**). Compose file: [`compose.yaml`](./compose.yaml).
 
@@ -44,7 +44,7 @@ Run `fix-permissions.sh` from the **git repo root** (the directory that contains
 
 ## Environment
 
-Copy [`.env.example`](./.env.example) → `.env`. **`SYNO_UID` / `SYNO_GID`** default to **0** (root) for NAS; see `README.md` for rationale.
+Copy [`.env.example`](./.env.example) -> `.env`. **`SYNO_UID` / `SYNO_GID`** default to **0** (root) for NAS; see `README.md` for rationale.
 
 ## cAdvisor / docker.sock
 

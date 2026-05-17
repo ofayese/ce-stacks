@@ -1,9 +1,5 @@
 otsorundscore.olutechsys.com	homepage-be
 otsorundscore.olutech.systems	homepage-be
-portainer.olutechsys.com	portainer-be
-portainer.olutech.systems	portainer-be
-portainer.otsorundscore.olutechsys.com	portainer-be
-portainer.otsorundscore.olutech.systems	portainer-be
 dozzle.olutechsys.com	dozzle-be
 dozzle.olutech.systems	dozzle-be
 dozzle.otsorundscore.olutechsys.com	dozzle-be
@@ -50,7 +46,11 @@ ntopng.olutechsys.com	ntopng-be
 ntopng.olutech.systems	ntopng-be
 dockhand.olutechsys.com	dockhand-be
 dockhand.olutech.systems	dockhand-be
-# node exporter intentionally omitted — internal Prometheus scrape only, no public DNS
+remotely.olutechsys.com	remotely-be
+remotely.olutech.systems	remotely-be
+desktop.olutechsys.com	github-desktop-be
+desktop.olutech.systems	github-desktop-be
+# node exporter intentionally omitted - internal Prometheus scrape only, no public DNS
 otscal.olutechsys.com	otscal-be
 otscal.olutech.systems	otscal-be
 otscnt.olutechsys.com	otscnt-be

@@ -2,7 +2,7 @@
 
 This directory is designed to be copied to `/volume2/docker/dockhand/` on your Synology NAS.
 
-> ⚠️ **Idempotent re-sync.** The raw `cp -r ce-stacks/dockhand /volume2/docker/dockhand`
+> [WARN] **Idempotent re-sync.** The raw `cp -r ce-stacks/dockhand /volume2/docker/dockhand`
 > shown below is destructive on re-run: it will overwrite operator-managed
 > files such as `.env`, `data/`, `db/`, `stacks/`, and `secrets/`. For
 > *subsequent* updates (after the initial copy), prefer one of:
@@ -104,7 +104,7 @@ Once Dockhand is running on your NAS:
 ## Next Steps
 
 1. Push ce-stacks repo changes to GitHub
-2. On NAS, copy dockhand/ → /volume2/docker/dockhand/
+2. On NAS, copy dockhand/ -> /volume2/docker/dockhand/
 3. Install RC script
 4. Follow MIGRATION.md (9 steps)
 

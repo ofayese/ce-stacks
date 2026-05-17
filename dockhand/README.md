@@ -43,13 +43,13 @@ All configuration is stored in `/volume2/docker/dockhand/` (outside this repo):
 
 ```
 /volume2/docker/dockhand/
-├── db/               # SQLite database (Dockhand state)
-├── stacks/           # Imported stack definitions
-├── git-repos/        # Cloned git repositories for stacks
-├── tmp/              # Temporary files
-├── icons/            # Container/stack icons
-├── snapshots/        # System snapshots
-└── scanner-cache/    # Container image scan cache
++--- db/               # SQLite database (Dockhand state)
++--- stacks/           # Imported stack definitions
++--- git-repos/        # Cloned git repositories for stacks
++--- tmp/              # Temporary files
++--- icons/            # Container/stack icons
++--- snapshots/        # System snapshots
++--- scanner-cache/    # Container image scan cache
 ```
 
 ## Initial Setup
@@ -94,9 +94,9 @@ git push origin main
 
 Dockhand preserves Docker labels from compose.yaml files, including:
 
-- `com.centurylinklabs.watchtower.enable` — prevents accidental DB upgrades
-- `com.example.app-version` — custom application labels
-- `security.apparmor` — AppArmor profiles
+- `com.centurylinklabs.watchtower.enable` -- prevents accidental DB upgrades
+- `com.example.app-version` -- custom application labels
+- `security.apparmor` -- AppArmor profiles
 
 Verify labels after deployment:
 
@@ -151,14 +151,14 @@ grep -A5 "labels:" /volume2/docker/ce-stacks/stacks/<stack>/compose.yaml
 - **Full Migration Guide**: `/volume2/docker/ce-stacks/dockhand/docs/MIGRATION.md`
 - **DSM Boot Persistence**: `/volume2/docker/ce-stacks/dockhand/docs/DSM_BOOT_PERSISTENCE.md`
 - **Validation Script**: `/volume2/docker/ce-stacks/dockhand/scripts/dockhand-validate.sh`
-- **Historical Portainer→Dockhand Migration Script**: `/volume2/docker/ce-stacks/dockhand/scripts/dockhand-migration.sh`
+- **Historical Portainer->Dockhand Migration Script**: `/volume2/docker/ce-stacks/dockhand/scripts/dockhand-migration.sh`
 - **RC Startup Script**: `/volume2/docker/ce-stacks/dockhand/scripts/dockhand-start.sh`
 - **Re-sync helper**: `/volume2/docker/ce-stacks/scripts/dockhand-sync.sh`
 - **Official Docs**: https://dockhand.pro/manual
 
 ## Rollback / disable Dockhand without affecting running stacks
 
-Dockhand is just the UI — your stacks run as independent containers managed by
+Dockhand is just the UI -- your stacks run as independent containers managed by
 the Docker engine. Stopping Dockhand never stops them.
 
 ```bash
@@ -176,5 +176,5 @@ sudo /usr/local/etc/rc.d/dockhand.sh
 
 > Note: Portainer is no longer part of this topology. The historical
 > `dockhand-migration.sh` script under `dockhand/scripts/` is retained only as a
-> reference for the original Portainer→Dockhand migration and is not part of
+> reference for the original Portainer->Dockhand migration and is not part of
 > the current deploy flow.

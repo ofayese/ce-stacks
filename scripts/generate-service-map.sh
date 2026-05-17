@@ -35,7 +35,7 @@ ROOT       = Path(sys.argv[1])
 STACKS_DIR = ROOT / "stacks"
 LAN_IP     = "10.0.1.15"
 
-# ── Protocol heuristics ───────────────────────────────────────────────────────
+# -- Protocol heuristics -------------------------------------------------------
 TCP_PORTS   = {3306, 3307, 3308, 5432, 5433, 10051}
 HTTPS_PORTS = {443, 8443, 9443}
 
@@ -48,7 +48,7 @@ def fmt_url(hp, cp):
     p = proto(hp, cp)
     return "`tcp://` *(non-HTTP)*" if p == "tcp" else f"`http{'s' if p=='https' else ''}://{LAN_IP}:{hp}`"
 
-# ── Human-readable descriptions ───────────────────────────────────────────────
+# -- Human-readable descriptions -----------------------------------------------
 DESCRIPTIONS = {
     "agents_gateway_data:mcp-gateway"       : "MCP tools gateway",
     "code-server:code-server"               : "VS Code in the browser (HTTPS)",
@@ -72,7 +72,7 @@ DESCRIPTIONS = {
     "zabbix:zabbix-web"                     : "Zabbix Web UI",
 }
 
-# ── Bare-metal / RC-script services (not in any compose.yaml) ─────────────────
+# -- Bare-metal / RC-script services (not in any compose.yaml) -----------------
 BARE_METAL = [
     {"stack": "portainer", "service": "portainer-ce",
      "hp": 9443, "cp": 9443,
@@ -85,7 +85,7 @@ BARE_METAL = [
      "desc": "Dockhand - git-backed compose stack manager UI"},
 ]
 
-# ── Resolve a port string that may contain ${VAR:-default} syntax ─────────────
+# -- Resolve a port string that may contain ${VAR:-default} syntax -------------
 _env_default = re.compile(r'\$\{[^}]+:-(\d+)\}')
 
 def resolve_port(val):
@@ -98,7 +98,7 @@ def resolve_port(val):
     except ValueError:
         return None
 
-# ── Parse compose files ───────────────────────────────────────────────────────
+# -- Parse compose files -------------------------------------------------------
 rows = []
 for compose_file in sorted(STACKS_DIR.glob("*/compose.yaml")):
     stack = compose_file.parent.name
@@ -140,11 +140,11 @@ for compose_file in sorted(STACKS_DIR.glob("*/compose.yaml")):
             rows.append({"stack": stack, "service": svc_name,
                          "hp": hp, "cp": cp, "desc": desc, "bare_metal": False})
 
-# ── Merge and sort by host port ───────────────────────────────────────────────
+# -- Merge and sort by host port -----------------------------------------------
 bm_rows = [dict(r, bare_metal=True) for r in BARE_METAL]
 all_rows = sorted(bm_rows + rows, key=lambda x: x["hp"])
 
-# ── Render markdown ───────────────────────────────────────────────────────────
+# -- Render markdown -----------------------------------------------------------
 lines = [
     "# NAS Service Map",
     "",
@@ -180,7 +180,7 @@ lines += [
 print("\n".join(lines))
 PYEOF
 
-# ── Write or print ─────────────────────────────────────────────────────────────
+# -- Write or print -------------------------------------------------------------
 if [[ "${STDOUT_ONLY}" -eq 1 ]]; then
     python3 - "${ROOT}" <<'PYEOF'
 # (already ran above; re-run for stdout path)

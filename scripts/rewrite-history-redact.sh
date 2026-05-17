@@ -164,7 +164,7 @@ for pat in "${PATTERNS[@]}"; do
 		printf '  - found pattern in %s blob(s)\n' "$hit_count"
 		found_any=1
 	else
-		printf '  - WARNING: pattern not currently reachable in history (already redacted?): %s\n' "${pat:0:8}…"
+		printf '  - WARNING: pattern not currently reachable in history (already redacted?): %s\n' "${pat:0:8}..."
 	fi
 done
 
@@ -181,7 +181,7 @@ remaining=0
 for pat in "${PATTERNS[@]}"; do
 	hit_count=$(git grep -I --all -F -l "$pat" -- "$(git rev-list --all)" 2>/dev/null | wc -l | tr -d ' ' || true)
 	if [[ "${hit_count:-0}" -gt 0 ]]; then
-		printf '  - STILL PRESENT in %s blob(s) - pattern starts with: %s\n' "$hit_count" "${pat:0:8}…"
+		printf '  - STILL PRESENT in %s blob(s) - pattern starts with: %s\n' "$hit_count" "${pat:0:8}..."
 		remaining=$((remaining + 1))
 	fi
 done

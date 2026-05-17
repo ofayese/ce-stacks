@@ -19,12 +19,12 @@ services:
       - 10.0.1.15:8812:8811
     volumes:
       # /var/run socket context
-      # Host-profile fix: dropped :rw → :ro. Gateway reads container metadata only.
+      # Host-profile fix: dropped :rw -> :ro. Gateway reads container metadata only.
       # If a future tool container truly needs :rw, front the socket with
-      # tecnativa/docker-socket-proxy (defense in depth — see README).
+      # tecnativa/docker-socket-proxy (defense in depth -- see README).
       - /var/run/docker.sock:/var/run/docker.sock:ro
     # Healthcheck type: A - HTTP /health probe (wget - verified 2026-05-07)
-    # Host publishes 8812→8811; in-container probe stays on 8811. Upstream example uses /health.
+    # Host publishes 8812->8811; in-container probe stays on 8811. Upstream example uses /health.
     # Source: https://raw.githubusercontent.com/docker/mcp-gateway/main/examples/health/compose.yaml
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8811/health"]

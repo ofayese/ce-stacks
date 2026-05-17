@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Legacy shim — canonical REST definitions live in ../endpoints/nas-api.ps1.
+    Legacy shim -- canonical REST definitions live in ../endpoints/nas-api.ps1.
 
 .NOTES
     When copying templates to the NAS, prefer data/Repository/.universal/endpoints/nas-api.ps1.

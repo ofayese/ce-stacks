@@ -48,17 +48,17 @@ WARNINGS=0
 
 # Helper functions
 success() {
-	echo -e "${GREEN}✓${NC} $1"
+	echo -e "${GREEN}[OK]${NC} $1"
 	((PASSED++))
 }
 
 error() {
-	echo -e "${RED}✗${NC} $1"
+	echo -e "${RED}[FAIL]${NC} $1"
 	((FAILED++))
 }
 
 warning() {
-	echo -e "${YELLOW}⚠${NC} $1"
+	echo -e "${YELLOW}[WARN]${NC} $1"
 	((WARNINGS++))
 }
 
@@ -155,13 +155,13 @@ else
 			((FOUND_COUNT++))
 			# Check if running or stopped
 			if "${DOCKER}" ps --format "{{.Names}}" | grep -q "^${CONTAINER}$"; then
-				info "  ✓ ${CONTAINER} (running)"
+				info "  [OK] ${CONTAINER} (running)"
 			else
-				warning "  ⚠ ${CONTAINER} (stopped) - Status won't show in Homepage"
+				warning "  [WARN] ${CONTAINER} (stopped) - Status won't show in Homepage"
 			fi
 		else
 			MISSING_CONTAINERS="${MISSING_CONTAINERS}${CONTAINER}\n"
-			warning "  ⚠ ${CONTAINER} (not found - container may be stopped or misconfigured)"
+			warning "  [WARN] ${CONTAINER} (not found - container may be stopped or misconfigured)"
 		fi
 	done <<<"$CONFIGURED_CONTAINERS"
 

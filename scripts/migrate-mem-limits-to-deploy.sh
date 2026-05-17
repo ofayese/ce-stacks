@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# migrate-mem-limits-to-deploy.sh — convert legacy `mem_limit:` / `cpu_shares:`
+# migrate-mem-limits-to-deploy.sh -- convert legacy `mem_limit:` / `cpu_shares:`
 # fields under each service into the canonical `deploy.resources.limits.{cpus,memory}`
 # Compose v2 form, preserving comments and indentation.
 #
@@ -9,7 +9,7 @@
 #   bash scripts/migrate-mem-limits-to-deploy.sh --self-test # parse-only smoke check
 #
 # Idempotent: services that already declare a `deploy:` block are skipped.
-# NOT part of the critical path — the legacy fields keep working on DSM 7.3.2.
+# NOT part of the critical path -- the legacy fields keep working on DSM 7.3.2.
 
 set -euo pipefail
 
@@ -28,7 +28,7 @@ case "${1:-}" in
         ;;
 esac
 
-# ── locate repo root ─────────────────────────────────────────────────
+# -- locate repo root -------------------------------------------------
 _script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="${_script_dir}"
 while [[ ! -f "${ROOT}/README.md" && "${ROOT}" != "/" ]]; do
@@ -46,7 +46,7 @@ if [[ "${MODE}" == "self-test" ]]; then
     exit 0
 fi
 
-# ── core logic ──────────────────────────────────────────────────────
+# -- core logic ------------------------------------------------------
 # For each compose.yaml: find every service block. If a service has
 # `mem_limit:` AND no `deploy:` block under it, append a `deploy:` block
 # right after the last of {mem_limit, cpu_shares, mem_reservation} for that service.
@@ -87,7 +87,7 @@ migrate_file() {
         /^[a-zA-Z_]/ && in_services { in_services = 0 }
 
         in_services && /^[[:space:]]+[a-zA-Z_][a-zA-Z0-9_-]*:[[:space:]]*$/ && indent_of($0) <= svc_indent + 2 {
-            # New service definition — flush previous, capture this one.
+            # New service definition -- flush previous, capture this one.
             flush_service()
             svc_indent = indent_of($0)
             svc_name = $1
@@ -100,7 +100,7 @@ migrate_file() {
             print; next
         }
         in_services && /[[:space:]]+cpu_shares:[[:space:]]*/ {
-            # Approximate translation: cpu_shares 1024 → cpus "1.0" baseline.
+            # Approximate translation: cpu_shares 1024 -> cpus "1.0" baseline.
             v = $0; sub(/^[^:]*:[[:space:]]*/, "", v); gsub(/[[:space:]]/, "", v)
             cpus_value = sprintf("%.2f", v / 1024.0)
             print; next

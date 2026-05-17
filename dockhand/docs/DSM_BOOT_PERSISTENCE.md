@@ -2,7 +2,7 @@
 
 ## Why this is needed
 
-Synology DSM 7.x — including DSM 7.3 — **does not** automatically execute
+Synology DSM 7.x -- including DSM 7.3 -- **does not** automatically execute
 scripts in `/usr/local/etc/rc.d/` on system boot. The directory exists and is
 the documented historical convention, but DSM only runs those scripts when
 *you* invoke them. After a reboot, `dockhand` (and any other RC-managed
@@ -34,12 +34,12 @@ docker ps | grep dockhand    # expect "(healthy)" within ~2 minutes
 
 In DSM web UI:
 
-1. **Control Panel → Task Scheduler → Create → Triggered Task → User-defined script**
+1. **Control Panel -> Task Scheduler -> Create -> Triggered Task -> User-defined script**
 2. **General**
    - Task: `dockhand boot`
    - User: `root`
    - Event: `Boot-up`
-   - Enabled: ✅
+   - Enabled: [OK]
 3. **Task Settings**
    - Run command:
      ```sh
@@ -50,7 +50,7 @@ In DSM web UI:
 
 ### 3. Verify
 
-Reboot the NAS (Control Panel → Info Center → Restart) and after it comes back
+Reboot the NAS (Control Panel -> Info Center -> Restart) and after it comes back
 up:
 
 ```bash
@@ -67,7 +67,7 @@ To stop Dockhand from auto-starting after reboot **without removing the
 container**:
 
 ```bash
-# Disable the DSM task: Task Scheduler → "dockhand boot" → Disable (or Delete)
+# Disable the DSM task: Task Scheduler -> "dockhand boot" -> Disable (or Delete)
 sudo rm -f /usr/local/etc/rc.d/dockhand.sh
 ```
 
@@ -78,13 +78,13 @@ re-create the Dockhand container.
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| Task never fires | Trigger set to wrong event | Edit task → Event → `Boot-up` |
+| Task never fires | Trigger set to wrong event | Edit task -> Event -> `Boot-up` |
 | Task fires but Dockhand never appears | `/usr/local/bin/docker` not in `$PATH` for `root` | The RC script already pins `DOCKER="/usr/local/bin/docker"`; check `/var/log/dockhand-boot.log` for the actual error |
 | Task fires but reports lock-file error | A previous run did not clean up `/tmp/dockhand-start.lock` | `sudo rm -rf /tmp/dockhand-start.lock && sudo /usr/local/etc/rc.d/dockhand.sh` |
 | Dockhand starts but `ce-internal` missing | `init-nas.sh` was never run | The RC script now auto-creates `ce-internal` via `ensure_ce_internal()`; if it fails, run `docker network create --driver bridge --subnet 172.26.0.0/24 --gateway 172.26.0.1 ce-internal` |
 
 ## Related
 
-- [`dockhand/scripts/dockhand-start.sh`](../scripts/dockhand-start.sh) — the RC script itself
-- [`dockhand/docs/DEPLOYMENT.md`](DEPLOYMENT.md) — initial copy-to-NAS flow
-- [`dockhand/docs/HEALTH_CHECK_DEBUG.md`](HEALTH_CHECK_DEBUG.md) — health-check troubleshooting
+- [`dockhand/scripts/dockhand-start.sh`](../scripts/dockhand-start.sh) -- the RC script itself
+- [`dockhand/docs/DEPLOYMENT.md`](DEPLOYMENT.md) -- initial copy-to-NAS flow
+- [`dockhand/docs/HEALTH_CHECK_DEBUG.md`](HEALTH_CHECK_DEBUG.md) -- health-check troubleshooting

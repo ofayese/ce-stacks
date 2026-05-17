@@ -3,9 +3,9 @@
 # Both the service and remote control use OUTGOING WebSocket connections over SSL/TLS.
 # No incoming ports need to be opened on the firewall beyond the web UI port.
 #
-# ⚠️  WebSocket required: Enable WebSocket in DSM Reverse Proxy for this container.
-#     DSM → Control Panel → Login Portal → Advanced → Reverse Proxy → Edit →
-#     Custom Header → Create → WebSocket (auto-adds Upgrade + Connection headers)
+# [WARN]  WebSocket required: Enable WebSocket in DSM Reverse Proxy for this container.
+#     DSM -> Control Panel -> Login Portal -> Advanced -> Reverse Proxy -> Edit ->
+#     Custom Header -> Create -> WebSocket (auto-adds Upgrade + Connection headers)
 #     Without this, remote control sessions fail over HTTPS.
 #
 # First deploy on the NAS:
@@ -64,7 +64,7 @@ services:
         max-size: 10m
         max-file: "3"
     labels:
-      # SQLite-backed service — Watchtower restart mid-write risks WAL corruption.
+      # SQLite-backed service -- Watchtower restart mid-write risks WAL corruption.
       # Update manually: docker pull immybot/remotely:latest && docker compose up -d (or refresh digest pin)
       - com.centurylinklabs.watchtower.enable=false
     networks:

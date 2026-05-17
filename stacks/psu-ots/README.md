@@ -1,4 +1,4 @@
-# psu-ots — PowerShell Universal (NAS command center)
+# psu-ots -- PowerShell Universal (NAS command center)
 
 PowerShell Universal provides **scheduled jobs**, **API endpoints**, and a **NOC dashboard** over the NAS monorepo bind (`/nas-repo`) and ACME PEMs (`/certs/acme`).
 
@@ -6,7 +6,7 @@ PowerShell Universal provides **scheduled jobs**, **API endpoints**, and a **NOC
 
 - **TLS:** Host-named wildcard PEMs under `${ACME_CERT_ROOT}/otsorundscore/` (OTS NAS). TLS termination handled by DSM Reverse Proxy.
 - **DNS:** Public + split-horizon records for `psu.otsorundscore.olutechsys.com` (and `.olutech.systems` if used).
-- **Port:** Container exposed directly on `10.0.1.15:5570` → DSM Reverse Proxy → HTTPS.
+- **Port:** Container exposed directly on `10.0.1.15:5570` -> DSM Reverse Proxy -> HTTPS.
 
 ## First deploy
 
@@ -27,13 +27,13 @@ Versioned PSU config lives under **`data/Repository/`** on the NAS (`.universal/
 
 ## Authentication
 
-Interactive PSU Admin login uses **PowerShell Universal defaults** from the image unless you configure auth inside PSU (e.g. OpenID in Admin) per [PowerShell Universal — OpenID Connect](https://docs.powershelluniversal.com/config/security/openid-connect). This repo’s tracked **`compose.yaml`** does **not** inject OIDC env. **Google Workspace → DSM** (NAS login portal only) is separate.
+Interactive PSU Admin login uses **PowerShell Universal defaults** from the image unless you configure auth inside PSU (e.g. OpenID in Admin) per [PowerShell Universal -- OpenID Connect](https://docs.powershelluniversal.com/config/security/openid-connect). This repo's tracked **`compose.yaml`** does **not** inject OIDC env. **Google Workspace -> DSM** (NAS login portal only) is separate.
 
-**APIs:** **`PSU_AUTH_TOKEN`**, **`STACK_MANAGER_USERNAME`** / **`STACK_MANAGER_PASSWORD`**, and **`NAS_PULL_APP_TOKEN`** power jobs, stack manager API, and webhooks — see **`universal/endpoints/nas-api.ps1`**.
+**APIs:** **`PSU_AUTH_TOKEN`**, **`STACK_MANAGER_USERNAME`** / **`STACK_MANAGER_PASSWORD`**, and **`NAS_PULL_APP_TOKEN`** power jobs, stack manager API, and webhooks -- see **`universal/endpoints/nas-api.ps1`**.
 
 ## Security notes
 
-- **`/nas-repo` is `:ro` in compose** — change to `:rw` only if you implement `git pull` from PSU and accept NAS git hygiene rules ([`AGENTS.md`](../../AGENTS.md)).
+- **`/nas-repo` is `:ro` in compose** -- change to `:rw` only if you implement `git pull` from PSU and accept NAS git hygiene rules ([`AGENTS.md`](../../AGENTS.md)).
 - **`POST /api/v1/nas/pull`:** Ship as a follow-up in Admin (App Token + role). **`GET /api/v1/nas/health`** (Phase 2) is registered in `universal/endpoints/nas-api.ps1` and returns the latest NAS + latency JSON reports (**Bearer `PSU_AUTH_TOKEN`** required).
 
 ## Automation
@@ -46,16 +46,16 @@ Interactive PSU Admin login uses **PowerShell Universal defaults** from the imag
 | `NAS-Validate-SSL-Certs`        | OpenSSL notAfter on `fullchain.pem`                |
 | `NAS-Monitor-Stacks`            | Stack manager API inventory (needs credentials)    |
 
-### Phase 2 — templates under `universal/`
+### Phase 2 -- templates under `universal/`
 
 Git-tracked PowerShell templates (copy into `data/Repository/.universal/` on the NAS):
 
 | Path | Role |
 |------|------|
-| `universal/scripts/nas-jobs.ps1` | Background jobs **A–G** + backup + **`Invoke-PSUJob_AutoRemediation`** / **`Invoke-PSUJob_GitOpsSync`**. Each `Invoke-PSUJob_*` queues `Start-Job` and writes timestamped JSON under `PSU_REPORTS_ROOT` (default `/data/reports`) with **48h** retention. |
+| `universal/scripts/nas-jobs.ps1` | Background jobs **A-G** + backup + **`Invoke-PSUJob_AutoRemediation`** / **`Invoke-PSUJob_GitOpsSync`**. Each `Invoke-PSUJob_*` queues `Start-Job` and writes timestamped JSON under `PSU_REPORTS_ROOT` (default `/data/reports`) with **48h** retention. |
 | `universal/endpoints/nas-api.ps1` | Registers `/api/v1/*` routes; enforces **`Authorization: Bearer`** vs **`PSU_AUTH_TOKEN`**. Optional: `PSU_ALLOW_STACK_RESTART`, `PSU_REMEDIATION_ENABLED`, `PSU_GITOPS_ENABLED`. |
 | `universal/endpoints/nas-endpoints.ps1` | Dot-sources `nas-api.ps1` (single entry for the `endpoints/` folder). |
-| `universal/dashboards/nas-noc.ps1` | NOC panels **A–G** (UD auto-refresh) backed by the JSON reports above. |
+| `universal/dashboards/nas-noc.ps1` | NOC panels **A-G** (UD auto-refresh) backed by the JSON reports above. |
 | `universal/scripts/Import-PSUGalleryModules.ps1` | **Required** gallery import (throws unless `PSU_GALLERY_OPTIONAL=1`). |
 | `universal/scripts/Install-PSUGalleryModules.ps1` | Downloads modules from PSGallery (`Install-PSResource` / `Install-Module`); used by **`PSU_GALLERY_INSTALL=1`** and **`Dockerfile`**. |
 | `scripts/docker-gallery-entrypoint.sh` | Compose **entrypoint** wrapper: optional install, then `exec ./Universal/Universal.Server` (matches upstream image). |
@@ -83,9 +83,9 @@ Git-tracked PowerShell templates (copy into `data/Repository/.universal/` on the
 
 **Three ways to satisfy strict import**
 
-1. **Bake into an image** — from `stacks/psu-ots/`: `docker build -t psu-ots:gallery .` then point compose `image:` at `psu-ots:gallery` (see **`Dockerfile`**; uses the same digest as compose by default).
-2. **Download on container start** — set **`PSU_GALLERY_INSTALL=1`** in `.env` (compose mounts **`scripts/docker-gallery-entrypoint.sh`** and runs **`Install-PSUGalleryModules.ps1`** before Universal.Server). Requires outbound HTTPS to PSGallery. **`PSU_GALLERY_INSTALL_STRICT=0`** allows partial install (import may still fail until all modules resolve).
-3. **Manual / PSU Admin** — install the same module names under the PSU modules path, or set **`PSU_GALLERY_OPTIONAL=1`** only until (1) or (2) is done.
+1. **Bake into an image** -- from `stacks/psu-ots/`: `docker build -t psu-ots:gallery .` then point compose `image:` at `psu-ots:gallery` (see **`Dockerfile`**; uses the same digest as compose by default).
+2. **Download on container start** -- set **`PSU_GALLERY_INSTALL=1`** in `.env` (compose mounts **`scripts/docker-gallery-entrypoint.sh`** and runs **`Install-PSUGalleryModules.ps1`** before Universal.Server). Requires outbound HTTPS to PSGallery. **`PSU_GALLERY_INSTALL_STRICT=0`** allows partial install (import may still fail until all modules resolve).
+3. **Manual / PSU Admin** -- install the same module names under the PSU modules path, or set **`PSU_GALLERY_OPTIONAL=1`** only until (1) or (2) is done.
 
 Ensure `chmod +x stacks/psu-ots/scripts/docker-gallery-entrypoint.sh` on the host so the bind-mounted script is executable.
 
@@ -97,4 +97,4 @@ Ensure `chmod +x stacks/psu-ots/scripts/docker-gallery-entrypoint.sh` on the hos
 
 ## Image pin
 
-Default: `ironmansoftware/universal@sha256:069b858b0f010d522144745ac918cc12c8ea022d516f011fe7e2596efc3a03c4` — tag `2026.1.6-ubuntu-24.04`. Re-resolve digest when upgrading. If you build **`Dockerfile`**, tag and pin that image instead.
+Default: `ironmansoftware/universal@sha256:069b858b0f010d522144745ac918cc12c8ea022d516f011fe7e2596efc3a03c4` -- tag `2026.1.6-ubuntu-24.04`. Re-resolve digest when upgrading. If you build **`Dockerfile`**, tag and pin that image instead.

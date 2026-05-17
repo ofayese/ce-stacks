@@ -1,6 +1,6 @@
 services:
   code-server:
-    # CLAUDE.md §8 - code-server must use the linuxserver image.
+    # CLAUDE.md S.8 - code-server must use the linuxserver image.
     # Migrated from codercom/code-server:4.117.0-39 (2026-05-13).
     # linuxserver image differences vs codercom:
     #   - Internal port: 8443 (HTTPS with self-signed cert); was 8080
@@ -12,7 +12,7 @@ services:
     # to prevent connection drops. Timeout: 600s in Application Portal.
     image: ghcr.io/linuxserver/code-server:4.118.0-ls337
     container_name: CodeServer
-    # Host-profile fix: 4g → 3g. Realistic working set for code-server + a couple
+    # Host-profile fix: 4g -> 3g. Realistic working set for code-server + a couple
     # of Node/TS workspaces is ~1.5 GB; 3g leaves headroom for `npm install` peaks
     # without crowding the DB sidecars on a 32 GB host.
     mem_limit: 3g
@@ -76,7 +76,7 @@ services:
   db:
     image: mysql:8.3
     container_name: CodeServerDB
-    # Host-profile fix: 2g → 1g. Dev-only MySQL; InnoDB buffer pool defaults to
+    # Host-profile fix: 2g -> 1g. Dev-only MySQL; InnoDB buffer pool defaults to
     # 128 MB and small dev datasets rarely exceed 200 MB resident.
     mem_limit: 1g
     cpu_shares: 512
@@ -116,7 +116,7 @@ services:
       retries: 10
       start_period: 30s
     labels:
-      # GAP-03 fix: NEVER auto-upgrade databases. MySQL major version bumps (8.3→8.4+)
+      # GAP-03 fix: NEVER auto-upgrade databases. MySQL major version bumps (8.3->8.4+)
       # require explicit in-place upgrade. A cold image swap can corrupt InnoDB data files.
       - com.centurylinklabs.watchtower.enable=false
     networks:
@@ -136,7 +136,7 @@ services:
         max-file: "3"
     restart: unless-stopped
     ports:
-      # 8379: avoids port conflict with db-tools/PhpMyAdmin (10.0.1.15:8378 → native MariaDB).
+      # 8379: avoids port conflict with db-tools/PhpMyAdmin (10.0.1.15:8378 -> native MariaDB).
       # CodeServerPMA targets the code-server MySQL sidecar (port 3307 internal).
       - 10.0.1.15:8379:80
     volumes:

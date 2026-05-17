@@ -16,12 +16,12 @@ route:
 receivers:
   - name: discord-nas
     discord_configs:
-      # URL is read from a secret file — never stored in this config or .env.
+      # URL is read from a secret file -- never stored in this config or .env.
       # Create: echo -n 'https://discord.com/api/webhooks/...' > secrets/discord_webhook_url.txt
       - webhook_url_file: '/run/secrets/discord_webhook_url'
         send_resolved: true
         title: >-
-          {{ if eq .Status "firing" }}🔥 FIRING{{ else }}✅ RESOLVED{{ end }} [{{ .CommonLabels.alertname }}]
+          {{ if eq .Status "firing" }}[hot] FIRING{{ else }}[OK] RESOLVED{{ end }} [{{ .CommonLabels.alertname }}]
         message: |
           {{ range .Alerts }}
           **Alert:** {{ .Labels.alertname }}

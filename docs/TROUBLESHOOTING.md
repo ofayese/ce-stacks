@@ -6,7 +6,7 @@
 
 1. **Via Dockhand UI**
    - Open <http://10.0.1.15:3866>
-   - Settings → Stacks → [Stack Name]
+   - Settings -> Stacks -> [Stack Name]
    - Check "Health" status (Green = healthy, Red = unhealthy)
 
 2. **Via Docker CLI**
@@ -151,7 +151,7 @@ docker port <container_name>
 curl -v http://10.0.1.15:<port>/
 
 # Check DSM firewall
-# Settings → Security → Firewall → Edit rules
+# Settings -> Security -> Firewall -> Edit rules
 ```
 
 #### Containers can't reach each other
@@ -222,16 +222,16 @@ sudo /usr/local/etc/rc.d/dockhand.sh start
 
 **Setup**:
 
-1. Dockhand UI → Settings → Webhooks
+1. Dockhand UI -> Settings -> Webhooks
 2. Copy webhook URL (e.g., <http://10.0.1.15:3866/webhook/>...)
-3. GitHub repo → Settings → Webhooks → Add webhook
+3. GitHub repo -> Settings -> Webhooks -> Add webhook
 4. Set URL to Dockhand webhook URL
 5. Select "Pushes" as trigger event
 
 **Debug**:
 
 - Check Dockhand logs: `docker logs dockhand`
-- Verify webhook delivery: GitHub → Repo → Settings → Webhooks → Recent Deliveries
+- Verify webhook delivery: GitHub -> Repo -> Settings -> Webhooks -> Recent Deliveries
 - Check network routing (NAT from GitHub to internal IP)
 
 ---
@@ -254,19 +254,19 @@ docker compose -f stacks/<stack>/compose.yaml config
 ### Pre-Deployment Checklist
 
 ```bash
-# ✓ Network exists
+# [OK] Network exists
 docker network inspect ce-internal
 
-# ✓ All .env files populated
+# [OK] All .env files populated
 for stack in stacks/*/; do
-  [ -f "$stack/.env" ] && echo "✓ $(basename $stack)" || echo "✗ $(basename $stack)"
+  [ -f "$stack/.env" ] && echo "[OK] $(basename $stack)" || echo "[FAIL] $(basename $stack)"
 done
 
-# ✓ Validation passes
+# [OK] Validation passes
 bash scripts/compose-validate.sh
 
-# ✓ No secrets in git
-git ls-files | grep -v ".example" | xargs grep -l "password\|token\|key" || echo "✓ Clean"
+# [OK] No secrets in git
+git ls-files | grep -v ".example" | xargs grep -l "password\|token\|key" || echo "[OK] Clean"
 ```
 
 ---
@@ -275,10 +275,10 @@ git ls-files | grep -v ".example" | xargs grep -l "password\|token\|key" || echo
 
 The dockhand/docs/ directory has specialized guides:
 
-- HEALTH_CHECK_SOLUTION.md — Comprehensive health check troubleshooting
-- HEALTH_CHECK_DEBUG.md — Detailed debugging steps
-- MIGRATION.md — Migration from Portainer to Dockhand
-- DEPLOYMENT.md — Step-by-step deployment guide
+- HEALTH_CHECK_SOLUTION.md -- Comprehensive health check troubleshooting
+- HEALTH_CHECK_DEBUG.md -- Detailed debugging steps
+- MIGRATION.md -- Migration from Portainer to Dockhand
+- DEPLOYMENT.md -- Step-by-step deployment guide
 
 ---
 

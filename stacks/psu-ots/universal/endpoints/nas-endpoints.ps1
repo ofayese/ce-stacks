@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    PSU HTTP endpoint entry — loads nas-api.ps1 from the same directory.
+    PSU HTTP endpoint entry -- loads nas-api.ps1 from the same directory.
 
 .NOTES
     Copy into data/Repository/.universal/endpoints/ on the NAS.

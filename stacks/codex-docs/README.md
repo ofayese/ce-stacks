@@ -1,11 +1,11 @@
 # codex-docs
 
-Internal documentation hub powered by codex.team's [codex.docs](https://github.com/codex-team/codex.docs) CMS, backed by MongoDB. The compose **`image:`** pins **`ghcr.io/codex-team/codex.docs@sha256:…`** (supply-chain); re-pin with `docker pull` + `docker image inspect` on your network.
+Internal documentation hub powered by codex.team's [codex.docs](https://github.com/codex-team/codex.docs) CMS, backed by MongoDB. The compose **`image:`** pins **`ghcr.io/codex-team/codex.docs@sha256:...`** (supply-chain); re-pin with `docker pull` + `docker image inspect` on your network.
 
 ## Services
 
-- **mongodb** — data store, internal-only
-- **codex-docs** (8896) — Node.js app; depends on `mongodb` healthcheck
+- **mongodb** -- data store, internal-only
+- **codex-docs** (8896) -- Node.js app; depends on `mongodb` healthcheck
 
 ## Startup order
 
@@ -13,7 +13,7 @@ Internal documentation hub powered by codex.team's [codex.docs](https://github.c
 
 ## Required env (`.env`)
 
-- `APP_SECRET` — random 64-char hex; rotate on compromise. Generate with `openssl rand -hex 32`.
+- `APP_SECRET` -- random 64-char hex; rotate on compromise. Generate with `openssl rand -hex 32`.
 
 See `.env.example` for the full set.
 

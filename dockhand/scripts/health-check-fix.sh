@@ -17,41 +17,41 @@ echo ""
 
 # Get container status
 echo "Container Status:"
-"${DOCKER}" ps | grep dockhand || echo "❌ Container not found"
+"${DOCKER}" ps | grep dockhand || echo "[FAIL] Container not found"
 echo ""
 
 # Get health status
 echo "Health Status:"
-"${DOCKER}" inspect dockhand 2>/dev/null | jq '.State.Health.Status' 2>/dev/null || echo "❌ Cannot get health status"
+"${DOCKER}" inspect dockhand 2>/dev/null | jq '.State.Health.Status' 2>/dev/null || echo "[FAIL] Cannot get health status"
 echo ""
 
 # Test health endpoint from host
 echo "Testing health endpoint (from host at 10.0.1.15:3866):"
 if curl -s -o /dev/null -w "%{http_code}" http://10.0.1.15:3866/health 2>/dev/null | grep -q "200"; then
-    echo "✓ Health endpoint responds with 200"
+    echo "[OK] Health endpoint responds with 200"
 else
-    echo "❌ Health endpoint failed"
+    echo "[FAIL] Health endpoint failed"
 fi
 echo ""
 
 # Test inside container
 echo "Testing health endpoint (from container at 127.0.0.1:3000):"
 if "${DOCKER}" exec dockhand curl -s http://127.0.0.1:3000/health >/dev/null 2>&1; then
-    echo "✓ Health endpoint responds from inside container"
+    echo "[OK] Health endpoint responds from inside container"
 else
-    echo "❌ Health endpoint failed from inside container"
+    echo "[FAIL] Health endpoint failed from inside container"
     echo ""
     echo "Checking if curl exists in container..."
     if "${DOCKER}" exec dockhand which curl >/dev/null 2>&1; then
-        echo "✓ curl is installed"
+        echo "[OK] curl is installed"
     else
-        echo "❌ curl NOT FOUND - this is likely the problem!"
+        echo "[FAIL] curl NOT FOUND - this is likely the problem!"
         echo ""
         echo "Checking for wget instead..."
         if "${DOCKER}" exec dockhand which wget >/dev/null 2>&1; then
-            echo "✓ wget is available - we can use this!"
+            echo "[OK] wget is available - we can use this!"
         else
-            echo "⚠️  neither curl nor wget found"
+            echo "[WARN]  neither curl nor wget found"
         fi
     fi
 fi

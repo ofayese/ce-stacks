@@ -11,7 +11,7 @@
 #
 # What it does:
 #   1. Pre-flight checks (dirs, git, SSH key)
-#   2. Backs up /volume2/docker/ce-stacks → /volume2/docker/archive/ce-stacks-backup-<ts>
+#   2. Backs up /volume2/docker/ce-stacks -> /volume2/docker/archive/ce-stacks-backup-<ts>
 #   3. Clones fresh repo into /volume2/docker/ce-stacks
 #   4. Calls scripts/restore-env.sh  - validates + restores .env files from backup
 #   5. Calls scripts/init-nas.sh     - creates STACK_ROOT directories
@@ -22,7 +22,7 @@
 
 set -eu
 
-# ── Config ────────────────────────────────────────────────────────────────────
+# -- Config --------------------------------------------------------------------
 CE_STACKS_DIR="/volume2/docker/ce-stacks"
 BACKUP_ROOT="/volume2/docker/archive"
 REPO_URL="git@github.com:ofayese/ce-stacks.git"
@@ -34,7 +34,7 @@ YES=0
 DRY_RUN=0
 FIX_ENV=0
 
-# ── Args ──────────────────────────────────────────────────────────────────────
+# -- Args ----------------------------------------------------------------------
 for arg in "$@"; do
 	case "$arg" in
 	--yes | -y) YES=1 ;;
@@ -51,7 +51,7 @@ for arg in "$@"; do
 	esac
 done
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# -- Helpers -------------------------------------------------------------------
 fail() {
 	echo ""
 	echo "ERROR: $*" >&2
@@ -64,7 +64,7 @@ info() {
 }
 warn() { echo "  WARN $*"; }
 
-# ── Pre-flight ────────────────────────────────────────────────────────────────
+# -- Pre-flight ----------------------------------------------------------------
 info "Pre-flight checks"
 
 command -v git >/dev/null 2>&1 || fail "git not found - install via SynoCommunity"
@@ -94,7 +94,7 @@ fi
 
 echo ""
 
-# ── Confirmation ──────────────────────────────────────────────────────────────
+# -- Confirmation --------------------------------------------------------------
 if [ "${YES}" -eq 0 ]; then
 	echo "  This will MOVE ${CE_STACKS_DIR} to a timestamped backup"
 	echo "  and clone a fresh copy from GitHub."
@@ -110,23 +110,23 @@ if [ "${YES}" -eq 0 ]; then
 	esac
 fi
 
-# ── Timestamp ─────────────────────────────────────────────────────────────────
+# -- Timestamp -----------------------------------------------------------------
 TS=$(date +"%Y%m%d-%H%M%S")
 BACKUP_DIR="${BACKUP_ROOT}/ce-stacks-backup-${TS}"
 
-# ── Create archive root ───────────────────────────────────────────────────────
+# -- Create archive root -------------------------------------------------------
 if [ ! -d "${BACKUP_ROOT}" ]; then
 	info "Creating backup root: ${BACKUP_ROOT}"
 	mkdir -p "${BACKUP_ROOT}" || fail "Cannot create ${BACKUP_ROOT}"
 fi
 
-# ── Backup ────────────────────────────────────────────────────────────────────
-info "Backing up ${CE_STACKS_DIR} → ${BACKUP_DIR}"
+# -- Backup --------------------------------------------------------------------
+info "Backing up ${CE_STACKS_DIR} -> ${BACKUP_DIR}"
 mv "${CE_STACKS_DIR}" "${BACKUP_DIR}" || fail "mv failed - aborting before clone"
 ok "Backup complete: ${BACKUP_DIR}"
 
-# ── Clone (with rollback on failure) ─────────────────────────────────────────
-info "Cloning ${REPO_URL} → ${CE_STACKS_DIR}"
+# -- Clone (with rollback on failure) -----------------------------------------
+info "Cloning ${REPO_URL} -> ${CE_STACKS_DIR}"
 git clone "${REPO_URL}" "${CE_STACKS_DIR}" || {
 	echo ""
 	echo "ERROR: git clone failed - rolling back"
@@ -135,10 +135,10 @@ git clone "${REPO_URL}" "${CE_STACKS_DIR}" || {
 }
 ok "Clone complete"
 
-# ── git safe.directory ────────────────────────────────────────────────────────
+# -- git safe.directory --------------------------------------------------------
 git config --global --add safe.directory "${CE_STACKS_DIR}" 2>/dev/null || true
 
-# ── restore-env.sh ───────────────────────────────────────────────────────────
+# -- restore-env.sh -----------------------------------------------------------
 # Auto-detects most recent backup under BACKUP_ROOT - picks up ${BACKUP_DIR} correctly.
 RESTORE_SCRIPT="${CE_STACKS_DIR}/scripts/restore-env.sh"
 info "Restoring .env files (scripts/restore-env.sh)"
@@ -168,7 +168,7 @@ else
 	fi
 fi
 
-# ── init-nas.sh ───────────────────────────────────────────────────────────────
+# -- init-nas.sh ---------------------------------------------------------------
 INIT_SCRIPT="${CE_STACKS_DIR}/scripts/init-nas.sh"
 info "Creating STACK_ROOT directories (scripts/init-nas.sh)"
 
@@ -182,7 +182,7 @@ else
 	warn "${INIT_SCRIPT} not found - run manually after this script"
 fi
 
-# ── fix-permissions.sh ────────────────────────────────────────────────────────
+# -- fix-permissions.sh --------------------------------------------------------
 # Normalises ownership of stack data dirs. Must be called with bash (uses BASH_SOURCE).
 FIX_PERMS_SCRIPT="${CE_STACKS_DIR}/scripts/fix-permissions.sh"
 info "Normalising stack data dir permissions (scripts/fix-permissions.sh)"
@@ -197,7 +197,7 @@ else
 	warn "${FIX_PERMS_SCRIPT} not found - skipping"
 fi
 
-# ── Repo-level ownership ──────────────────────────────────────────────────────
+# -- Repo-level ownership ------------------------------------------------------
 # fix-permissions.sh handles stacks/data dirs only.
 # This covers the repo root so the operator can run git pull without sudo.
 info "Fixing repo ownership: ${OWNER}:${GROUP}"
@@ -206,7 +206,7 @@ chown -R "${OWNER}:${GROUP}" "${CE_STACKS_DIR}" ||
 chmod -R u+rwX "${CE_STACKS_DIR}"
 ok "Repo ownership set to ${OWNER}:${GROUP}"
 
-# ── Summary ───────────────────────────────────────────────────────────────────
+# -- Summary -------------------------------------------------------------------
 echo ""
 echo "============================================"
 echo " nas-reset.sh complete"

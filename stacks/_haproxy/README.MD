@@ -4,7 +4,7 @@
 
 HAProxy is installed as a **bare-metal service** on the Synology NAS (not containerized). It acts as the reverse proxy for all ce-stacks services, terminating SSL/TLS and routing traffic to backend containers.
 
-> **IMPORTANT — Configuration Deployment**
+> **IMPORTANT -- Configuration Deployment**
 >
 > Always apply `haproxy.cfg` changes through the **DSM Package Center GUI editor**, never via `sudo cp` from SSH.
 > Direct file copy outside of DSM's control corrupts the package state and triggers a "repair required" loop.
@@ -21,9 +21,9 @@ HAProxy is installed as a **bare-metal service** on the Synology NAS (not contai
 
 **Key Sections**:
 
-1. **Global settings** — timeouts, logging, SSL defaults
-2. **Frontend sections** — listen on port 8280 (HTTP redirect) / 8281 (HTTPS) / 8282 (stats)
-3. **Backend sections** — upstream targets (container IPs/ports); routing via `maps/host.map`
+1. **Global settings** -- timeouts, logging, SSL defaults
+2. **Frontend sections** -- listen on port 8280 (HTTP redirect) / 8281 (HTTPS) / 8282 (stats)
+3. **Backend sections** -- upstream targets (container IPs/ports); routing via `maps/host.map`
 
 ### Typical Backend Entry
 
@@ -33,9 +33,9 @@ backend services
     server docker_app 10.0.1.15:8080
 ```
 
-- `docker_app` — service name/label
-- `10.0.1.15` — LAN IP (NAS IP)
-- `8080` — container exposed port
+- `docker_app` -- service name/label
+- `10.0.1.15` -- LAN IP (NAS IP)
+- `8080` -- container exposed port
 
 ### SSL/TLS Configuration
 
@@ -49,7 +49,7 @@ frontend https-in
     mode http
 ```
 
-**Force HTTP → HTTPS**:
+**Force HTTP -> HTTPS**:
 
 ```
 frontend http-redirect
@@ -63,7 +63,7 @@ frontend http-redirect
 
 ### Standard update procedure (GUI route)
 
-1. **Edit the repo file** — make all changes in `stacks/_haproxy/haproxy.cfg`.
+1. **Edit the repo file** -- make all changes in `stacks/_haproxy/haproxy.cfg`.
 
 2. **Validate locally via SSH** (read-only, safe):
 
@@ -73,13 +73,13 @@ frontend http-redirect
 
    *(This reads the current live file. To pre-validate before applying, save to a temp path and point `-f` at it.)*
 
-3. **Open DSM Package Center** → HAProxy → click **Open**.
+3. **Open DSM Package Center** -> HAProxy -> click **Open**.
 
 4. In the HAProxy web UI, click **Configuration** (or the edit/pencil icon for the config file).
 
 5. **Select all and paste** the full contents of `stacks/_haproxy/haproxy.cfg`.
 
-6. Click **Apply** / **Save**. DSM validates and restarts HAProxy within its own lifecycle — no manual restart needed.
+6. Click **Apply** / **Save**. DSM validates and restarts HAProxy within its own lifecycle -- no manual restart needed.
 
 7. **Verify TLS** from SSH:
 
@@ -97,7 +97,7 @@ frontend http-redirect
    ```
 
 > **Why not `sudo cp`?**
-> The Synology HAProxy package (`synopkg`) maintains internal state metadata. Writing the config file directly via SSH bypasses DSM's lifecycle hooks, causing a state mismatch that forces a package repair on next restart. The `start-stop-status` restart script also requires environment variables injected only by `synopkg` — calling it from a plain sudo shell always fails with "Environment variables are not set."
+> The Synology HAProxy package (`synopkg`) maintains internal state metadata. Writing the config file directly via SSH bypasses DSM's lifecycle hooks, causing a state mismatch that forces a package repair on next restart. The `start-stop-status` restart script also requires environment variables injected only by `synopkg` -- calling it from a plain sudo shell always fails with "Environment variables are not set."
 
 ---
 
@@ -105,7 +105,7 @@ frontend http-redirect
 
 ### Add a New Backend Service
 
-1. **Edit the repo config** — `stacks/_haproxy/haproxy.cfg`:
+1. **Edit the repo config** -- `stacks/_haproxy/haproxy.cfg`:
 
    Add a backend section:
 
@@ -122,7 +122,7 @@ frontend http-redirect
    my-service.olutechsys.com    my_service-be
    ```
 
-2. **Apply via DSM GUI** — follow the [Applying Configuration Changes](#applying-configuration-changes) steps above.
+2. **Apply via DSM GUI** -- follow the [Applying Configuration Changes](#applying-configuration-changes) steps above.
 
 3. **Verify**:
 
@@ -134,14 +134,14 @@ frontend http-redirect
 
 When `acme-sh` renews certificates:
 
-1. **Deploy PEM bundles** (SSH is safe here — cert dir write does not affect package state):
+1. **Deploy PEM bundles** (SSH is safe here -- cert dir write does not affect package state):
 
    ```bash
    sudo bash -c 'STACK_ROOT=/volume2/docker/ce-stacks/stacks \
      bash /volume2/docker/ce-stacks/stacks/acme-sh/scripts/deploy_certs.sh'
    ```
 
-2. **Restart HAProxy via DSM GUI** — Package Center → HAProxy → Action → Restart.
+2. **Restart HAProxy via DSM GUI** -- Package Center -> HAProxy -> Action -> Restart.
    *(HAProxy does not hot-reload certs; a restart is required.)*
 
 3. **Verify**:
@@ -190,9 +190,9 @@ sudo bash -c 'STACK_ROOT=/volume2/docker/ce-stacks/stacks \
 
 **Common causes**:
 
-- Port 8280/8281 already in use — `ss -pltn | grep 828`
+- Port 8280/8281 already in use -- `ss -pltn | grep 828`
 - Certificate file missing or unreadable (must be `sc-haproxy:synocommunity`, mode `640`)
-- Config syntax error — run the `-c` check above
+- Config syntax error -- run the `-c` check above
 
 ### HAProxy Serving `haproxy-default` Self-Signed Cert
 
@@ -203,7 +203,7 @@ sudo bash -c 'STACK_ROOT=/volume2/docker/ce-stacks/stacks \
 sudo bash -c 'STACK_ROOT=/volume2/docker/ce-stacks/stacks \
   bash /volume2/docker/ce-stacks/stacks/acme-sh/scripts/deploy_certs.sh'
 ls -la /var/packages/haproxy/var/crt/
-# Then: DSM Package Center → HAProxy → Action → Restart
+# Then: DSM Package Center -> HAProxy -> Action -> Restart
 ```
 
 ### Backend Service Unreachable
@@ -211,7 +211,7 @@ ls -la /var/packages/haproxy/var/crt/
 1. Verify backend is running: `docker ps | grep <service>`
 2. Test port directly: `curl http://10.0.1.15:<port>/`
 3. Check logs: `tail -50 /var/packages/haproxy/var/http-access.log | grep <service>`
-4. Verify `maps/host.map` has the correct hostname → backend name mapping
+4. Verify `maps/host.map` has the correct hostname -> backend name mapping
 
 ### Performance / Slow Requests
 
@@ -260,10 +260,10 @@ After Synology App Store updates HAProxy, the live config may be reset to the st
 
 ## Related Documentation
 
-- **ce-stacks README.md** → Network subnets, port bindings
-- **acme-sh stack** → Certificate generation, renewal, and deployment (`deploy_certs.sh`)
-- **Homepage stack** → Service portal routing examples
-- **`maps/host.map`** → Hostname → backend routing table
+- **ce-stacks README.md** -> Network subnets, port bindings
+- **acme-sh stack** -> Certificate generation, renewal, and deployment (`deploy_certs.sh`)
+- **Homepage stack** -> Service portal routing examples
+- **`maps/host.map`** -> Hostname -> backend routing table
 
 ---
 

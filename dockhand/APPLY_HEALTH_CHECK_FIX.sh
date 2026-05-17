@@ -8,9 +8,9 @@ set -e
 # Resolve docker binary once; caller can override via DOCKER=/path/to/docker.
 DOCKER="${DOCKER:-$(command -v docker 2>/dev/null || echo /usr/local/bin/docker)}"
 
-echo "═══════════════════════════════════════════════════════════════════════════"
+echo "==========================================================================="
 echo "DOCKHAND HEALTH CHECK - DEFINITIVE FIX"
-echo "═══════════════════════════════════════════════════════════════════════════"
+echo "==========================================================================="
 echo ""
 
 # Step 1: Diagnose current state
@@ -27,23 +27,23 @@ echo "Last 3 health check results:"
 echo ""
 echo "Does curl exist in container?"
 if "${DOCKER}" exec dockhand which curl >/dev/null 2>&1; then
-    echo "✓ Yes - curl is available"
+    echo "[OK] Yes - curl is available"
 else
-    echo "✗ No - curl NOT found (this is the problem!)"
+    echo "[FAIL] No - curl NOT found (this is the problem!)"
 fi
 
 echo ""
 echo "Does wget exist in container?"
 if "${DOCKER}" exec dockhand which wget >/dev/null 2>&1; then
-    echo "✓ Yes - wget is available (we'll use this)"
+    echo "[OK] Yes - wget is available (we'll use this)"
 else
-    echo "✗ No - wget not found either"
+    echo "[FAIL] No - wget not found either"
 fi
 
 echo ""
-echo "═══════════════════════════════════════════════════════════════════════════"
+echo "==========================================================================="
 echo "STEP 2: Applying fix..."
-echo "═══════════════════════════════════════════════════════════════════════════"
+echo "==========================================================================="
 echo ""
 
 echo "Stopping and removing old container..."
@@ -58,9 +58,9 @@ echo "Restarting Dockhand with fixed RC script..."
 sudo /usr/local/etc/rc.d/dockhand.sh
 
 echo ""
-echo "═══════════════════════════════════════════════════════════════════════════"
+echo "==========================================================================="
 echo "STEP 3: Waiting for startup (120 seconds)..."
-echo "═══════════════════════════════════════════════════════════════════════════"
+echo "==========================================================================="
 echo ""
 
 for i in {1..12}; do
@@ -69,9 +69,9 @@ for i in {1..12}; do
 done
 
 echo ""
-echo "═══════════════════════════════════════════════════════════════════════════"
+echo "==========================================================================="
 echo "STEP 4: Verifying health status..."
-echo "═══════════════════════════════════════════════════════════════════════════"
+echo "==========================================================================="
 echo ""
 
 HEALTH=$("${DOCKER}" inspect dockhand | jq -r '.State.Health.Status' 2>/dev/null || echo "unknown")
@@ -80,7 +80,7 @@ echo "Current health status: $HEALTH"
 echo ""
 
 if [ "$HEALTH" = "healthy" ]; then
-    echo "✓ SUCCESS! Dockhand is now HEALTHY"
+    echo "[OK] SUCCESS! Dockhand is now HEALTHY"
     echo ""
     echo "Container status:"
     "${DOCKER}" ps | grep dockhand
@@ -90,7 +90,7 @@ if [ "$HEALTH" = "healthy" ]; then
     echo ""
     echo "You can now access Dockhand at: http://10.0.1.15:3866"
 else
-    echo "⚠ Still showing as: $HEALTH"
+    echo "[WARN] Still showing as: $HEALTH"
     echo ""
     echo "Running diagnostics..."
     echo ""
@@ -107,6 +107,6 @@ else
 fi
 
 echo ""
-echo "═══════════════════════════════════════════════════════════════════════════"
+echo "==========================================================================="
 echo "Done!"
-echo "═══════════════════════════════════════════════════════════════════════════"
+echo "==========================================================================="

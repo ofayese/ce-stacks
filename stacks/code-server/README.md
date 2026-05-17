@@ -6,7 +6,7 @@ Browser-based VS Code (`code-server`) with adjacent MySQL (`db`) and phpMyAdmin 
 
 ## Services
 
-- **code-server** (8377→8443) - IDE; mounts host `docker.sock` (rw) and project paths under `/config/workspace/`
+- **code-server** (8377->8443) - IDE; mounts host `docker.sock` (rw) and project paths under `/config/workspace/`
 - **db** (3307) - MySQL 8.3, project-scoped data via named volume `mysql_data`
 - **phpmyadmin** (8378) - DB admin UI; depends on `db` healthcheck
 
@@ -35,7 +35,7 @@ See `.env.example` for the full set.
 
 ## DSM Reverse Proxy - WebSocket requirement
 
-code-server requires WebSocket support. In DSM → Application Portal → Reverse Proxy, add **Custom Headers** for the code-server rule:
+code-server requires WebSocket support. In DSM -> Application Portal -> Reverse Proxy, add **Custom Headers** for the code-server rule:
 
 | Header | Value |
 |---|---|

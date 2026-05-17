@@ -4,7 +4,7 @@ Use this checklist to fix all identified issues before Dockhand deployment.
 
 ---
 
-## 2026-05-15 — Items now obsolete
+## 2026-05-15 -- Items now obsolete
 
 The following items in this checklist are **automated** by
 `scripts/init-nas.sh` (and `scripts/bootstrap-env.sh --apply`, which it
@@ -12,17 +12,17 @@ invokes) and by the RC-script changes from
 [`implementation_plan.md`](./implementation_plan.md). You can skip the manual
 shell snippets below and just run `bash scripts/init-nas.sh` on the NAS:
 
-- ~~Fix #1: Create ce-internal Network~~ — now created by both `init-nas.sh` and `dockhand/scripts/dockhand-start.sh::ensure_ce_internal()`.
-- ~~Fix #2: Create All Missing .env Files~~ — `scripts/bootstrap-env.sh --apply` materializes every `.env` from its `.env.example` (operator still edits real values).
-- ~~Fix #3: Verify All Compose Files Now Validate~~ — `scripts/compose-validate.sh` is the canonical check; run after editing `.env` values.
-- ~~Fix #10: Link Solution Architect Document~~ — added to `README.md` "Architecture & Design".
+- ~~Fix #1: Create ce-internal Network~~ -- now created by both `init-nas.sh` and `dockhand/scripts/dockhand-start.sh::ensure_ce_internal()`.
+- ~~Fix #2: Create All Missing .env Files~~ -- `scripts/bootstrap-env.sh --apply` materializes every `.env` from its `.env.example` (operator still edits real values).
+- ~~Fix #3: Verify All Compose Files Now Validate~~ -- `scripts/compose-validate.sh` is the canonical check; run after editing `.env` values.
+- ~~Fix #10: Link Solution Architect Document~~ -- added to `README.md` "Architecture & Design".
 
 The High/Medium/Low items below (security_opt additions, PUID/PGID env
 additions, subnet registry, HAProxy doc, etc.) remain manual.
 
 ---
 
-## 🔴 CRITICAL FIXES (Do These First!)
+## [RED] CRITICAL FIXES (Do These First!)
 
 ### Fix #1: Create ce-internal Network
 
@@ -66,7 +66,7 @@ for stack in acme-sh agents_gateway_data code-server databases dozzle \
   
   if [ -f "stacks/$stack/.env.example" ] && [ ! -f "stacks/$stack/.env" ]; then
     cp "stacks/$stack/.env.example" "stacks/$stack/.env"
-    echo "✓ Created stacks/$stack/.env - EDIT WITH ACTUAL VALUES"
+    echo "[OK] Created stacks/$stack/.env - EDIT WITH ACTUAL VALUES"
   fi
 done
 
@@ -124,10 +124,10 @@ for compose in $(find ./stacks -name "compose.yaml" -o -name "docker-compose.yml
   STACK=$(dirname "$compose" | xargs basename)
   
   if docker compose -f "$compose" config >/dev/null 2>&1; then
-    echo "✓ $STACK"
+    echo "[OK] $STACK"
     VALID=$((VALID + 1))
   else
-    echo "✗ $STACK - INVALID"
+    echo "[FAIL] $STACK - INVALID"
     docker compose -f "$compose" config 2>&1 | head -5
     INVALID=$((INVALID + 1))
   fi
@@ -143,7 +143,7 @@ echo "Summary: $VALID valid, $INVALID invalid"
 
 ---
 
-## 🟠 HIGH PRIORITY FIXES (Do After Critical)
+## [ORANGE] HIGH PRIORITY FIXES (Do After Critical)
 
 #### Time: 10 minutesing Security Options
 
@@ -187,7 +187,7 @@ environment:
 
 ---
 
-## 🟡 MEDIUM PRIORITY FIXES (Nice to Have)
+## [YELLOW] MEDIUM PRIORITY FIXES (Nice to Have)
 
 ### Fix #6: Update README.md with Complete Network Subnet Registry
 
@@ -201,18 +201,18 @@ All bridge networks use explicit /24 subnets to prevent Docker's auto-assigned /
 | Stack | Network name | Subnet | Status |
 |---|---|---|---|
 | (backbone) | ce-internal | 172.26.0.0/24 | External; created at setup |
-| ollama | ollama-net | 172.27.0.0/24 | ✓ |
-| databases | db-net | 172.28.0.0/24 | ✓ |
-| code-server | code-server-net | 172.28.2.0/24 | ✓ |
-| grafana-prom | grafana-net | 172.29.0.0/24 | ✓ |
-| grafana-prom | prometheus-net | 172.29.1.0/24 | ✓ |
-| zabbix | zabbix-net | 172.30.0.0/24 | ✓ |
-| dozzle | dozzle-net | 172.31.0.0/24 | ✓ |
-| watchtower | watchtower-net | 172.31.1.0/24 | ✓ |
-| agents_gateway_data | agents-gateway-net | 172.31.7.0/24 | ✓ |
-| mcp-tools-config | mcp-tools-net | 172.31.8.0/24 | ✓ |
-| psu-ots | psu-ots-net | 172.32.0.0/24 | ✓ |
-| codex-docs | codex-net | 172.20.0.0/24 | ✓ |
+| ollama | ollama-net | 172.27.0.0/24 | [OK] |
+| databases | db-net | 172.28.0.0/24 | [OK] |
+| code-server | code-server-net | 172.28.2.0/24 | [OK] |
+| grafana-prom | grafana-net | 172.29.0.0/24 | [OK] |
+| grafana-prom | prometheus-net | 172.29.1.0/24 | [OK] |
+| zabbix | zabbix-net | 172.30.0.0/24 | [OK] |
+| dozzle | dozzle-net | 172.31.0.0/24 | [OK] |
+| watchtower | watchtower-net | 172.31.1.0/24 | [OK] |
+| agents_gateway_data | agents-gateway-net | 172.31.7.0/24 | [OK] |
+| mcp-tools-config | mcp-tools-net | 172.31.8.0/24 | [OK] |
+| psu-ots | psu-ots-net | 172.32.0.0/24 | [OK] |
+| codex-docs | codex-net | 172.20.0.0/24 | [OK] |
 ```
 
 ---
@@ -271,7 +271,7 @@ git status  # ensure nothing uncommitted
 
 ---
 
-## 🟢 LOW PRIORITY FIXES (Polish)
+## [GREEN] LOW PRIORITY FIXES (Polish)
 
 ### Fix #9: Add Clarifying Comments to Volume Paths
 
@@ -319,7 +319,7 @@ docker network inspect ce-internal
 
 # 2. All compose files validate
 for compose in $(find ./stacks -name "compose.yaml"); do
-  docker compose -f "$compose" config >/dev/null && echo "✓ $(dirname $compose | xargs basename)" || echo "✗ $(dirname $compose | xargs basename)"
+  docker compose -f "$compose" config >/dev/null && echo "[OK] $(dirname $compose | xargs basename)" || echo "[FAIL] $(dirname $compose | xargs basename)"
 done
 
 # 3. Check security options

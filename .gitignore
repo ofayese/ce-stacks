@@ -1,5 +1,5 @@
 # =============================================================================
-# ce-stacks — root .gitignore
+# ce-stacks -- root .gitignore
 # Covers: macOS/Synology sidecars, secrets, runtime data, Python artefacts
 # =============================================================================
 
@@ -21,7 +21,7 @@
 .SynologyWorkingDirectory
 
 # ---------------------------------------------------------------------------
-# Secret material — NEVER commit
+# Secret material -- NEVER commit
 # ---------------------------------------------------------------------------
 # Private keys (all forms)
 *.key
@@ -42,14 +42,14 @@ cert.key
 # Secret text files in per-stack secrets/ directories (passwords, tokens, etc.)
 # These are consumed by Docker secrets at runtime; must never be committed.
 # NOTE: stacks/databases/secrets/*.txt and stacks/grafana-prom/secrets/*.txt
-# contain intentional CI dummy values and are already tracked — use
+# contain intentional CI dummy values and are already tracked -- use
 # `git rm --cached` to stop tracking them if you replace with real credentials.
 stacks/acme-sh/secrets/*.txt
 stacks/code-server/secrets/*.txt
 stacks/grafana-prom/secrets/*.txt
 
 # ---------------------------------------------------------------------------
-# Runtime .env files — keep .env.example, never commit .env
+# Runtime .env files -- keep .env.example, never commit .env
 # ---------------------------------------------------------------------------
 .env
 .env.local
@@ -58,7 +58,7 @@ stacks/grafana-prom/secrets/*.txt
 !.env.example
 
 # ---------------------------------------------------------------------------
-# Stack runtime data directories — contain secrets / large blobs
+# Stack runtime data directories -- contain secrets / large blobs
 # ---------------------------------------------------------------------------
 # acme.sh certificates and account keys
 stacks/acme-sh/data/
@@ -130,5 +130,5 @@ temp/
 # ---------------------------------------------------------------------------
 # Git artefacts (Synology NAS git repo integrity)
 # ---------------------------------------------------------------------------
-# Synology EA sidecar bundles inside .git/ — handled by git hooks, not here
+# Synology EA sidecar bundles inside .git/ -- handled by git hooks, not here
 # See scripts for EA cleanup tooling

@@ -1,4 +1,4 @@
-# Grafana dashboard provisioning — ce-stacks/grafana-prom
+# Grafana dashboard provisioning -- ce-stacks/grafana-prom
 # Grafana loads all JSON files from the path below on startup and on
 # updateIntervalSeconds. Dashboards are read-only in the UI (allowUiUpdates: false)
 # so that local edits don't drift from source-controlled JSON.

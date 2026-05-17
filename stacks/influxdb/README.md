@@ -1,4 +1,4 @@
-# influxdb — Time-Series Database for ntopng
+# influxdb -- Time-Series Database for ntopng
 
 InfluxDB 1.8.10 is deployed as the time-series backend for ntopng network traffic metrics.
 Grafana queries it directly as a second datasource alongside Prometheus.
@@ -7,11 +7,11 @@ Grafana queries it directly as a second datasource alongside Prometheus.
 
 ```
 ntopng (native NAS package, port 3000)
-    │  writes via InfluxDB line protocol
-    ▼
+    |  writes via InfluxDB line protocol
+    v
 InfluxDB 1.8.10 (container, 10.0.1.15:8086)
-    │  queried by proxy datasource
-    ▼
+    |  queried by proxy datasource
+    v
 Grafana (container, 10.0.1.15:3340)
 ```
 
@@ -23,7 +23,7 @@ Grafana (container, 10.0.1.15:3340)
 cd /volume2/docker/ce-stacks/stacks/influxdb
 mkdir -p data
 cp .env.example .env
-# Edit .env — fill in all passwords before starting the container
+# Edit .env -- fill in all passwords before starting the container
 ```
 
 ### 2. Start InfluxDB
@@ -42,7 +42,7 @@ read-only user automatically on first start from the env vars in compose.yaml.
 
 In the ntopng DSM package web UI (`http://10.0.1.15:3000`):
 
-1. Go to **Settings → Timeseries → Driver** → select **InfluxDB**
+1. Go to **Settings -> Timeseries -> Driver** -> select **InfluxDB**
 2. Set the following:
 
    | Field     | Value                             |
@@ -53,7 +53,7 @@ In the ntopng DSM package web UI (`http://10.0.1.15:3000`):
    | User      | `ntopng`                          |
    | Password  | value of `INFLUXDB_NTOPNG_PASSWORD` from .env |
 
-3. Click **Save** — ntopng will start writing flow metrics immediately.
+3. Click **Save** -- ntopng will start writing flow metrics immediately.
 
 ### 4. Verify data is flowing
 
@@ -70,7 +70,7 @@ docker exec -it InfluxDB influx \
 
 The `grafana-prom` stack auto-provisions an InfluxDB datasource on Grafana startup
 (`provisioning/datasources/influxdb.yml`). No manual Grafana UI steps are required,
-but Grafana needs `INFLUXDB_GRAFANA_PASSWORD` in its environment — see
+but Grafana needs `INFLUXDB_GRAFANA_PASSWORD` in its environment -- see
 `stacks/grafana-prom/.env.example`.
 
 ## Ports
@@ -79,7 +79,7 @@ but Grafana needs `INFLUXDB_GRAFANA_PASSWORD` in its environment — see
 |------|----------|-----------------------------|
 | 8086 | HTTP     | InfluxDB API (read + write) |
 
-Port 8086 is not routed through HAProxy — it is an internal data store only.
+Port 8086 is not routed through HAProxy -- it is an internal data store only.
 
 ## Users Created on First Start
 
@@ -115,6 +115,6 @@ docker cp InfluxDB:/tmp/backup ./backup-$(date +%Y%m%d)
 
 ## Related
 
-- `stacks/grafana-prom/` — Grafana + Prometheus stack
-- `stacks/grafana-prom/provisioning/datasources/influxdb.yml` — auto-provisioned datasource
-- ntopng SynoCommunity package — Settings → Timeseries → InfluxDB
+- `stacks/grafana-prom/` -- Grafana + Prometheus stack
+- `stacks/grafana-prom/provisioning/datasources/influxdb.yml` -- auto-provisioned datasource
+- ntopng SynoCommunity package -- Settings -> Timeseries -> InfluxDB

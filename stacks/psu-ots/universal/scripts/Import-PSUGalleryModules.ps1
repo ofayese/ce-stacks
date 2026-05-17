@@ -89,7 +89,7 @@ function Import-PSUGalleryModules {
     }
 
     if (-not $allowPartialFailure -and $failed.Count -gt 0) {
-        $detail = ($failed | ForEach-Object { "$_ → $($global:NASGalleryModuleState[$_].error)" }) -join '; '
+        $detail = ($failed | ForEach-Object { "$_ -> $($global:NASGalleryModuleState[$_].error)" }) -join '; '
         throw "Import-PSUGalleryModules: required module(s) failed: $detail. Install modules (PSU Admin, Dockerfile, or PSU_GALLERY_INSTALL=1), or set PSU_GALLERY_OPTIONAL=1 only while staging."
     }
 
