@@ -250,6 +250,8 @@ services:
       - PROMETHEUS_WIREGUARD_EXPORTER_INTERFACES=${WG_INTERFACE:-wg0}
       # Annotate metrics with peer [Interface] Name fields from the config file for readable labels.
       - PROMETHEUS_WIREGUARD_EXPORTER_PEERS_FILE=/etc/wireguard/wg0.conf
+      # Required explicit bool -- no default in v3.6.6. CAP_NET_ADMIN covers wg show; sudo not needed.
+      - PROMETHEUS_WIREGUARD_EXPORTER_PREPEND_SUDO=false
     volumes:
       # Mount :ro so peer names are available in metrics; keys remain inaccessible (exporter reads [Interface] + [Peer] Name only).
       - /etc/wireguard/wg0.conf:/etc/wireguard/wg0.conf:ro
