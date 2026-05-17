@@ -34,7 +34,7 @@ services:
 
   zabbix-server:
     container_name: Zabbix-Server
-    image: zabbix/zabbix-server-pgsql:alpine-7.4.3
+    image: zabbix/zabbix-server-pgsql:alpine-7.4.10
     mem_limit: 768m
     cpu_shares: 1024
     security_opt:
@@ -74,7 +74,7 @@ services:
 
   zabbix-web:
     container_name: Zabbix-Web
-    image: zabbix/zabbix-web-nginx-pgsql:alpine-7.4.3
+    image: zabbix/zabbix-web-nginx-pgsql:alpine-7.4.10
     mem_limit: 512m
     cpu_shares: 768
     security_opt:

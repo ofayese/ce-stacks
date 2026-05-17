@@ -236,6 +236,50 @@ services:
     labels:
       - com.centurylinklabs.watchtower.enable=true
 
+  wireguard-exporter:
+    image: docker.io/mindflavor/prometheus-wireguard-exporter:3.6.6
+    container_name: Prometheus-WireGuard-Exporter
+    hostname: prometheus-wireguard
+    # WireGuard lives in the NAS host kernel -- host networking is required to read the wg0 interface.
+    # The exporter binds on 127.0.0.1:9586 of the host; Prometheus scrapes via 10.0.1.15:9586.
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - PROMETHEUS_WIREGUARD_EXPORTER_ADDRESS=127.0.0.1:9586
+      - PROMETHEUS_WIREGUARD_EXPORTER_INTERFACES=${WG_INTERFACE:-wg0}
+      # Annotate metrics with peer [Interface] Name fields from the config file for readable labels.
+      - PROMETHEUS_WIREGUARD_EXPORTER_PEERS_FILE=/etc/wireguard/wg0.conf
+    volumes:
+      # Mount :ro so peer names are available in metrics; keys remain inaccessible (exporter reads [Interface] + [Peer] Name only).
+      - /etc/wireguard/wg0.conf:/etc/wireguard/wg0.conf:ro
+    restart: unless-stopped
+    mem_limit: 64m
+    cpu_shares: 128
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://127.0.0.1:9586/metrics"
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    labels:
+      - com.centurylinklabs.watchtower.enable=true
+
 networks:
   grafana-net:
     name: grafana-net

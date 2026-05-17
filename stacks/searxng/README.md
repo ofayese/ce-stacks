@@ -13,7 +13,7 @@ Privacy-respecting metasearch engine, backed by Valkey (Redis fork) for caching.
 
 ## Public hostname
 
-`search.otsorundscore.olutechsys.com` (frontend; via HAProxy when ready).
+`search.olutechsys.com` (frontend; via HAProxy).
 
 ## Required state
 

@@ -4,8 +4,8 @@ PowerShell Universal provides **scheduled jobs**, **API endpoints**, and a **NOC
 
 ## Prerequisites
 
-- **TLS:** Host-named wildcard PEMs under `${ACME_CERT_ROOT}/otsorundscore/` (OTS NAS). TLS termination handled by DSM Reverse Proxy.
-- **DNS:** Public + split-horizon records for `psu.otsorundscore.olutechsys.com` (and `.olutech.systems` if used).
+- **TLS:** Wildcard PEM at `${ACME_CERT_ROOT}/wildcard/fullchain.pem` (`*.olutechsys.com`). TLS termination handled by DSM Reverse Proxy.
+- **DNS:** Public + split-horizon records for `psu.olutechsys.com` (and `psu.olutech.systems` if used).
 - **Port:** Container exposed directly on `10.0.1.15:5570` -> DSM Reverse Proxy -> HTTPS.
 
 ## First deploy
@@ -17,7 +17,7 @@ cp .env.example .env
 docker compose up -d
 ```
 
-Admin UI: `https://psu.otsorundscore.olutechsys.com` (via DSM Reverse Proxy) or connect to `http://10.0.1.15:5570` directly for bootstrap.
+Admin UI: `https://psu.olutechsys.com` (via DSM Reverse Proxy) or connect to `http://10.0.1.15:5570` directly for bootstrap.
 
 ## Repository layout
 
@@ -35,6 +35,22 @@ Interactive PSU Admin login uses **PowerShell Universal defaults** from the imag
 
 - **`/nas-repo` is `:ro` in compose** -- change to `:rw` only if you implement `git pull` from PSU and accept NAS git hygiene rules ([`AGENTS.md`](../../AGENTS.md)).
 - **`POST /api/v1/nas/pull`:** Ship as a follow-up in Admin (App Token + role). **`GET /api/v1/nas/health`** (Phase 2) is registered in `universal/endpoints/nas-api.ps1` and returns the latest NAS + latency JSON reports (**Bearer `PSU_AUTH_TOKEN`** required).
+
+## Known Security Gaps (Tech Debt)
+
+### TD-13 — PSU authentication tokens in plaintext `.env`
+
+**Risk:** The PSU App Tokens (`PSU_AGENT_TOKEN`, `NAS_PULL_APP_TOKEN`, `PSU_AUTH_TOKEN`) and the stack manager credentials (`STACK_MANAGER_USERNAME` / `STACK_MANAGER_PASSWORD`) must currently be stored as plaintext values in the `.env` file on the NAS. Docker secrets injection for these variables is not yet implemented.
+
+**Accepted workaround — OPERATOR ACTION REQUIRED:** The NAS firewall **must** be configured to block port `5570` from all non-LAN (non-`10.0.1.0/24`) hosts. PSU traffic routes through the DSM Reverse Proxy → Cloudflare Tunnel so the container port is not exposed to the public internet, but the LAN-only bind (`10.0.1.15:5570`) and the DSM firewall deny rule are both required as defence-in-depth.
+
+**Verification checklist:**
+
+1. DSM → Control Panel → Security → Firewall → confirm deny-all inbound rule for port `5570` except source `10.0.1.0/24`.
+2. Confirm `compose.yaml` port binding is `"10.0.1.15:5570:5000"` (never `0.0.0.0:5570`).
+3. Rotate `PSU_AGENT_TOKEN` immediately if any `.env` file is committed to git or copied off-NAS.
+
+**Future remediation path:** Inject all PSU tokens via Docker secrets (`compose secrets:` stanza + `docker secret create`) once Dockhand supports secret passthrough, or use a Vault-backed secrets manager. Remove this section when TD-13 is closed.
 
 ## Automation
 

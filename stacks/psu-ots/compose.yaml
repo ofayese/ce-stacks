@@ -97,6 +97,38 @@ services:
     networks:
       - psu-ots-net
 
+  psu-agent:
+    container_name: psu-ots-agent
+    image: ironmansoftware/universal-agent
+    # Pin digest to match psu-server on upgrade. Resolve with:
+    #   docker pull ironmansoftware/universal-agent:<tag>
+    #   docker inspect --format='{{index .RepoDigests 0}}' ironmansoftware/universal-agent:<tag>
+    # Example: ironmansoftware/universal-agent@sha256:<digest>
+    restart: unless-stopped
+    mem_limit: 256m
+    cpu_shares: 256
+    # cpus: removed - Synology DS723+ kernel lacks CFS scheduler cgroup (NanoCPUs unsupported)
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    environment:
+      # Internal WebSocket connectivity to psu-server (service key: universal)
+      - PSU_Connections__0__Url=http://universal:5000
+      - PSU_Connections__0__Hub=AgentHub
+      # PSU_AGENT_TOKEN: App Token created in PSU Admin -> Security -> App Tokens.
+      # Requires the "Agent" role. Never embed the value here; set in .env only.
+      # TD-13: token is plaintext in .env -- firewall must block port 5570 from non-LAN hosts.
+      - PSU_Connections__0__AppToken=${PSU_AGENT_TOKEN}
+    depends_on:
+      universal:
+        condition: service_healthy
+    networks:
+      - psu-ots-net
+
 networks:
   psu-ots-net:
     name: psu-ots-net

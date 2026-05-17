@@ -85,7 +85,7 @@ frontend http-redirect
 
    ```bash
    CONNECT_HOST=10.0.1.15 CONNECT_PORT=8281 \
-     SNI=psu.otsorundscore.olutechsys.com MIN_VALID_DAYS=21 \
+     SNI=psu.olutechsys.com MIN_VALID_DAYS=21 \
      bash /volume2/docker/ce-stacks/stacks/acme-sh/scripts/verify_serving.sh
    ```
 

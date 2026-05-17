@@ -68,3 +68,13 @@ scrape_configs:
     bearer_token_file: /etc/prometheus/watchtower_bearer_token
     static_configs:
       - targets: ["10.0.1.15:18787"]
+
+  # WireGuard VPN tunnel -- native host kernel module (not containerized).
+  # Requires the wireguard-exporter service in compose.yaml (network_mode: host, port 9586).
+  # Prerequisite: wg0 interface must be up before this exporter starts (wg-quick up wg0).
+  - job_name: "wireguard"
+    scrape_interval: 30s
+    static_configs:
+      - targets: ["10.0.1.15:9586"]
+        labels:
+          instance: otsorundscore

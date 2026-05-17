@@ -9,7 +9,7 @@ Self-hosted resume builder ([Open-Resume](https://github.com/xitanggg/open-resum
 
 ## Public hostname
 
-`resume.otsorundscore.olutechsys.com` (via HAProxy stretch when ready; resolved via `extra_hosts` today).
+`resume.olutechsys.com` (via HAProxy; resolved via `extra_hosts` for LAN split-horizon).
 
 ## Health
 

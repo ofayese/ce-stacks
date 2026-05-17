@@ -1,0 +1,43 @@
+Default gateways
+
+Machines configured to connect to multiple networks, such as the physical hosts, SLB/MUX, and gateway VMs must only have one default gateway configured. Use the following default gateways for the hosts and the infrastructure VMs:
+
+For Hyper-V hosts, use the management network as the default gateway.
+For Network Controller VMs, use the management network as the default gateway.
+For SLB/MUX VMs, use the management network as the default gateway.
+For the gateway VMs, use the HNV Provider network as the default gateway. This should be set on the front-end NIC of the gateway VMs.
+
+
+Compute
+
+All Hyper-V hosts must have the appropriate operating system installed, be enabled for Hyper-V, and use an external Hyper-V virtual switch with at least one physical adapter connected to the management logical network. The host must be reachable via a management IP address assigned to the management host vNIC.
+
+
+SDN infrastructure VM role requirements
+The following shows the requirements for the VM roles.
+
+Role					vCPU requirements	Memory requirements			Disk requirements
+
+Network Controller (three nodes)	4 vCPUs			4GB min(8 GB recommended)		75GB for operating system drive
+
+SLB/MUX (three nodes)			8 vCPUs			8GB recommended				75GB for operating system drive
+
+RAS Gateway				8 vCPUs			8 GB recommended			75GB for operating system drive(single pool of three nodes 
+gateways, two active, one passive)
+
+RAS Gateway BGP router			2 vCPUs			2 GB					75GB for operating system drive
+for SLB/MUX peering
+(alternatively use ToR switch
+as BGP Router)	
+
+
+Feature					Deployment requirements			Network requirements
+
+Inbound/Outbound NAT			Network Controller			BGP on HNV PA network 
+Load Balancing				SLB/MUX					Private and Public VIP subnets
+
+
+L3 gateway connections			Network Controller			BGP on HNV PA network
+					SLB/MUX					Private and Public VIP subnets
+					Gateway					Tenant VLAN, Subnet, Router
+										BGP on tenant VLAN optional

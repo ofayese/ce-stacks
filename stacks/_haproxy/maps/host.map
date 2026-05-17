@@ -10,6 +10,9 @@ tools.otsorundscore.olutechsys.com	ittools-be
 tools.otsorundscore.olutech.systems	ittools-be
 search.olutechsys.com	searxng-be
 search.olutech.systems	searxng-be
+# legacy aliases -- *.otsorundscore.* -- no public Cloudflare DNS; LAN split-horizon only.
+# Option B canonical names are service.olutechsys.com above.
+# Remove after DNS audit confirms no devices still resolving sub-subdomain names.
 search.otsorundscore.olutechsys.com	searxng-be
 search.otsorundscore.olutech.systems	searxng-be
 ai.olutechsys.com	openwebui-be

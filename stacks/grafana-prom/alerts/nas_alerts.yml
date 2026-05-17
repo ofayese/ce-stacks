@@ -172,3 +172,68 @@ groups:
           summary: "Watchtower failed to update {{ $value }} container(s) in the last hour"
           description: >-
             Check Watchtower logs: `docker logs watchtower --tail 100`.
+
+  # --- WireGuard VPN Tunnel --------------------------------------------------
+  - name: nas.wireguard
+    interval: 30s
+    rules:
+      - alert: WireGuardPeerStale
+        # wireguard_peer_last_handshake_seconds is a Unix epoch timestamp from the exporter.
+        # A peer is "stale" when it has missed multiple rekey cycles (WireGuard rekeys every 180s when active).
+        # 600s threshold accommodates mobile peers on aggressive NAT that may miss one or two cycles.
+        # Tune per-peer via label matchers below if some peers are expected to be intermittently offline.
+        expr: >-
+          (
+            (time() - wireguard_peer_last_handshake_seconds{job="wireguard"}) > 600
+            and
+            wireguard_peer_last_handshake_seconds{job="wireguard"} > 0
+          )
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "WireGuard peer {{ $labels.name | default ($labels.public_key | trunc 8) }}... has not reconnected"
+          description: >-
+            Peer {{ $labels.public_key }} (name: {{ $labels.name | default "unnamed" }}) on interface
+            {{ $labels.interface }} last handshake was {{ $value | humanizeDuration }} ago.
+            The peer may be offline, behind a restrictive NAT, or have a config mismatch.
+            Run `wg show {{ $labels.interface }}` on the NAS to inspect current state.
+
+      - alert: WireGuardPeerNeverConnected
+        # Separate alert for peers that have never completed a handshake (epoch = 0).
+        # This usually means a misconfigured client or wrong public key.
+        expr: wireguard_peer_last_handshake_seconds{job="wireguard"} == 0
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "WireGuard peer {{ $labels.name | default ($labels.public_key | trunc 8) }}... has never connected"
+          description: >-
+            Peer {{ $labels.public_key }} on interface {{ $labels.interface }} shows handshake epoch = 0.
+            The peer has not completed a handshake since the interface came up.
+            Verify the peer's client config (endpoint, allowed IPs, public key) matches /etc/wireguard/wg0.conf.
+
+      - alert: WireGuardTunnelDown
+        # The exporter itself is unreachable -- wg0 may be down or the container crashed.
+        expr: up{job="wireguard"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "WireGuard exporter on otsorundscore is not responding"
+          description: >-
+            Prometheus cannot reach the wireguard-exporter on 10.0.1.15:9586 for 2+ minutes.
+            Verify wg0 is up: `wg show` on the NAS host.
+            Check container: `docker logs Prometheus-WireGuard-Exporter --tail 50`.
+
+      - alert: WireGuardNoPeersConfigured
+        # Exporter is up but returning no peer metrics -- wg0 may have an empty config.
+        expr: count(wireguard_peer_last_handshake_seconds{job="wireguard"}) == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "WireGuard interface has no configured peers"
+          description: >-
+            The WireGuard exporter is running but returning no peer metrics.
+            Verify at least one [Peer] block exists in /etc/wireguard/wg0.conf.

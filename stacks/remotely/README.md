@@ -36,7 +36,7 @@ once an HTTPS connection is established.
 
 | Variable               | Required | Default                                         | Description                                   |
 | ---------------------- | -------- | ----------------------------------------------- | --------------------------------------------- |
-| `REMOTELY_SERVER_URL`  | Yes      | `https://remotely.otsorundscore.olutechsys.com` | Public HTTPS URL for agent download links     |
+| `REMOTELY_SERVER_URL`  | Yes      | `https://remotely.olutechsys.com`               | Public HTTPS URL for agent download links     |
 | `REMOTELY_KNOWN_PROXY` | Yes      | `10.0.1.15`                                     | Reverse proxy LAN IP -- trusts X-Forwarded-For |
 | `TZ`                   | No       | `America/New_York`                              | Timezone for log timestamps                   |
 
@@ -103,8 +103,9 @@ backend remotely-be
 # maps/host.map
 remotely.olutechsys.com	remotely-be
 remotely.olutech.systems	remotely-be
-remotely.otsorundscore.olutechsys.com	remotely-be
-remotely.otsorundscore.olutech.systems	remotely-be
+# legacy LAN aliases -- retain until DNS audit confirms no devices still resolving sub-subdomain names
+# remotely.otsorundscore.olutechsys.com	remotely-be
+# remotely.otsorundscore.olutech.systems	remotely-be
 ```
 
 After editing: validate with `haproxy -c`, then restart HAProxy via **DSM -> Package Center -> HAProxy -> Action -> Restart**.

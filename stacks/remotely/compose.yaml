@@ -50,7 +50,7 @@ services:
       - Remotely_ApplicationOptions__KnownProxies__0=${REMOTELY_KNOWN_PROXY:-10.0.1.15}
       # Public-facing URL used to generate agent download links.
       # Change to your actual HTTPS hostname served by the reverse proxy.
-      - Remotely_ApplicationOptions__ServerUrl=${REMOTELY_SERVER_URL:-https://remotely.otsorundscore.olutechsys.com}
+      - Remotely_ApplicationOptions__ServerUrl=${REMOTELY_SERVER_URL:-https://remotely.olutechsys.com}
     # Healthcheck type A: HTTP probe - ASP.NET Core Debian image ships curl.
     healthcheck:
       test: ["CMD", "curl", "-fs", "http://localhost:5000/"]

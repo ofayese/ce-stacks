@@ -126,7 +126,7 @@ If you access Homepage from a different hostname (e.g., a VPN client or second d
 
 ```yaml
 environment:
-  - HOMEPAGE_ALLOWED_HOSTS=10.0.1.15:7575,otsorundscore.olutechsys.com:7575,otsorundscore.olutech.systems:7575,your-other-hostname:7575
+  - HOMEPAGE_ALLOWED_HOSTS=10.0.1.15:7575,otsorundscore.olutechsys.com,otsorundscore.olutech.systems,homepage.olutechsys.com,homepage.olutech.systems
 ```
 
 Then restart:

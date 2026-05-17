@@ -18,7 +18,7 @@ server:
   image_proxy: true
   port: 8080
   bind_address: "0.0.0.0"
-  base_url: "https://search.otsorundscore.olutechsys.com/"
+  base_url: "https://search.olutechsys.com/"
   http_protocol_version: "1.1"
   method: "POST"
 

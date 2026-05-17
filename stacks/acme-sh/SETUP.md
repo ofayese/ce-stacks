@@ -144,7 +144,7 @@ Importing DSM's **control panel** or **reverse-proxy** certificate is **manual**
 ```bash
 openssl x509 -in /volume2/certs/acme/otsorundscore/fullchain.pem -noout -subject -dates 2>/dev/null || true
 sudo docker exec AcmeSh /acme-sh-entrypoint.sh --list
-CONNECT_HOST=10.0.1.15 CONNECT_PORT=8281 SNI=psu.otsorundscore.olutechsys.com MIN_VALID_DAYS=21 \
+CONNECT_HOST=10.0.1.15 CONNECT_PORT=8281 SNI=psu.olutechsys.com MIN_VALID_DAYS=21 \
   bash "${STACK_ROOT}/acme-sh/scripts/verify_serving.sh"
 ```
 
