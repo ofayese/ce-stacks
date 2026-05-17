@@ -17,9 +17,9 @@ services:
     # See stacks/searxng/README.md for Task Scheduler setup instructions.
     # The warnings are cosmetic - Valkey starts successfully without these.
     environment:
-      - PUID=${PUID:-0}
-      - PGID=${PGID:-0}
-      - TZ=${TZ:-America/New_York}
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
     healthcheck:
       test:
         - CMD
@@ -63,8 +63,9 @@ services:
       - UWSGI_THREADS=${UWSGI_THREADS}
       - TZ=${TZ}
     healthcheck:
-      # searxng uWSGI listens on 8080; /healthz is not available -- probe root path.
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/"]
+      # searxng uWSGI listens on 8080; /healthz is not available — probe TCP port directly
+      # to bypass strict HTTP Host header validation when SEARXNG_BASE_URL is set.
+      test: ["CMD", "nc", "-z", "127.0.0.1", "8080"]
       interval: 30s
       timeout: 10s
       retries: 3
