@@ -132,3 +132,4 @@ temp/
 # ---------------------------------------------------------------------------
 # Synology EA sidecar bundles inside .git/ -- handled by git hooks, not here
 # See scripts for EA cleanup tooling
+stacks/influxdb/data/
