@@ -1,0 +1,25 @@
+# pre-commit.ci configuration
+ci:
+  autofix_commit_msg: "chore(pre-commit): auto fixes from pre-commit.ci"
+  autoupdate_commit_msg: "chore(pre-commit): pre-commit autoupdate"
+  autoupdate_schedule: weekly
+  autofix_prs: true
+
+repos:
+  # Standard file hygiene and syntax checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+      - id: check-executables-have-shebangs
+
+  # Shell script linting for your /scripts directory
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.10.0.1
+    hooks:
+      - id: shellcheck
+        args: ["-x"]

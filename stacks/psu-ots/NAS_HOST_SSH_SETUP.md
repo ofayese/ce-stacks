@@ -7,7 +7,7 @@
 On your workstation or the NAS:
 
 ```bash
-ssh-keygen -t ed25519 -f psu_remediation_key -N ""
+ssh-keygen -t ed25519 -f psu_remediation_key #-N ""
 ```
 
 Keep **`psu_remediation_key`** private; distribute only **`psu_remediation_key.pub`**.
