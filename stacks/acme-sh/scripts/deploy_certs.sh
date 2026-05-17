@@ -42,6 +42,23 @@ notify_discord() {
 	curl -fsS -X POST "${DISCORD_WEBHOOK_URL}" -H 'Content-Type: application/json' -d "${payload}" || true
 }
 
+# Auto-detect STACK_ROOT from script location (script lives at stacks/acme-sh/scripts/).
+# Repo root is three levels up; stacks/ is one level below that.
+# Falls back to repo-root .env, then to the canonical NAS path.
+if [[ -z "${STACK_ROOT:-}" ]]; then
+	_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+	_REPO_ROOT="$(cd "${_SCRIPT_DIR}/../../.." && pwd)"
+	if [[ -d "${_REPO_ROOT}/stacks" ]]; then
+		STACK_ROOT="${_REPO_ROOT}/stacks"
+		echo "Auto-detected STACK_ROOT: ${STACK_ROOT}"
+	elif [[ -f "${_REPO_ROOT}/.env" ]] && grep -q '^STACK_ROOT=' "${_REPO_ROOT}/.env" 2>/dev/null; then
+		STACK_ROOT="$(grep '^STACK_ROOT=' "${_REPO_ROOT}/.env" | cut -d= -f2- | tr -d '"' | tr -d "'")"
+		echo "STACK_ROOT loaded from ${_REPO_ROOT}/.env: ${STACK_ROOT}"
+	else
+		STACK_ROOT="/volume2/docker/ce-stacks/stacks"
+		echo "STACK_ROOT defaulting to: ${STACK_ROOT}"
+	fi
+fi
 STACK_ROOT="${STACK_ROOT:?Set STACK_ROOT to your stacks directory (e.g. /volume2/docker/ce-stacks/stacks)}"
 ACME_CERT_ROOT="${ACME_CERT_ROOT:-/volume2/certs/acme}"
 DO_HAPROXY_CHECK=1
