@@ -1,7 +1,7 @@
 services:
   homepage:
     container_name: Homepage
-    image: ghcr.io/gethomepage/homepage:v1.12.0
+    image: ghcr.io/gethomepage/homepage:v1.13.1
     mem_limit: 512m
     cpu_shares: 512
     # cpus: removed - Synology DS723+ kernel lacks CFS scheduler cgroup (NanoCPUs unsupported)
