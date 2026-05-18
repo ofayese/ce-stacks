@@ -137,7 +137,9 @@ services:
       - TZ=${TZ:-America/New_York}
       # Active agent: connects out to the server rather than waiting to be polled.
       # Server IP must be the host LAN IP because the agent is on the host network.
-      - ZBX_HOSTNAME=Synology-DS723
+      # NOTE: zabbix-agent2 image uses ZBX_HOSTNAME -- not ZBX_AGENT_HOSTNAME.
+      # Set ZBX_HOSTNAME in .env (e.g. ZBX_HOSTNAME=Synology-DS723).
+      - ZBX_HOSTNAME=${ZBX_HOSTNAME:-Synology-DS723}
       - ZBX_SERVER_HOST=10.0.1.15
       - ZBX_SERVER_PORT=${ZABBIX_SERVER_PORT:-10051}
       - ZBX_ACTIVE_ALLOW=true
