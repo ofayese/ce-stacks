@@ -127,6 +127,10 @@ services:
     cpu_shares: 256
     security_opt:
       - no-new-privileges:true
+      # Synology DS723+ kernel does not support AppArmor -- /proc/self/attr is
+      # read-only. Without this, Docker fails to start the container with:
+      #   "apparmor failed to apply profile: open /proc/self/attr/exec: read-only file system"
+      - apparmor:unconfined
     restart: unless-stopped
     depends_on:
       zabbix-server:
