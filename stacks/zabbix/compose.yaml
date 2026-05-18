@@ -118,19 +118,19 @@ services:
   zabbix-agent:
     container_name: Zabbix-Agent
     image: zabbix/zabbix-agent2:alpine-7.4.10
-    # Bridge networking via zabbix-net. The agent collects host metrics through
-    # bind-mounted /proc, /sys, /var/run -- network_mode:host is not required for data
-    # collection. Active checks connect to zabbix-server by Docker DNS (same network).
-    # network_mode:host is avoided because Synology DS723+ has AppArmor stubs in the
-    # kernel that make runc attempt a profile write to /proc/self/attr/exec (read-only)
-    # at container init -- this breaks ALL host-network containers regardless of
-    # security_opt settings.
+    # Bridge networking via zabbix-net. Host metrics come through bind-mounted
+    # /proc, /sys, /var/run -- network_mode:host is not needed for data collection.
     networks:
       - zabbix-net
     mem_limit: 128m
     cpu_shares: 256
-    security_opt:
-      - no-new-privileges:true
+    # privileged: true is required on Synology DS723+. The kernel has AppArmor stubs
+    # that cause runc to attempt a write to /proc/self/attr/exec (read-only) at
+    # container init. With privileged: true, Docker sets AppArmor profile to "" in the
+    # OCI spec and runc skips the write entirely. security_opt must NOT be set alongside
+    # privileged on this kernel -- no-new-privileges:true prevents AppArmor from being
+    # cleared and reintroduces the crash.
+    privileged: true
     restart: unless-stopped
     depends_on:
       zabbix-server:
