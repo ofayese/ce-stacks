@@ -125,13 +125,14 @@ services:
     network_mode: host
     mem_limit: 128m
     cpu_shares: 256
+    # privileged: true is required on Synology DS723+ for host-network monitoring containers.
+    # The Synology kernel has AppArmor partially compiled-in but /proc/self/attr/exec is
+    # read-only -- runc cannot write ANY AppArmor profile (including "unconfined") at
+    # container init time. privileged: true bypasses AppArmor profile application entirely.
+    # This is acceptable for a monitoring agent that already mounts /, /proc, /sys, /var/run.
+    privileged: true
     security_opt:
       - no-new-privileges:true
-      # Synology DS723+ kernel does not support AppArmor -- /proc/self/attr is
-      # read-only. Without this, Docker fails to start the container with:
-      #   "apparmor failed to apply profile: open /proc/self/attr/exec: read-only file system"
-      # NOTE: must use = not : -- AppArmor secopt parser requires apparmor=unconfined form.
-      - apparmor=unconfined
     restart: unless-stopped
     depends_on:
       zabbix-server:
