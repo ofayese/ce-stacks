@@ -17,7 +17,7 @@ services:
     restart: unless-stopped
     # Host 8812 -> container 8811 (parity with root compose.yaml)
     ports:
-      - 10.0.1.15:8812:8811
+      - "10.0.1.15:8812:8811"
     volumes:
       # /var/run socket context
       # Host-profile fix: dropped :rw -> :ro (parity with ../compose.yaml).

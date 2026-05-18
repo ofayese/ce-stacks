@@ -97,18 +97,32 @@ if command -v rsync >/dev/null 2>&1; then
     [ "$DRY_RUN" -eq 1 ] && RSYNC_FLAGS+=(--dry-run --itemize-changes)
     rsync "${RSYNC_FLAGS[@]}" "${EXCLUDES[@]}" "${SRC}/" "${DST}/"
 else
-    echo "dockhand-sync: rsync not available; falling back to cp -R"
+    echo "dockhand-sync: rsync not available; using safer cp fallback"
     if [ "$DRY_RUN" -eq 1 ]; then
-        echo "dockhand-sync: (dry-run) would copy ${SRC}/ -> ${DST}/ (no-clobber for protected paths)"
+        echo "dockhand-sync: (dry-run) would copy ${SRC}/ -> ${DST}/ (preserving runtime state)"
     else
-        # cp with no-clobber preserves anything already at the destination.
-        # We do an `cp -R` then redo with `-n` for the protected runtime dirs.
-        cp -R "${SRC}/." "${DST}/"
-        # Restore protected paths if they happen to exist in src (they shouldn't):
+        # Backup and preserve protected runtime paths before copy.
         for protected in data db stacks git-repos tmp icons snapshots scanner-cache secrets .env; do
-            if [ -e "${SRC}/${protected}" ] && [ -e "${DST}/${protected}.bak" ]; then
+            if [ -e "${DST}/${protected}" ]; then
+                mv "${DST}/${protected}" "${DST}/${protected}.backup.$$" || {
+                    echo "dockhand-sync: ERROR: failed to backup ${DST}/${protected}" >&2
+                    exit 1
+                }
+            fi
+        done
+        # Now copy everything from source.
+        cp -R "${SRC}/." "${DST}/" || {
+            echo "dockhand-sync: ERROR: cp failed; restoring backups" >&2
+            for protected in data db stacks git-repos tmp icons snapshots scanner-cache secrets .env; do
+                [ -e "${DST}/${protected}.backup.$$" ] && mv "${DST}/${protected}.backup.$$" "${DST}/${protected}"
+            done
+            exit 1
+        }
+        # Restore protected paths from backups.
+        for protected in data db stacks git-repos tmp icons snapshots scanner-cache secrets .env; do
+            if [ -e "${DST}/${protected}.backup.$$" ]; then
                 rm -rf "${DST}/${protected}"
-                mv "${DST}/${protected}.bak" "${DST}/${protected}"
+                mv "${DST}/${protected}.backup.$$" "${DST}/${protected}"
             fi
         done
     fi

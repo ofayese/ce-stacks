@@ -28,7 +28,8 @@ BUDGET_MB="${HOST_MEM_BUDGET_MB:-32000}"
 # -- parse_mem_to_mb -------------------------------------------------
 # Accepts: 128m, 512M, 1g, 14G, 2GB, 256MB, 1024k, 4096b, or a bare integer (assumed bytes).
 # Emits: integer megabytes (floor).
-# Returns 1 if input is empty / malformed.
+# Rejects decimals to avoid floating-point precision loss in budget calculations.
+# Returns 1 if input is empty / malformed / contains decimal places.
 parse_mem_to_mb() {
     local v="${1:-}"
     [[ -z "${v}" ]] && return 1
@@ -41,8 +42,8 @@ parse_mem_to_mb() {
     if [[ "${num}" == "${v}" ]]; then
         unit="bytes"
     fi
-    # Validate numeric
-    [[ "${num}" =~ ^[0-9]+(\.[0-9]+)?$ ]] || return 1
+    # Validate numeric: reject decimals to prevent silent precision loss
+    [[ "${num}" =~ ^[0-9]+$ ]] || return 1
     awk -v n="${num}" -v u="${unit}" 'BEGIN {
         if (u == "bytes") { print int(n / 1024 / 1024); }
         else if (u == "k") { print int(n / 1024); }
@@ -75,6 +76,7 @@ if [[ "${1:-}" == "--self-test" ]]; then
     check "2G" "2048"
     check "256MB" "256"
     check "16m" "16"
+    check "1.5g" "ERR"  # decimals rejected
     echo ""
     echo "Self-test: ${pass} passed, ${fail} failed."
     [[ "${fail}" -eq 0 ]] || exit 1

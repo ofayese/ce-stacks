@@ -255,11 +255,11 @@ services:
       - "9586"
       - --interfaces
       - "wg0"
-    volumes:
-      # Retained for future use: this build does not support --peers_file so peer [Name] labels
-      # are not injected into metrics. The mount is harmless and can be activated if upgrading
-      # to a build that supports --peers_file (add flag to command: block above).
-      - /etc/wireguard/wg0.conf:/etc/wireguard/wg0.conf:ro
+    # Volumes disabled: this build does not support --peers_file so peer [Name] labels
+    # are not injected into metrics. Can be re-enabled if upgrading to a build that
+    # supports --peers_file (uncomment and add flag to command: block above).
+    # volumes:
+    #   - /etc/wireguard/wg0.conf:/etc/wireguard/wg0.conf:ro
     restart: unless-stopped
     mem_limit: 64m
     cpu_shares: 128

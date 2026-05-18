@@ -11,7 +11,7 @@ services:
       - no-new-privileges:true
     restart: unless-stopped
     ports:
-      - 10.0.1.15:8889:3000
+      - "10.0.1.15:8889:3000"
     environment:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}

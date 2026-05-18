@@ -9,7 +9,7 @@ services:
       - no-new-privileges:true
     restart: unless-stopped
     ports:
-      - 10.0.1.15:8894:80
+      - "10.0.1.15:8894:80"
     environment:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}

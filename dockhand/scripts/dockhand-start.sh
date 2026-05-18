@@ -1,4 +1,5 @@
-#!/bin/sh
+HEALTH_RETRIES=0
+MAX_HEALTH_RETRIES=90  # 90 * 2s = 180s total wait (accounts for health-start-period=120s)#!/bin/sh
 # =============================================================================
 # Dockhand startup script - Synology DSM rc.d replacement
 # =============================================================================
@@ -214,8 +215,7 @@ fi
 
 # Wait for health check to pass (up to 60s + health-start-period)
 echo "dockhand-start: waiting for ${NAME} to become healthy..."
-HEALTH_RETRIES=0
-MAX_HEALTH_RETRIES=30
+if [ $HEALTH_RETRIES -ge $MAX_HEALTH_RETRIES ]; then
 while [ $HEALTH_RETRIES -lt $MAX_HEALTH_RETRIES ]; do
     HEALTH=$($DOCKER inspect -f '{{.State.Health.Status}}' "$NAME" 2>/dev/null || echo "none")
     if [ "$HEALTH" = "healthy" ]; then

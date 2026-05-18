@@ -27,13 +27,16 @@ export CODE_SERVER_PASSWORD="${CODE_SERVER_PASSWORD:-validation_dummy_pass}"
 export WATCHTOWER_NOTIFICATION_URL="${WATCHTOWER_NOTIFICATION_URL:-discord://dummy_token@dummy_id}"
 
 mkdir -p "${STACKS}/grafana-prom/secrets"
-if [[ ! -s "${STACKS}/grafana-prom/secrets/watchtower_bearer_token.txt" ]]; then
+# Create watchtower bearer token if missing (size 0 files indicate corruption).
+if [[ ! -f "${STACKS}/grafana-prom/secrets/watchtower_bearer_token.txt" ]] || [[ ! -s "${STACKS}/grafana-prom/secrets/watchtower_bearer_token.txt" ]]; then
 	printf 'ci-watchtower-bearer-token\n' >"${STACKS}/grafana-prom/secrets/watchtower_bearer_token.txt"
 fi
 
 mkdir -p "${STACKS}/databases/secrets"
+# Create database secret files if missing or size 0 (corruption check).
+mkdir -p "${STACKS}/databases/secrets"
 for f in mariadb_root_pw.txt mariadb_app_pw.txt postgres_pw.txt; do
-	if [[ ! -s "${STACKS}/databases/secrets/${f}" ]]; then
+	if [[ ! -f "${STACKS}/databases/secrets/${f}" ]] || [[ ! -s "${STACKS}/databases/secrets/${f}" ]]; then
 		printf 'ci-dummy-db-secret\n' >"${STACKS}/databases/secrets/${f}"
 	fi
 done

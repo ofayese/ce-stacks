@@ -33,7 +33,7 @@ services:
       - no-new-privileges:true
     restart: unless-stopped
     ports:
-      - 10.0.1.15:5371:5000
+      - "10.0.1.15:5371:5000"
     volumes:
       # SQLite DB, agent installers, and app data live here.
       - ${STACK_ROOT}/remotely/data:/app/AppData:rw

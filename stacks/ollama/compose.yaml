@@ -22,7 +22,7 @@ services:
         max-file: "3"
     restart: unless-stopped
     ports:
-      - 10.0.1.15:11434:11434
+      - "10.0.1.15:11434:11434"
     networks:
       - ollama-net
     entrypoint: ["/bin/bash", "/entrypoint.sh"]
@@ -68,7 +68,7 @@ services:
         max-file: "3"
     restart: unless-stopped
     ports:
-      - 10.0.1.15:8893:8080
+      - "10.0.1.15:8893:8080"
     volumes:
       - ${STACK_ROOT}/ollama/data/open-webui:/app/backend/data:rw
     environment:
@@ -108,6 +108,7 @@ networks:
     driver: bridge
     ipam:
       config:
-        # Restored the 172.31.0.0/24 subnet to sidestep the overlap error
-        - subnet: 172.31.0.0/24
-          gateway: 172.31.0.1
+        # Synology DS723+ local LLM inference network.
+        # Subnet 172.27.0.0/24 per host-profile (avoid collision with dozzle 172.31.0.0/24 and watchtower 172.31.1.0/24).
+        - subnet: 172.27.0.0/24
+          gateway: 172.27.0.1
