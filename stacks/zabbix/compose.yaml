@@ -10,9 +10,10 @@ services:
     networks:
       - zabbix-net
     environment:
-      - PUID=${PUID:-0}
-      - PGID=${PGID:-0}
-      - TZ=${TZ:-America/New_York}
+      # Stripped bash fallbacks for full Dockhand .env parser compatibility
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -39,6 +40,9 @@ services:
     cpu_shares: 1024
     security_opt:
       - no-new-privileges:true
+    # Replaced unsupported ping_group_range sysctl with native Docker capability
+    cap_add:
+      - NET_RAW
     restart: unless-stopped
     networks:
       - zabbix-net
@@ -46,11 +50,11 @@ services:
       postgres:
         condition: service_healthy
     ports:
-      - "10.0.1.15:${ZABBIX_SERVER_PORT:-10051}:10051"
+      - "10.0.1.15:${ZABBIX_SERVER_PORT}:10051"
     environment:
-      - PUID=${PUID:-0}
-      - PGID=${PGID:-0}
-      - TZ=${TZ:-America/New_York}
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
       - DB_SERVER_HOST=postgres
       - DB_SERVER_PORT=5432
       - POSTGRES_DB=${POSTGRES_DB}
@@ -90,9 +94,9 @@ services:
     ports:
       - "10.0.1.15:${ZABBIX_WEB_PORT}:8080"
     environment:
-      - PUID=${PUID:-0}
-      - PGID=${PGID:-0}
-      - TZ=${TZ:-America/New_York}
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
       - DB_SERVER_HOST=postgres
       - DB_SERVER_PORT=5432
       - POSTGRES_DB=${POSTGRES_DB}
@@ -100,7 +104,7 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - ZBX_SERVER_HOST=zabbix-server
       - ZBX_SERVER_PORT=10051
-      - PHP_TZ=${TZ:-America/New_York}
+      - PHP_TZ=${TZ}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/ping"]
       interval: 30s
@@ -118,33 +122,25 @@ services:
   zabbix-agent:
     container_name: Zabbix-Agent
     image: zabbix/zabbix-agent2:alpine-7.4.10
-    # Bridge networking via zabbix-net. Host metrics come through bind-mounted
-    # /proc, /sys, /var/run -- network_mode:host is not needed for data collection.
-    # AppArmor note: Synology DS723+ kernel has AppArmor stubs compiled in but the
-    # write path (/proc/self/attr/exec) is read-only. Fix applied at the host level:
-    # /usr/local/etc/rc.d/00-disable-apparmor-detection.sh binds /dev/null over
-    # /sys/module/apparmor/parameters/enabled so runc skips AppArmor for all containers.
-    # See: https://github.com/opencontainers/runc/issues/4968
     networks:
       - zabbix-net
     mem_limit: 128m
     cpu_shares: 256
     security_opt:
       - no-new-privileges:true
+      # Unconfines apparmor to prevent crashes when mounting /proc and /sys
+      - apparmor=unconfined
     restart: unless-stopped
     depends_on:
       zabbix-server:
         condition: service_healthy
     environment:
-      - PUID=${PUID:-0}
-      - PGID=${PGID:-0}
-      - TZ=${TZ:-America/New_York}
-      # NOTE: zabbix-agent2 image uses ZBX_HOSTNAME -- not ZBX_AGENT_HOSTNAME.
-      # Set ZBX_HOSTNAME in .env (e.g. ZBX_HOSTNAME=Synology-DS723).
-      - ZBX_HOSTNAME=${ZBX_HOSTNAME:-Synology-DS723}
-      # Docker DNS -- agent and server share zabbix-net.
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - ZBX_HOSTNAME=${ZBX_HOSTNAME}
       - ZBX_SERVER_HOST=zabbix-server
-      - ZBX_SERVER_PORT=${ZABBIX_SERVER_PORT:-10051}
+      - ZBX_SERVER_PORT=${ZABBIX_SERVER_PORT}
       - ZBX_ACTIVE_ALLOW=true
       - ZBX_PASSIVE_ALLOW=true
     volumes:
