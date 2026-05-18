@@ -42,6 +42,7 @@ services:
       - BRIDGE_SHARED_SECRET=${BRIDGE_SHARED_SECRET}
       - PASSWORD=${CODE_SERVER_PASSWORD}
       - SUDO_PASSWORD=${SUDO_PASSWORD}
+      - PROXY_DOMAIN=${PROXY_DOMAIN}
     networks:
       - code-server-net
 
