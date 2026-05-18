@@ -16,7 +16,7 @@ services:
         max-file: "3"
     restart: unless-stopped
     ports:
-      - 10.0.1.15:8812:8811
+      - "10.0.1.15:8812:8811"
     volumes:
       # /var/run socket context
       # Host-profile fix: dropped :rw -> :ro. Gateway reads container metadata only.
@@ -33,9 +33,10 @@ services:
       retries: 5
       start_period: 15s
     environment:
-      - PUID=${PUID:-0}
-      - PGID=${PGID:-0}
-      - TZ=America/New_York
+      # Pure syntax required for full Dockhand .env parser compatibility
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
       - OLLAMA_API_BASE_URL=${OLLAMA_API_BASE_URL}
       - BRIDGE_SHARED_SECRET=${BRIDGE_SHARED_SECRET}
     labels:
@@ -46,6 +47,7 @@ services:
     networks:
       - agents-gateway-net
       - ce-internal
+
 networks:
   agents-gateway-net:
     name: agents-gateway-net
