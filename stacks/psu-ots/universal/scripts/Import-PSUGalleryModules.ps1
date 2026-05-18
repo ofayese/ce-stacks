@@ -38,12 +38,11 @@ function Get-NASGalleryModuleNames {
         'PowerShellUniversal.Scripts',
         'PowerShellUniversal.Apps.Tools',
         'PowerShellUniversal.API.PSResourceGet',
-        'PowerShellUniversal.Plaster',
-        'PowershellUniversal.Plaster',
+        'PowerShellUniversal.Plaster',   # canonical casing; duplicate 'PowershellUniversal.Plaster' removed
         'PowerShellUniversal.Apps.Cookbook',
-        'PowerShellUniversal.Apps.Random',
-        'Universal.Apps.ActiveDirectory',
-        'PowerShellUniversal.Roles.ActiveDirectory'
+        'PowerShellUniversal.Apps.Random'
+        # Removed: Universal.Apps.ActiveDirectory, PowerShellUniversal.Roles.ActiveDirectory
+        # Neither package exists in PSGallery — PSU_GALLERY_INSTALL_STRICT=1 caused abort before PSU started.
     ) | Select-Object -Unique
 
     if ($IncludeWindowsOnly) {
