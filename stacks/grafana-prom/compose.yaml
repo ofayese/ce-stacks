@@ -245,8 +245,9 @@ services:
     network_mode: host
     cap_add:
       - NET_ADMIN
-    # clap v3 requires --prepend_sudo as an explicit CLI flag -- env var PROMETHEUS_WIREGUARD_EXPORTER_PREPEND_SUDO
-    # is not reliably picked up in v3.6.6 and causes a crash loop. Pass all args via command: to be safe.
+    # This build of mindflavor/prometheus-wireguard-exporter:3.6.6 only accepts three flags.
+    # --peers_file / --prepend_sudo / --verbose_errors are not present in this binary.
+    # Liveness is via CAP_NET_ADMIN (no sudo needed); peer-name labels unavailable without peers_file.
     command:
       - --address
       - "127.0.0.1"
@@ -254,14 +255,10 @@ services:
       - "9586"
       - --interfaces
       - "wg0"
-      - --peers_file
-      - "/etc/wireguard/wg0.conf"
-      - --prepend_sudo
-      - "false"
-      - --verbose_errors
-      - "false"
     volumes:
-      # Mount :ro so peer names are available in metrics; keys remain inaccessible (exporter reads [Interface] + [Peer] Name only).
+      # Retained for future use: this build does not support --peers_file so peer [Name] labels
+      # are not injected into metrics. The mount is harmless and can be activated if upgrading
+      # to a build that supports --peers_file (add flag to command: block above).
       - /etc/wireguard/wg0.conf:/etc/wireguard/wg0.conf:ro
     restart: unless-stopped
     mem_limit: 64m
