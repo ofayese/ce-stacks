@@ -86,12 +86,14 @@ docker exec otsai curl -s http://localhost:11434/api/tags >/dev/null && echo "�
 ## 🆘 If Something Fails
 
 ### Validation fails
+
 ```bash
 bash scripts/compose-validate.sh 2>&1 | grep -i "error\|fail"
 # Then fix the specific issue or rollback
 ```
 
 ### Ollama won't start
+
 ```bash
 cd stacks/ollama
 docker compose logs
@@ -99,12 +101,14 @@ docker compose logs
 ```
 
 ### Dockhand won't be healthy
+
 ```bash
 docker logs dockhand | tail -100
 # Look for "ERROR" lines
 ```
 
 ### Sysctls won't apply
+
 ```bash
 # Verify you're running as root (you are from ssh root@...)
 sysctl net.ipv4.ping_group_range
@@ -167,7 +171,7 @@ sudo /usr/local/etc/rc.d/dockhand.sh
 
 ---
 
-## 🎉 Success!
+## 🎉 Success
 
 When you see this, deployment is complete:
 
@@ -177,6 +181,7 @@ docker inspect dockhand | jq '.State.Health.Status'
 ```
 
 Monitor logs for 24h:
+
 ```bash
 docker logs -f dockhand
 ```
