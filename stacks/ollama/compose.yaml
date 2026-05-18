@@ -14,7 +14,6 @@ services:
     mem_reservation: 6g
     cpu_shares: 1024
     # Hard cap: never let Ollama pin both cores under sustained inference (Cool mode).
-    # cpus: removed - Synology DS723+ kernel lacks CFS scheduler cgroup (NanoCPUs unsupported)
     security_opt:
       - no-new-privileges:true
     logging:
@@ -23,41 +22,29 @@ services:
         max-size: 10m
         max-file: "3"
     restart: unless-stopped
-    # FIXED: Changed from network_mode: host to bridge network (ollama-net).
-    # This allows open-webui to reach Ollama via container hostname "otsai-server"
-    # instead of trying to reach 10.0.1.15:11434 from a different bridge network.
-    # Synology Docker bridge DNS is broken (127.0.0.11), but internal bridge works.
-    # Outbound to registry.ollama.ai works fine from bridge networks.
     ports:
       - 10.0.1.15:11434:11434
     networks:
       - ollama-net
-    # entrypoint.sh pattern from mariushosting.com: starts ollama serve then pulls
-    # models in one container - no separate init container needed.
     entrypoint: ["/bin/bash", "/entrypoint.sh"]
     volumes:
       - ${STACK_ROOT}/ollama/data/ollama:/root/.ollama:rw
       - ${STACK_ROOT}/ollama/scripts/entrypoint.sh:/entrypoint.sh:ro
     environment:
-      - PUID=${PUID:-0}
-      - PGID=${PGID:-0}
-      # Model list is hardcoded in scripts/entrypoint.sh.
-      # Override here only if you need a non-default set:
-      # - MODELS=phi4:mini,nomic-embed-text
-      # CPU: keep at 1 - parallelism halves per-request throughput on R1600
-      - OLLAMA_NUM_PARALLEL=${OLLAMA_NUM_PARALLEL:-1}
-      # CPU: only one model in memory at a time
-      - OLLAMA_MAX_LOADED_MODELS=${OLLAMA_MAX_LOADED_MODELS:-1}
-      # Keep model loaded 30 min after last request (CPU reload takes 15-60s)
-      - OLLAMA_KEEP_ALIVE=${OLLAMA_KEEP_ALIVE:-30m}
-      # Flash attention reduces KV cache memory - always enable on CPU
+      # Use pure syntax for Dockhand parser compatibility
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      # Explicitly mapped Tier Model variables for entrypoint.sh to read
+      - OLLAMA_TIER1_MODELS=${OLLAMA_TIER1_MODELS}
+      - OLLAMA_TIER2_MODELS=${OLLAMA_TIER2_MODELS}
+      - OLLAMA_TIER3_MODELS=${OLLAMA_TIER3_MODELS}
+      - OLLAMA_NUM_PARALLEL=${OLLAMA_NUM_PARALLEL}
+      - OLLAMA_MAX_LOADED_MODELS=${OLLAMA_MAX_LOADED_MODELS}
+      - OLLAMA_KEEP_ALIVE=${OLLAMA_KEEP_ALIVE}
       - OLLAMA_FLASH_ATTENTION=1
-      - TZ=America/New_York
     labels:
-      # Pinned to a fixed semver tag (see image: above). Watchtower MUST NOT
-      # auto-pull -- a mid-pull restart corrupts the model store under /root/.ollama.
       - com.centurylinklabs.watchtower.enable=false
-    # Healthcheck: ollama binary self-probe via CMD (curl not in image).
     healthcheck:
       test:
         - CMD
@@ -71,11 +58,8 @@ services:
   open-webui:
     container_name: otsai-webui
     image: ghcr.io/open-webui/open-webui:v0.9.5
-    # Host-profile fix: 2g -> 1g. Open-WebUI is a Node/Python web UI; 1g covers
-    # SSE streaming + RAG indexing without competing with the ollama serve container.
     mem_limit: 1g
     cpu_shares: 768
-    # cpus: removed - Synology DS723+ kernel lacks CFS scheduler cgroup (NanoCPUs unsupported)
     security_opt:
       - no-new-privileges:true
     logging:
@@ -89,19 +73,15 @@ services:
     volumes:
       - ${STACK_ROOT}/ollama/data/open-webui:/app/backend/data:rw
     environment:
-      - PUID=${PUID:-0}
-      - PGID=${PGID:-0}
-      # FIXED: Changed from 10.0.1.15:11434 to otsai-server (container hostname).
-      # Both services now on ollama-net, so container DNS resolves otsai-server to Ollama.
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
       - OLLAMA_BASE_URL=http://otsai:11434
       - BRIDGE_SHARED_SECRET=${BRIDGE_SHARED_SECRET}
       - WEBUI_AUTH=1
       - WEBUI_NAME=OluTechSystems.AI
-      - WEBUI_URL=${WEBUI_URL:-https://10.0.1.15:8893}
-      # Comma-separated model names shown in dropdown (does NOT auto-pull).
-      # entrypoint.sh handles auto-pull when otsai-server starts.
-      - DEFAULT_MODELS=${DEFAULT_MODELS:-stablelm2:3b,stablelm2:7b,qwen2.5-coder:7b,nomic-embed-text}
-      - TZ=America/New_York
+      - WEBUI_URL=${WEBUI_URL}
+      - DEFAULT_MODELS=${DEFAULT_MODELS}
     depends_on:
       ollama:
         condition: service_healthy
@@ -122,11 +102,9 @@ services:
 
 networks:
   ollama-net:
-    # Used by both ollama and open-webui.
     name: ollama-net
     driver: bridge
     ipam:
       config:
-        # Subnet registry: 172.27.0.0/24 allocated to ollama-net (see README.md)
         - subnet: 172.27.0.0/24
           gateway: 172.27.0.1
