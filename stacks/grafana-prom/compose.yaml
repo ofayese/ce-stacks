@@ -249,7 +249,9 @@ services:
     # is not reliably picked up in v3.6.6 and causes a crash loop. Pass all args via command: to be safe.
     command:
       - --address
-      - "127.0.0.1:9586"
+      - "127.0.0.1"
+      - --port
+      - "9586"
       - --interfaces
       - "wg0"
       - --peers_file
