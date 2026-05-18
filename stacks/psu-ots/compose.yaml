@@ -100,7 +100,7 @@ services:
       - psu-ots-net
 
   psu-agent:
-    container_name: psu-ots-agent
+    container_name: otsagt
     image: ironmansoftware/universal-agent
     # Pin digest to match psu-server on upgrade. Resolve with:
     #   docker pull ironmansoftware/universal-agent:<tag>
