@@ -23,6 +23,8 @@ services:
       # If a future tool container truly needs :rw, front the socket with
       # tecnativa/docker-socket-proxy (defense in depth -- see README).
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Data persistence mount - adding this allows Dockhand to detect and inject STACK_ROOT
+      - ${STACK_ROOT}/agents_gateway_data/data:/data:rw
     # Healthcheck type: A - HTTP /health probe (wget - verified 2026-05-07)
     # Host publishes 8812->8811; in-container probe stays on 8811. Upstream example uses /health.
     # Source: https://raw.githubusercontent.com/docker/mcp-gateway/main/examples/health/compose.yaml
