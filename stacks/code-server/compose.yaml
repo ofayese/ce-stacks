@@ -13,12 +13,10 @@ services:
     image: ghcr.io/linuxserver/code-server:4.118.0-ls337
     container_name: CodeServer
     # Host-profile fix: 4g -> 3g. Realistic working set for code-server + a couple
-    # of Node/TS workspaces is ~1.5 GB; 3g leaves headroom for `npm install` peaks
+    # of Node/TS workspaces is ~1.5 GB; 3g leaves headroom for npm install peaks
     # without crowding the DB sidecars on a 32 GB host.
     mem_limit: 3g
     cpu_shares: 1024
-    # Hard cap: code-server + Node/TS toolchains can saturate both cores during npm install.
-    # cpus: removed - Synology DS723+ kernel lacks CFS scheduler cgroup (NanoCPUs unsupported)
     security_opt:
       - no-new-privileges:true
     logging:
@@ -28,51 +26,25 @@ services:
         max-file: "3"
     restart: unless-stopped
     ports:
-      - 10.0.1.15:8377:8443
+      - "10.0.1.15:8377:8443"
     volumes:
       # linuxserver unified config dir - replaces separate .config + .local/share mounts
       - ${STACK_ROOT}/code-server/config:/config:rw
-      - ${CODE_SERVER_HOST_DOCKER_BIND:?set CODE_SERVER_HOST_DOCKER_BIND in
-        .env}:/config/workspace/docker:rw # EXEMPT operator wide bind (see stack README)
-      - ${CODE_SERVER_HOST_HOME_BIND:?set CODE_SERVER_HOST_HOME_BIND in
-        .env}:/config/workspace/home:rw # EXEMPT operator home bind
-
-      # /var/run socket context
-      # SECURITY: docker.sock :rw - In-IDE Docker needs full API access for build, run, and compose operations.
-      - /var/run/docker.sock:/var/run/docker.sock:rw
-      # GAP-08: inject PASSWORD + SUDO_PASSWORD via Docker secrets.
-      # init-secrets.sh runs as an s6-overlay custom-cont-init hook and writes
-      # the values to /var/run/s6/container_environment/ before code-server starts.
-      - ${STACK_ROOT}/code-server/scripts/init-secrets.sh:/custom-cont-init.d/10-secrets.sh:ro
+      # Removed bash guard syntax to allow Dockhand to inject these bindings
+      - ${CODE_SERVER_HOST_DOCKER_BIND}:/config/workspace/docker:rw
+      - ${CODE_SERVER_HOST_HOME_BIND}:/config/workspace/home:rw
     environment:
-      - PUID=${PUID:-0}
-      - PGID=${PGID:-0}
-      - TZ=${TZ:-America/New_York}
-      # PASSWORD and SUDO_PASSWORD intentionally absent - injected by init-secrets.sh
-      # from /run/secrets/code_server_password and /run/secrets/sudo_password.
-      - PROXY_DOMAIN=${PROXY_DOMAIN:-}
-      - DEFAULT_WORKSPACE=/config/workspace
-    secrets:
-      - code_server_password
-      - sudo_password
-    # Healthcheck type B: HTTPS probe with -k (self-signed cert acceptable for internal health check).
-    # linuxserver/code-server serves HTTPS on 8443 internally, even when behind a reverse proxy.
-    healthcheck:
-      test:
-        - CMD
-        - curl
-        - -fsk
-        - https://localhost:8443/
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-    labels:
-      - com.centurylinklabs.watchtower.enable=true
-    extra_hosts:
-      - otsorundscore.olutechsys.com:10.0.1.15
+      # Explicitly map all variables and secrets so Dockhand can inject them
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - DOCKER_USER=${DOCKER_USER}
+      - BRIDGE_SHARED_SECRET=${BRIDGE_SHARED_SECRET}
+      - PASSWORD=${CODE_SERVER_PASSWORD}
+      - SUDO_PASSWORD=${SUDO_PASSWORD}
     networks:
       - code-server-net
+
   db:
     image: mysql:8.3
     container_name: CodeServerDB
@@ -80,7 +52,6 @@ services:
     # 128 MB and small dev datasets rarely exceed 200 MB resident.
     mem_limit: 1g
     cpu_shares: 512
-    # cpus: removed - Synology DS723+ kernel lacks CFS scheduler cgroup (NanoCPUs unsupported)
     security_opt:
       - no-new-privileges:true
     logging:
@@ -90,18 +61,19 @@ services:
         max-file: "3"
     restart: unless-stopped
     ports:
-      - 10.0.1.15:3307:3306
+      - "10.0.1.15:3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
       - ${STACK_ROOT}/code-server/config/mysql-init:/docker-entrypoint-initdb.d:ro
     environment:
-      - PUID=${PUID:-0}
-      - PGID=${PGID:-0}
+      # Pure syntax required for full Dockhand .env parser compatibility
+      - PUID=${PUID}
+      - PGID=${PGID}
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=${MYSQL_DATABASE:-development}
-      - MYSQL_USER=${MYSQL_USER:-developer}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${PMA_CONTROLPASS}
-      - TZ=${TZ:-America/New_York}
+      - TZ=${TZ}
     healthcheck:
       test:
         - CMD
@@ -121,12 +93,12 @@ services:
       - com.centurylinklabs.watchtower.enable=false
     networks:
       - code-server-net
+
   phpmyadmin:
     image: phpmyadmin:5.2.2-apache
     container_name: CodeServerPMA
     mem_limit: 512m
     cpu_shares: 256
-    # cpus: removed - Synology DS723+ kernel lacks CFS scheduler cgroup (NanoCPUs unsupported)
     security_opt:
       - no-new-privileges:true
     logging:
@@ -138,21 +110,22 @@ services:
     ports:
       # 8379: avoids port conflict with db-tools/PhpMyAdmin (10.0.1.15:8378 -> native MariaDB).
       # CodeServerPMA targets the code-server MySQL sidecar (port 3307 internal).
-      - 10.0.1.15:8379:80
+      - "10.0.1.15:8379:80"
     volumes:
       - ${STACK_ROOT}/code-server/config/phpmyadmin:/etc/phpmyadmin:rw
       - ${STACK_ROOT}/code-server/data/phpmyadmin_sessions:/sessions:rw
     environment:
-      - PUID=${PUID:-0}
-      - PGID=${PGID:-0}
+      # Pure syntax required for full Dockhand .env parser compatibility
+      - PUID=${PUID}
+      - PGID=${PGID}
       - PMA_HOST=db
       - PMA_PORT=3306
-      - PMA_CONTROLUSER=${PMA_CONTROLUSER:-pma}
+      - PMA_CONTROLUSER=${PMA_CONTROLUSER}
       - PMA_CONTROLPASS=${PMA_CONTROLPASS}
       - PMA_BLOWFISH_SECRET=${PMA_BLOWFISH_SECRET}
-      - PMA_ABSOLUTE_URI=${PMA_ABSOLUTE_URI:-}
+      - PMA_ABSOLUTE_URI=${PMA_ABSOLUTE_URI}
       - HIDE_PHP_VERSION=1
-      - TZ=${TZ:-America/New_York}
+      - TZ=${TZ}
     healthcheck:
       test:
         - CMD
@@ -170,8 +143,9 @@ services:
       - com.centurylinklabs.watchtower.enable=true
     networks:
       - code-server-net
-# GAP-08: Docker file-based secrets for code-server credentials.
-# Populate: see stacks/code-server/secrets/README.md
+
+### GAP-08: Docker file-based secrets for code-server credentials.
+### Populate: see stacks/code-server/secrets/README.md
 secrets:
   code_server_password:
     file: ${STACK_ROOT}/code-server/secrets/code_server_password.txt
@@ -181,6 +155,7 @@ secrets:
 volumes:
   mysql_data:
     driver: local
+
 networks:
   code-server-net:
     name: code-server-net
