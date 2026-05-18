@@ -5,15 +5,14 @@ services:
     # PINNED: floating :latest is dangerous on a stateful model store. Refresh
     # this digest manually after testing on a non-prod host; this also gates
     # Watchtower from auto-pulling (mid-pull restart corrupts model blobs).
-    # To refresh: docker pull ollama/ollama:0.4.7 ; docker inspect ...
-    image: ollama/ollama:0.4.7
+    # To refresh: docker pull ollama/ollama:0.24.0 ; docker inspect ...
+    image: ollama/ollama:0.24.0
     # Host-profile fix (otsorundscore, 32 GB / 2c): lowered 14g -> 10g, reservation
     # 8g -> 6g. 7B-Q4 models RSS ~5-6 GB; 10g leaves 4 GB KV cache headroom and
     # recovers 4 GB for DSM + other stacks on this 2-core CPU-only host.
     mem_limit: 10g
     mem_reservation: 6g
     cpu_shares: 1024
-    # Hard cap: never let Ollama pin both cores under sustained inference (Cool mode).
     security_opt:
       - no-new-privileges:true
     logging:
@@ -31,20 +30,20 @@ services:
       - ${STACK_ROOT}/ollama/data/ollama:/root/.ollama:rw
       - ${STACK_ROOT}/ollama/scripts/entrypoint.sh:/entrypoint.sh:ro
     environment:
-      # Use pure syntax for Dockhand parser compatibility
+      # Restored pure variable syntax for Dockhand parser
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=${TZ}
-      # Explicitly mapped Tier Model variables for entrypoint.sh to read
-      - OLLAMA_TIER1_MODELS=${OLLAMA_TIER1_MODELS}
-      - OLLAMA_TIER2_MODELS=${OLLAMA_TIER2_MODELS}
-      - OLLAMA_TIER3_MODELS=${OLLAMA_TIER3_MODELS}
+      # Mapped for the entrypoint.sh auto-pull logic
+      - MODELS=${OLLAMA_MODELS}
       - OLLAMA_NUM_PARALLEL=${OLLAMA_NUM_PARALLEL}
       - OLLAMA_MAX_LOADED_MODELS=${OLLAMA_MAX_LOADED_MODELS}
       - OLLAMA_KEEP_ALIVE=${OLLAMA_KEEP_ALIVE}
       - OLLAMA_FLASH_ATTENTION=1
     labels:
       - com.centurylinklabs.watchtower.enable=false
+      # Explicitly blocks Dockhand from auto-updating this stateful container
+      - dockhand.update=false
     healthcheck:
       test:
         - CMD
@@ -73,6 +72,7 @@ services:
     volumes:
       - ${STACK_ROOT}/ollama/data/open-webui:/app/backend/data:rw
     environment:
+      # Restored pure variable syntax for Dockhand parser
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=${TZ}
@@ -95,6 +95,8 @@ services:
       start_period: 60s
     labels:
       - com.centurylinklabs.watchtower.enable=true
+      # Creates a clickable quick-launch link in the Dockhand dashboard
+      - dockhand.url=${WEBUI_URL}
     extra_hosts:
       - otsorundscore.olutechsys.com:10.0.1.15
     networks:
@@ -106,5 +108,6 @@ networks:
     driver: bridge
     ipam:
       config:
+        # Restored the 172.31.0.0/24 subnet to sidestep the overlap error
         - subnet: 172.31.0.0/24
           gateway: 172.31.0.1

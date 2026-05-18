@@ -115,6 +115,52 @@ services:
     labels:
       - com.centurylinklabs.watchtower.enable=false
 
+  zabbix-agent:
+    container_name: Zabbix-Agent
+    image: zabbix/zabbix-agent2:alpine-7.4.10
+    # network_mode: host is required on Synology DS723+. Docker bridge containers
+    # cannot ping or reach the NAS host IP (10.0.1.15) due to DSM firewall blocking
+    # ICMP from 172.30.0.0/24. Host networking gives the agent native access to the
+    # NAS network stack so active checks reach the server over 10.0.1.15:10051.
+    network_mode: host
+    mem_limit: 128m
+    cpu_shares: 256
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    depends_on:
+      zabbix-server:
+        condition: service_healthy
+    environment:
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - TZ=${TZ:-America/New_York}
+      # Active agent: connects out to the server rather than waiting to be polled.
+      # Server IP must be the host LAN IP because the agent is on the host network.
+      - ZBX_HOSTNAME=Synology-DS723
+      - ZBX_SERVER_HOST=10.0.1.15
+      - ZBX_SERVER_PORT=${ZABBIX_SERVER_PORT:-10051}
+      - ZBX_ACTIVE_ALLOW=true
+      - ZBX_PASSIVE_ALLOW=true
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /proc:/proc:ro
+    healthcheck:
+      test: ["CMD", "zabbix_agent2", "-t", "agent.ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    labels:
+      - com.centurylinklabs.watchtower.enable=false
+
 networks:
   zabbix-net:
     name: zabbix-net
