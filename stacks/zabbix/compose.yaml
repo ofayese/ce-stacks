@@ -120,17 +120,17 @@ services:
     image: zabbix/zabbix-agent2:alpine-7.4.10
     # Bridge networking via zabbix-net. Host metrics come through bind-mounted
     # /proc, /sys, /var/run -- network_mode:host is not needed for data collection.
+    # AppArmor note: Synology DS723+ kernel has AppArmor stubs compiled in but the
+    # write path (/proc/self/attr/exec) is read-only. Fix applied at the host level:
+    # /usr/local/etc/rc.d/00-disable-apparmor-detection.sh binds /dev/null over
+    # /sys/module/apparmor/parameters/enabled so runc skips AppArmor for all containers.
+    # See: https://github.com/opencontainers/runc/issues/4968
     networks:
       - zabbix-net
     mem_limit: 128m
     cpu_shares: 256
-    # privileged: true is required on Synology DS723+. The kernel has AppArmor stubs
-    # that cause runc to attempt a write to /proc/self/attr/exec (read-only) at
-    # container init. With privileged: true, Docker sets AppArmor profile to "" in the
-    # OCI spec and runc skips the write entirely. security_opt must NOT be set alongside
-    # privileged on this kernel -- no-new-privileges:true prevents AppArmor from being
-    # cleared and reintroduces the crash.
-    privileged: true
+    security_opt:
+      - no-new-privileges:true
     restart: unless-stopped
     depends_on:
       zabbix-server:
@@ -142,16 +142,16 @@ services:
       # NOTE: zabbix-agent2 image uses ZBX_HOSTNAME -- not ZBX_AGENT_HOSTNAME.
       # Set ZBX_HOSTNAME in .env (e.g. ZBX_HOSTNAME=Synology-DS723).
       - ZBX_HOSTNAME=${ZBX_HOSTNAME:-Synology-DS723}
-      # Use Docker DNS -- agent and server share zabbix-net.
+      # Docker DNS -- agent and server share zabbix-net.
       - ZBX_SERVER_HOST=zabbix-server
       - ZBX_SERVER_PORT=${ZABBIX_SERVER_PORT:-10051}
       - ZBX_ACTIVE_ALLOW=true
       - ZBX_PASSIVE_ALLOW=true
     volumes:
-      - /:/rootfs:ro
-      - /var/run:/var/run:ro
-      - /sys:/sys:ro
       - /proc:/proc:ro
+      - /sys:/sys:ro
+      - /var/run:/var/run:ro
+      - ${STACK_ROOT}/zabbix/config:/etc/zabbix:rw
     healthcheck:
       test: ["CMD", "zabbix_agent2", "-t", "agent.ping"]
       interval: 30s
