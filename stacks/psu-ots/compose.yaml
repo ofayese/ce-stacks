@@ -78,15 +78,17 @@ services:
       - ${NAS_REPO_ROOT:-${STACK_ROOT}/..}:/nas-repo:ro
       - ${ACME_CERT_ROOT:-/volume2/certs/acme}:/certs/acme:ro
     healthcheck:
+      # /api/v1/alive returns 200 OK when PSU is ready; root path redirects to login (curl -f fails on 3xx).
+      # start_period: 180s covers LiteDB init + gallery entrypoint module import on cold start.
       test:
         - CMD
         - curl
         - -fs
-        - http://127.0.0.1:5000/
+        - http://127.0.0.1:5000/api/v1/alive
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 120s
+      start_period: 180s
     ports:
       - "10.0.1.15:5570:5000"
     labels:
