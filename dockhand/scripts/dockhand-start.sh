@@ -1,5 +1,4 @@
-HEALTH_RETRIES=0
-MAX_HEALTH_RETRIES=90  # 90 * 2s = 180s total wait (accounts for health-start-period=120s)#!/bin/sh
+#!/bin/sh
 # =============================================================================
 # Dockhand startup script - Synology DSM rc.d replacement
 # =============================================================================
@@ -41,7 +40,7 @@ MAX_HEALTH_RETRIES=90  # 90 * 2s = 180s total wait (accounts for health-start-pe
 #   - Port binding verified (must bind 10.0.1.15:3866)
 #   - Data mount checked (must be at /volume2/docker/dockhand)
 #   - Docker socket access validated (warns if inaccessible)
-#   - Health check passes within 60s start period
+#   - Health check passes within 180s start period
 #
 # On DSM update/reboot, this script re-registers with the RC system.
 # To uninstall:
@@ -213,9 +212,10 @@ else
     create_container
 fi
 
-# Wait for health check to pass (up to 60s + health-start-period)
+# Wait for health check to pass (up to 180s)
 echo "dockhand-start: waiting for ${NAME} to become healthy..."
-if [ $HEALTH_RETRIES -ge $MAX_HEALTH_RETRIES ]; then
+HEALTH_RETRIES=0
+MAX_HEALTH_RETRIES=90
 while [ $HEALTH_RETRIES -lt $MAX_HEALTH_RETRIES ]; do
     HEALTH=$($DOCKER inspect -f '{{.State.Health.Status}}' "$NAME" 2>/dev/null || echo "none")
     if [ "$HEALTH" = "healthy" ]; then
@@ -233,7 +233,7 @@ while [ $HEALTH_RETRIES -lt $MAX_HEALTH_RETRIES ]; do
 done
 
 if [ $HEALTH_RETRIES -ge $MAX_HEALTH_RETRIES ]; then
-    echo "dockhand-start: WARNING: ${NAME} did not reach healthy state within 60s" >&2
+    echo "dockhand-start: WARNING: ${NAME} did not reach healthy state within 180s" >&2
     echo "dockhand-start: Check logs: $DOCKER logs $NAME" >&2
     LOGS=$($DOCKER logs "$NAME" 2>&1 | tail -20)
     echo "$LOGS" >&2
