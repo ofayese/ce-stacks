@@ -104,10 +104,12 @@ services:
 
   psu-agent:
     container_name: otsagt
-    image: devolutions/powershell-universal-agent:2026.1.4-ubuntu-lts
-    # Pin digest to match psu-server on upgrade. Resolve with:
-    #   docker pull devolutions/powershell-universal-agent:2026.1.4-ubuntu-lts
-    #   docker inspect --format='{{index .RepoDigests 0}}' devolutions/powershell-universal-agent:2026.1.4-ubuntu-lts
+    image: devolutions/powershell-universal-agent:2026.1.1-ubuntu-lts
+    # 2026.1.4 agent tag not yet published by Devolutions -- latest available is 2026.1.1-ubuntu-lts.
+    # Bump when Devolutions publishes a matching agent tag for the server version (2026.1.4).
+    # Pin digest after pull:
+    #   docker pull devolutions/powershell-universal-agent:2026.1.1-ubuntu-lts
+    #   docker inspect --format='{{index .RepoDigests 0}}' devolutions/powershell-universal-agent:2026.1.1-ubuntu-lts
     # Then pin: devolutions/powershell-universal-agent@sha256:<digest>
     restart: unless-stopped
     mem_limit: 256m
