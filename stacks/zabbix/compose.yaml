@@ -83,6 +83,8 @@ services:
     cpu_shares: 768
     security_opt:
       - no-new-privileges:true
+    cap_add:
+      - NET_RAW
     restart: unless-stopped
     networks:
       - zabbix-net
@@ -130,6 +132,8 @@ services:
       - no-new-privileges:true
       # Unconfines apparmor to prevent crashes when mounting /proc and /sys
       - apparmor=unconfined
+    cap_add:
+      - NET_RAW
     restart: unless-stopped
     depends_on:
       zabbix-server:
