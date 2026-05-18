@@ -1,4 +1,4 @@
-# Stack: psu-ots - PowerShell Universal (NAS automation / NOC dashboard)
+# Stack: otspsu - PowerShell Universal (NAS automation / NOC dashboard)
 # Exposed on 10.0.1.15:5570; DSM reverse proxy handles TLS termination.
 services:
   universal:
@@ -32,7 +32,7 @@ services:
       - STACK_MANAGER_USERNAME=${STACK_MANAGER_USERNAME:-}
       - STACK_MANAGER_PASSWORD=${STACK_MANAGER_PASSWORD:-}
       - NAS_PULL_APP_TOKEN=${NAS_PULL_APP_TOKEN:-}
-      # Phase 2 PSU API + jobs (see stacks/psu-ots/.env.example)
+      # Phase 2 PSU API + jobs (see stacks/otspsu/.env.example)
       - PSU_AUTH_TOKEN=${PSU_AUTH_TOKEN:-}
       - PSU_ALLOW_STACK_RESTART=${PSU_ALLOW_STACK_RESTART:-0}
       - PSU_REMEDIATION_ENABLED=${PSU_REMEDIATION_ENABLED:-0}
@@ -48,7 +48,7 @@ services:
       - PSU_SAFE_MODE_WEBHOOK_URL=${PSU_SAFE_MODE_WEBHOOK_URL:-}
       - PSU_SAFE_MODE_DISCORD_WEBHOOK=${PSU_SAFE_MODE_DISCORD_WEBHOOK:-}
       - PSU_NAS_ALERT_WEBHOOK_TOKEN=${PSU_NAS_ALERT_WEBHOOK_TOKEN:-}
-      # Host SSH (optional -- see stacks/psu-ots/NAS_HOST_SSH_SETUP.md)
+      # Host SSH (optional -- see stacks/otspsu/NAS_HOST_SSH_SETUP.md)
       - NAS_HOST_IP=${NAS_HOST_IP:-}
       - NAS_SSH_USER=${NAS_SSH_USER:-}
       - SSH_KEY_PATH=${SSH_KEY_PATH:-}
@@ -71,12 +71,12 @@ services:
       - /bin/sh
       - /nas-gallery-entrypoint.sh
     volumes:
-      - ${STACK_ROOT}/psu-ots/scripts/docker-gallery-entrypoint.sh:/nas-gallery-entrypoint.sh:ro
-      - ${STACK_ROOT}/psu-ots/universal/scripts/Install-PSUGalleryModules.ps1:/install/Install-PSUGalleryModules.ps1:ro
-      - ${STACK_ROOT}/psu-ots/universal/scripts/Import-PSUGalleryModules.ps1:/install/Import-PSUGalleryModules.ps1:ro
-      - ${STACK_ROOT}/psu-ots/data:/data:rw
+      - ${STACK_ROOT}/otspsu/scripts/docker-gallery-entrypoint.sh:/nas-gallery-entrypoint.sh:ro
+      - ${STACK_ROOT}/otspsu/universal/scripts/Install-PSUGalleryModules.ps1:/install/Install-PSUGalleryModules.ps1:ro
+      - ${STACK_ROOT}/otspsu/universal/scripts/Import-PSUGalleryModules.ps1:/install/Import-PSUGalleryModules.ps1:ro
+      - ${STACK_ROOT}/otspsu/data:/data:rw
       # Optional: mount read-only private key for host SSH remediation (chmod 600 on host; never commit keys)
-      - ${STACK_ROOT}/psu-ots/keys:/ssh-keys:ro
+      - ${STACK_ROOT}/otspsu/keys:/ssh-keys:ro
       # Repo root (parent of stacks/) for git status + scripts -- same as ${NAS_REPO_ROOT} when set in .env
       - ${NAS_REPO_ROOT:-${STACK_ROOT}/..}:/nas-repo:ro
       - ${ACME_CERT_ROOT:-/volume2/certs/acme}:/certs/acme:ro
@@ -100,7 +100,7 @@ services:
       # job-queue state and noting the new digest tag for rollback.
       - com.centurylinklabs.watchtower.enable=false
     networks:
-      - psu-ots-net
+      - otspsu-net
 
   psu-agent:
     container_name: otsagt
@@ -132,11 +132,11 @@ services:
       universal:
         condition: service_healthy
     networks:
-      - psu-ots-net
+      - otspsu-net
 
 networks:
-  psu-ots-net:
-    name: psu-ots-net
+  otspsu-net:
+    name: otspsu-net
     driver: bridge
     ipam:
       config:

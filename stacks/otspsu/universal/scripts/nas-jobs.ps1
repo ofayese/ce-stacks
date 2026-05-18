@@ -12,7 +12,7 @@
 .NOTES
     Copy into data/Repository/.universal/scripts/ on the NAS. Register schedules in PSU.
     Environment: NAS_REPO_ROOT, PSU_STACK_ROOT, STACK_MANAGER_URL, STACK_MANAGER_USERNAME, STACK_MANAGER_PASSWORD,
-    NAS_HOST_IP, NAS_SSH_USER, SSH_KEY_PATH, NAS_HOST_STACKS_ROOT (see stacks/psu-ots/NAS_HOST_SSH_SETUP.md).
+    NAS_HOST_IP, NAS_SSH_USER, SSH_KEY_PATH, NAS_HOST_STACKS_ROOT (see stacks/otspsu/NAS_HOST_SSH_SETUP.md).
 #>
 
 $ErrorActionPreference = "Stop"
@@ -703,7 +703,7 @@ function Invoke-PSUJob_AutoRemediation {
                     }
                     else {
                         $payload = @{
-                            source  = "psu-ots"
+                            source  = "otspsu"
                             severity = "critical"
                             reason  = $Reason
                             detail  = $Detail

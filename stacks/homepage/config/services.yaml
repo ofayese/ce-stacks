@@ -145,7 +145,7 @@
         siteMonitor: http://10.0.1.15:5371/
 
     - PSU (PowerShell Universal):
-        # Container name from: psu-ots/compose.yaml (service: universal)
+        # Container name from: otspsu/compose.yaml (service: universal)
         icon: powershell.png
         href: http://10.0.1.15:5570/
         description: NAS automation & NOC dashboard

@@ -1,4 +1,4 @@
-# psu-ots -- PowerShell Universal (NAS command center)
+# otspsu -- PowerShell Universal (NAS command center)
 
 PowerShell Universal provides **scheduled jobs**, **API endpoints**, and a **NOC dashboard** over the NAS monorepo bind (`/nas-repo`) and ACME PEMs (`/certs/acme`).
 
@@ -11,7 +11,7 @@ PowerShell Universal provides **scheduled jobs**, **API endpoints**, and a **NOC
 ## First deploy
 
 ```bash
-cd "${STACK_ROOT}/psu-ots"
+cd "${STACK_ROOT}/otspsu"
 cp .env.example .env
 # set STACK_MANAGER_USERNAME / STACK_MANAGER_PASSWORD for API checks; optional NAS_PULL_APP_TOKEN for future webhook
 docker compose up -d
@@ -99,11 +99,11 @@ Git-tracked PowerShell templates (copy into `data/Repository/.universal/` on the
 
 **Three ways to satisfy strict import**
 
-1. **Bake into an image** -- from `stacks/psu-ots/`: `docker build -t psu-ots:gallery .` then point compose `image:` at `psu-ots:gallery` (see **`Dockerfile`**; uses the same digest as compose by default).
+1. **Bake into an image** -- from `stacks/otspsu/`: `docker build -t otspsu:gallery .` then point compose `image:` at `otspsu:gallery` (see **`Dockerfile`**; uses the same digest as compose by default).
 2. **Download on container start** -- set **`PSU_GALLERY_INSTALL=1`** in `.env` (compose mounts **`scripts/docker-gallery-entrypoint.sh`** and runs **`Install-PSUGalleryModules.ps1`** before Universal.Server). Requires outbound HTTPS to PSGallery. **`PSU_GALLERY_INSTALL_STRICT=0`** allows partial install (import may still fail until all modules resolve).
 3. **Manual / PSU Admin** -- install the same module names under the PSU modules path, or set **`PSU_GALLERY_OPTIONAL=1`** only until (1) or (2) is done.
 
-Ensure `chmod +x stacks/psu-ots/scripts/docker-gallery-entrypoint.sh` on the host so the bind-mounted script is executable.
+Ensure `chmod +x stacks/otspsu/scripts/docker-gallery-entrypoint.sh` on the host so the bind-mounted script is executable.
 
 **NAS rollout checklist:** [`GALLERY_ROLLOUT_NAS.md`](./GALLERY_ROLLOUT_NAS.md).
 

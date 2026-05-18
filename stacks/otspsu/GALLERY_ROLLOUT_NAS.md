@@ -1,4 +1,4 @@
-# NAS operator -- strict gallery rollout (psu-ots)
+# NAS operator -- strict gallery rollout (otspsu)
 
 Run on the **NAS** from the **git repo root** (e.g. `/volume2/docker/ce-stacks`), not only under `stacks/`.
 
@@ -6,23 +6,23 @@ Run on the **NAS** from the **git repo root** (e.g. `/volume2/docker/ce-stacks`)
 
 ```bash
 cd /volume2/docker/ce-stacks
-docker build -t psu-ots:gallery stacks/psu-ots/
+docker build -t otspsu:gallery stacks/otspsu/
 ```
 
 ## 2. Configure `.env`
 
-Edit `stacks/psu-ots/.env` (create from `.env.example` if needed):
+Edit `stacks/otspsu/.env` (create from `.env.example` if needed):
 
 - `PSU_GALLERY_INSTALL=1`
 - `PSU_GALLERY_INSTALL_STRICT=1`
 - `PSU_GALLERY_OPTIONAL=0`
 
-Point compose at the custom image: in `stacks/psu-ots/compose.yaml` (or stack manager YAML override), set `image: psu-ots:gallery` instead of the default digest-pinned Universal image when you are ready to run from this tag.
+Point compose at the custom image: in `stacks/otspsu/compose.yaml` (or stack manager YAML override), set `image: otspsu:gallery` instead of the default digest-pinned Universal image when you are ready to run from this tag.
 
 ## 3. Deploy
 
 ```bash
-cd "${STACK_ROOT}/psu-ots"
+cd "${STACK_ROOT}/otspsu"
 docker compose up -d --force-recreate
 ```
 

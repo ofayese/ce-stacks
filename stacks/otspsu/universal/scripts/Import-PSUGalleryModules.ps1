@@ -10,8 +10,8 @@
 
 .NOTES
     Linux / NAS Docker: Windows-only modules are skipped unless -IncludeWindowsOnly.
-    Bake modules: stacks/psu-ots/Dockerfile or runtime PSU_GALLERY_INSTALL=1 + entrypoint.
-    See stacks/psu-ots/README.md.
+    Bake modules: stacks/otspsu/Dockerfile or runtime PSU_GALLERY_INSTALL=1 + entrypoint.
+    See stacks/otspsu/README.md.
 #>
 
 $ErrorActionPreference = "Continue"

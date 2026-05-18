@@ -94,7 +94,7 @@ done
 
 - acme-sh, agents_gateway_data, code-server, databases, dozzle
 - github-desktop, grafana-prom, homepage, it-tools, mcp-tools-config
-- ollama, openresume, psu-ots, remotely, searxng
+- ollama, openresume, otspsu, remotely, searxng
 - synology-api-bridge, watchtower, zabbix
 
 ---
@@ -156,7 +156,7 @@ security_opt:
 **Affected Stacks**:
 
 - `synology-api-bridge` - No PUID/PGID (binds to host filesystem)
-- `psu-ots` - No PUID/PGID (Synology standard)
+- `otspsu` - No PUID/PGID (Synology standard)
 
 **Impact**: Potential permission issues on Synology DSM with bind-mounts. Default root ownership may cause problems.
 
@@ -204,7 +204,7 @@ Wait, re-check: Actually ALL 20 stacks HAVE health checks. [OK] **NO ISSUE HERE*
 172.31.7.0/24    - agents_gateway_data
 172.31.8.0/24    - mcp-tools-config
 172.31.9.0/24    - ? (unknown)
-172.32.0.0/24    - psu-ots
+172.32.0.0/24    - otspsu
 ```
 
 **Impact**: Some subnets are undefined/orphaned. Difficult to track without central registry.
@@ -259,7 +259,7 @@ docker network create \
 - `ollama` - `/usr/bin/ollama` (command, not volume)
 - `watchtower` - `/watchtower` (command, not volume)
 - `grafana-prom` - Host filesystem mounts (intentional, exempt)
-- `psu-ots`, `dozzle` - Similar false positives
+- `otspsu`, `dozzle` - Similar false positives
 
 **Remediation**: Add comments to clarify these are intentional:
 
@@ -318,7 +318,7 @@ volumes:
 ### Phase 2: High (Before Production)
 
 1. Add `no-new-privileges` to github-desktop
-2. Add `PUID`/`PGID` to synology-api-bridge and psu-ots
+2. Add `PUID`/`PGID` to synology-api-bridge and otspsu
 
 ### Phase 3: Medium (During Dockhand Setup)
 
@@ -341,7 +341,7 @@ volumes:
 [OK] Private keys excluded (.key, .pem files)
 [OK] Runtime data directories ignored
 [WARN]  stacks/grafana-prom/secrets/README.md (tracked - just metadata)
-[WARN]  stacks/psu-ots/keys/.gitignore (tracked - just metadata)
+[WARN]  stacks/otspsu/keys/.gitignore (tracked - just metadata)
 ```
 
 Status: **CLEAN** - No exposed secrets.

@@ -118,7 +118,7 @@ STACK_MANIFEST=(
 	#   Absent from manifest intentionally. Listed here for audit trail.
 
 	# -- New stacks: add entry here before first deploy -----------------
-	"psu-ots:data"
+	"otspsu:data"
 	# HAProxy bind-mount assets (certs + host map); not a Docker compose stack - see stacks/_haproxy/README.txt
 	"_haproxy:certs,maps"
 )

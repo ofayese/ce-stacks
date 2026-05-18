@@ -120,7 +120,7 @@ This NAS keeps:
 - `/volume1/@appstore/haproxy/` -- bare-metal HAProxy (Synology AppStore install)
 - `/volume2/docker/ce-stacks` -- this repo
 - `/volume2/docker/dockhand` -- Dockhand runtime
-- `/volume2/certs/acme` -- ACME cert output (consumed by HAProxy on volume1, **and** by `psu-ots` on volume2)
+- `/volume2/certs/acme` -- ACME cert output (consumed by HAProxy on volume1, **and** by `otspsu` on volume2)
 
 **Implication:** the HAProxy uid must be able to *read* `/volume2/certs/acme/*.pem`. Synology App Center installs HAProxy as user `haproxy:haproxy` (uid varies). Validate after each cert renewal:
 
@@ -129,7 +129,7 @@ sudo -u haproxy cat /volume2/certs/acme/otsorundscore.olutechsys.com.fullchain.p
 # Exit 0 = HAProxy can read; non-zero = chown / chmod fix needed
 ```
 
-`stacks/acme-sh` writes certs to `${ACME_CERT_ROOT:-/volume2/certs/acme}`; never change the default unless you also update the HAProxy AppStore config and any consumer stacks (today: `psu-ots`).
+`stacks/acme-sh` writes certs to `${ACME_CERT_ROOT:-/volume2/certs/acme}`; never change the default unless you also update the HAProxy AppStore config and any consumer stacks (today: `otspsu`).
 
 ---
 
@@ -152,7 +152,7 @@ The legacy form keeps working; the migration is **not** part of the critical pat
 
 Any `subnet:` declared in a compose `networks:` block must live inside RFC1918 (`10/8`, `172.16/12`, `192.168/16`). DSM's NAT and any future VPN / WireGuard / Tailscale routing will mis-route traffic destined for non-RFC1918 ranges that happen to overlap with public space.
 
-The repo currently uses `172.20-172.31` (RFC1918 [OK]) for stack networks and `172.26.0.0/24` for `ce-internal`. `172.32.0.0/24` was previously assigned to `psu-ots` -- that is **outside** `172.16.0.0/12` (which ends at `172.31.255.255`). It has been reallocated to `172.31.10.0/24` by this plan.
+The repo currently uses `172.20-172.31` (RFC1918 [OK]) for stack networks and `172.26.0.0/24` for `ce-internal`. `172.32.0.0/24` was previously assigned to `otspsu` -- that is **outside** `172.16.0.0/12` (which ends at `172.31.255.255`). It has been reallocated to `172.31.10.0/24` by this plan.
 
 Run the linter after any subnet change:
 

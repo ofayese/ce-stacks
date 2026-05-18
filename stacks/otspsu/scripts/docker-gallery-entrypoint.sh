@@ -1,5 +1,5 @@
 #!/bin/sh
-# Optional first-boot gallery install for psu-ots (PowerShell Universal).
+# Optional first-boot gallery install for otspsu (PowerShell Universal).
 # Default image entrypoint: run Universal.Server from /home (see ironmansoftware/universal-docker).
 
 set -eu

@@ -64,7 +64,7 @@ DESCRIPTIONS = {
     "ollama:ollama"                         : "Ollama LLM inference API",
     "ollama:open-webui"                     : "Open WebUI - chat interface for Ollama",
     "openresume:openresume"                 : "OpenResume - resume builder",
-    "psu-ots:universal"                     : "PowerShell Universal - NOC dashboard & automation",
+    "otspsu:universal"                     : "PowerShell Universal - NOC dashboard & automation",
     "remotely:remotely"                     : "Remotely - remote desktop / support tool",
     "searxng:searxng"                       : "SearXNG - privacy-first metasearch engine",
     "watchtower:watchtower"                 : "Watchtower - container image update API",

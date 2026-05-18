@@ -61,7 +61,7 @@ cd /volume2/docker/ce-stacks
 
 for stack in acme-sh agents_gateway_data code-server databases dozzle \
              github-desktop grafana-prom homepage it-tools mcp-tools-config \
-             ollama openresume psu-ots remotely searxng synology-api-bridge \
+             ollama openresume otspsu remotely searxng synology-api-bridge \
              watchtower zabbix; do
   
   if [ -f "stacks/$stack/.env.example" ] && [ ! -f "stacks/$stack/.env" ]; then
@@ -98,7 +98,7 @@ done
 - mcp-tools-config
 - ollama
 - openresume
-- psu-ots
+- otspsu
 - remotely
 - searxng
 - synology-api-bridge (needs BRIDGE_SHARED_SECRET)
@@ -174,7 +174,7 @@ environment:
   # ... existing vars ...
 ```
 
-#### psu-ots/compose.yaml
+#### otspsu/compose.yaml
 
 Add to environment section:
 
@@ -211,7 +211,7 @@ All bridge networks use explicit /24 subnets to prevent Docker's auto-assigned /
 | watchtower | watchtower-net | 172.31.1.0/24 | [OK] |
 | agents_gateway_data | agents-gateway-net | 172.31.7.0/24 | [OK] |
 | mcp-tools-config | mcp-tools-net | 172.31.8.0/24 | [OK] |
-| psu-ots | psu-ots-net | 172.32.0.0/24 | [OK] |
+| otspsu | otspsu-net | 172.32.0.0/24 | [OK] |
 | codex-docs | codex-net | 172.20.0.0/24 | [OK] |
 ```
 

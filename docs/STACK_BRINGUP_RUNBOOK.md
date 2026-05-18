@@ -164,14 +164,14 @@ Open-WebUI -> `http://10.0.1.15:8893` -- create your admin account on first visi
 
 ---
 
-### psu-ots (PowerShell Universal -- NOC dashboard)
+### otspsu (PowerShell Universal -- NOC dashboard)
 
-Most complex stack. Read `stacks/psu-ots/README.md` fully before deploying.  
+Most complex stack. Read `stacks/otspsu/README.md` fully before deploying.  
 Start with all dangerous operations **off** (defaults in `.env.example` are safe).
 
 ```bash
-cp stacks/psu-ots/.env.example stacks/psu-ots/.env
-nano stacks/psu-ots/.env
+cp stacks/otspsu/.env.example stacks/otspsu/.env
+nano stacks/otspsu/.env
 ```
 
 **Minimum required values to fill in:**
@@ -188,7 +188,7 @@ nano stacks/psu-ots/.env
 **Leave off for now** (set to `0` / blank): `PSU_REMEDIATION_ENABLED`, `PSU_ALLOW_STACK_RESTART`, `PSU_SAFE_MODE_ENABLED`, `PSU_GITOPS_ENABLED`, all SSH vars.
 
 ```bash
-mkdir -p stacks/psu-ots/data
+mkdir -p stacks/otspsu/data
 ```
 
 Deploy -> PSU web UI at `http://10.0.1.15:5570`  
@@ -197,7 +197,7 @@ Default login: set on first visit (PSU prompts for admin credentials on fresh in
 **After first login:** go to Admin -> Security -> App Tokens, create a token, and set `NAS_PULL_APP_TOKEN` in `.env`, then redeploy.
 
 **SSH remediation** (optional, enables `docker compose` over SSH from inside the container):  
-See `stacks/psu-ots/NAS_HOST_SSH_SETUP.md` -- generates a dedicated key pair and adds it to `~/.ssh/authorized_keys`.
+See `stacks/otspsu/NAS_HOST_SSH_SETUP.md` -- generates a dedicated key pair and adds it to `~/.ssh/authorized_keys`.
 
 ---
 
@@ -213,7 +213,7 @@ See `stacks/psu-ots/NAS_HOST_SSH_SETUP.md` -- generates a dedicated key pair and
 7. searxng         <- settings.yml required
 8. zabbix          <- DB init takes ~60s
 9. ollama          <- start last; model pulls run in background
-10. psu-ots        <- after all other stacks are healthy (monitors them)
+10. otspsu        <- after all other stacks are healthy (monitors them)
 ```
 
 ---

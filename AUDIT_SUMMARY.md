@@ -48,7 +48,7 @@
 ### 5. Missing PUID/PGID (2 stacks)
 
 - synology-api-bridge
-- psu-ots  
+- otspsu  
 **Fix**: 2 lines each
 
 ---

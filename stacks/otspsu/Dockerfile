@@ -1,7 +1,7 @@
 # Extend pinned PowerShell Universal image with PSU gallery modules baked in.
 # Build (from repo stack folder):
-#   docker build -t psu-ots:gallery --build-arg BASE_IMAGE=ironmansoftware/universal@sha256:069b858b0f010d522144745ac918cc12c8ea022d516f011fe7e2596efc3a03c4 .
-# Compose: set image: psu-ots:gallery (or your registry path).
+#   docker build -t otspsu:gallery --build-arg BASE_IMAGE=ironmansoftware/universal@sha256:069b858b0f010d522144745ac918cc12c8ea022d516f011fe7e2596efc3a03c4 .
+# Compose: set image: otspsu:gallery (or your registry path).
 
 ARG BASE_IMAGE=ironmansoftware/universal@sha256:069b858b0f010d522144745ac918cc12c8ea022d516f011fe7e2596efc3a03c4
 FROM ${BASE_IMAGE}

@@ -43,7 +43,7 @@ ce-stacks/
 |   +--- mcp-tools-config/    # MCP tool configuration
 |   +--- ollama/              # Local LLM inference (Ollama)
 |   +--- openresume/          # Resume builder
-|   +--- psu-ots/             # PSU OTS application
+|   +--- otspsu/              # PSU OTS application
 |   +--- remotely/            # Remote desktop / support
 |   +--- searxng/             # Privacy-respecting metasearch
 |   +--- synology-api-bridge/ # Internal DSM HTTP shim (FastAPI)
@@ -98,7 +98,7 @@ Verify: `docker network inspect ce-internal`
 # Create missing .env files from .env.example
 for stack in acme-sh agents_gateway_data code-server databases dozzle \
              github-desktop grafana-prom homepage it-tools mcp-tools-config \
-             ollama openresume psu-ots remotely searxng synology-api-bridge \
+             ollama openresume otspsu remotely searxng synology-api-bridge \
              watchtower zabbix; do
   [ -f "stacks/$stack/.env" ] || cp "stacks/$stack/.env.example" "stacks/$stack/.env"
 done
@@ -176,7 +176,7 @@ All bridge networks use explicit `/24` subnets to prevent Docker's auto-assigned
 | code-server | code-server-net | 172.28.2.0/24 | |
 | grafana-prom | grafana-net | 172.29.0.0/24 | |
 | grafana-prom | prometheus-net | 172.29.1.0/24 | |
-| psu-ots | psu-ots-net | 172.32.0.0/24 | Moved from 172.25; 172.30 taken by zabbix |
+| otspsu | otspsu-net | 172.32.0.0/24 | Moved from 172.25; 172.30 taken by zabbix |
 | dozzle | dozzle-net | 172.31.0.0/24 | |
 | watchtower | watchtower-net | 172.31.1.0/24 | |
 | agents_gateway_data | agents-gateway-net | 172.31.7.0/24 | |

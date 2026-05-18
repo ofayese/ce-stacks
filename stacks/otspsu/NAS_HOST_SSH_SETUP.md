@@ -34,14 +34,14 @@ ssh -i psu_remediation_key -p 28 username@nasip '/usr/local/bin/docker info >/de
 ### Option A - File mount (repo template)
 
 1. Copy the private key onto the NAS (not into Git), e.g.  
-   `/volume2/docker/ce-stacks/stacks/psu-ots/keys/psu_remediation_key`
+   `/volume2/docker/ce-stacks/stacks/otspsu/keys/psu_remediation_key`
 2. Restrict permissions:
 
 ```bash
-chmod 600 /volume2/docker/ce-stacks/stacks/psu-ots/keys/psu_remediation_key
+chmod 600 /volume2/docker/ce-stacks/stacks/otspsu/keys/psu_remediation_key
 ```
 
-1. Compose mounts **`${STACK_ROOT}/psu-ots/keys` -> `/ssh-keys:ro`**. Set in **`stacks/psu-ots/.env`**:
+1. Compose mounts **`${STACK_ROOT}/otspsu/keys` -> `/ssh-keys:ro`**. Set in **`stacks/otspsu/.env`**:
 
 - `SSH_KEY_PATH=/ssh-keys/psu_remediation_key`
 
@@ -53,7 +53,7 @@ Store the private key material as a **Secret** in PSU (Platform -> Variables), c
 
 ## 4. Container environment
 
-In **`stacks/psu-ots/.env`** (then recreate the container):
+In **`stacks/otspsu/.env`** (then recreate the container):
 
 | Variable | Example | Purpose |
 |----------|---------|---------|
@@ -77,7 +77,7 @@ Optional:
 Recreate PSU after editing **`.env`**:
 
 ```bash
-cd "${STACK_ROOT}/psu-ots"
+cd "${STACK_ROOT}/otspsu"
 docker compose up -d --force-recreate
 ```
 
