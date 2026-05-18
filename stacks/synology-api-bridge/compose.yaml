@@ -14,8 +14,13 @@ services:
     security_opt:
       - no-new-privileges:true
     environment:
-      - PUID=${PUID:-0}
-      - PGID=${PGID:-0}  
+      # Use pure syntax for Dockhand parser compatibility
+      - PUID=${PUID}
+      - PGID=${PGID}  
+      # Explicitly map secrets and overridden variables so they reach the container
+      - BRIDGE_SHARED_SECRET=${BRIDGE_SHARED_SECRET}
+      - DSM_BASE_URL=${DSM_BASE_URL}
+      - DSM_HTTP_TIMEOUT_SECONDS=${DSM_HTTP_TIMEOUT_SECONDS}
     logging:
       driver: json-file
       options:
@@ -26,7 +31,8 @@ services:
     volumes:
       - ${STACK_ROOT}/synology-api-bridge/data:/data:rw
     ports:
-      - "${NAS_IP:-10.0.1.15}:8780:8000"
+      # Removed bash-style fallback for NAS IP
+      - "10.0.1.15:8780:8000"
     labels:
       # Local build -- never auto-update via Watchtower.
       - com.centurylinklabs.watchtower.enable=false
