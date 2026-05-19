@@ -141,15 +141,10 @@ services:
       - ZBX_DONTCREATEPIDFILE=1
     volumes:
       - /var/run:/var/run:ro
-      - ${STACK_ROOT}/zabbix/config:/etc/zabbix:rw
-      # The entrypoint (uid 1997 / zabbix) auto-generates plugin configs in plugins.d at startup.
-      # Bind-mounting the full /etc/zabbix from the host means plugins.d inherits host ownership
-      # (root:root / 755), which blocks uid 1997 writes → crash-loop "Permission denied".
-      # Fix: shadow plugins.d with a Docker-managed named volume. Docker initialises the volume
-      # from the image's own /etc/zabbix/zabbix_agent2.d/plugins.d with correct uid 1997
-      # ownership, bypassing the host-filesystem restriction. The rest of /etc/zabbix
-      # stays bind-mounted for persistence.
-      - zabbix-plugins-d:/etc/zabbix/zabbix_agent2.d/plugins.d
+      # /etc/zabbix bind mount removed: the entrypoint (uid 1997) generates zabbix_agent2.conf
+      # and all plugins.d configs from ZBX_* environment variables at startup. Bind-mounting a
+      # root-owned host directory over /etc/zabbix blocked every write → crash-loop. All agent
+      # configuration is fully env-var driven (see ZBX_* below); no host config file is needed.
     healthcheck:
       test: ["CMD", "zabbix_agent2", "-t", "agent.ping"]
       interval: 30s
@@ -163,12 +158,6 @@ services:
         max-file: "3"
     labels:
       - com.centurylinklabs.watchtower.enable=false
-
-volumes:
-  # Writable Docker-managed volume shadowing zabbix_agent2.d/plugins.d.
-  # Prevents "Permission denied" when the zabbix entrypoint (uid 1997) writes
-  # auto-generated plugin configs into the bind-mounted /etc/zabbix host directory.
-  zabbix-plugins-d:
 
 networks:
   zabbix-net:
