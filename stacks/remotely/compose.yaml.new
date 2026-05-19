@@ -1,0 +1,53 @@
+# Stack: remotely
+# Remote support platform: remote control, remote scripting, and IT support tooling.
+# DATABASE: 10.0.1.15:3306 (shared NAS MariaDB - optional for multi-server HA)
+
+services:
+  remotely:
+    container_name: remotely
+    image: immybot/remotely@sha256:9bdff2d8f7a9926731fe8394d9b0292eb5679153b1da7f3b80ecd9fa9823b89b
+    mem_limit: 1g
+    cpu_shares: 512
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    ports:
+      - "10.0.1.15:5371:5000"
+    volumes:
+      # SQLite DB, agent installers, and app data live here.
+      - ${STACK_ROOT}/remotely/data:/app/AppData:rw
+    environment:
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - TZ=${TZ:-America/New_York}
+      - ASPNETCORE_ENVIRONMENT=Production
+      # Switch to MySQL for multi-server setups (or keep SQLite for single-server)
+      - Remotely_ApplicationOptions__DbProvider=${REMOTELY_DB_PROVIDER}
+      # For MySQL: use "Server=10.0.1.15;Port=3306;Database=remotely;User=remotely_user;Password=...;"
+      - Remotely_ApplicationOptions__ConnectionString=${REMOTELY_CONNECTION_STRING}
+      - Remotely_ApplicationOptions__KnownProxies__0=${REMOTELY_KNOWN_PROXY:-10.0.1.15}
+      - Remotely_ApplicationOptions__ServerUrl=${REMOTELY_SERVER_URL:-https://remotely.olutechsys.com}
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://localhost:5000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    labels:
+      - com.centurylinklabs.watchtower.enable=false
+    networks:
+      - remotely-net
+
+networks:
+  remotely-net:
+    name: remotely-net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.31.5.0/24
+          gateway: 172.31.5.1

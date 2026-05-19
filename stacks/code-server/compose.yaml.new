@@ -1,0 +1,94 @@
+services:
+  code-server:
+    image: ghcr.io/linuxserver/code-server:4.118.0-ls337
+    container_name: CodeServer
+    mem_limit: 3g
+    cpu_shares: 1024
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    restart: unless-stopped
+    ports:
+      - "10.0.1.15:8377:8443"
+    volumes:
+      - ${STACK_ROOT}/code-server/config:/config:rw
+      - ${CODE_SERVER_HOST_DOCKER_BIND}:/config/workspace/docker:rw
+      - ${CODE_SERVER_HOST_HOME_BIND}:/config/workspace/home:rw
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - DOCKER_USER=${DOCKER_USER}
+      - BRIDGE_SHARED_SECRET=${BRIDGE_SHARED_SECRET}
+      - PASSWORD=${CODE_SERVER_PASSWORD}
+      - SUDO_PASSWORD=${SUDO_PASSWORD}
+      - PROXY_DOMAIN=${PROXY_DOMAIN}
+    networks:
+      - code-server-net
+
+  phpmyadmin:
+    image: phpmyadmin:5.2.2-apache
+    container_name: CodeServerPMA
+    mem_limit: 512m
+    cpu_shares: 256
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    restart: unless-stopped
+    ports:
+      - "10.0.1.15:8379:80"
+    volumes:
+      - ${STACK_ROOT}/code-server/config/phpmyadmin:/etc/phpmyadmin:rw
+      - ${STACK_ROOT}/code-server/data/phpmyadmin_sessions:/sessions:rw
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - PMA_HOST=10.0.1.15
+      - PMA_PORT=3306
+      - PMA_CONTROLUSER=${PMA_CONTROLUSER}
+      - PMA_CONTROLPASS=${PMA_CONTROLPASS}
+      - PMA_BLOWFISH_SECRET=${PMA_BLOWFISH_SECRET}
+      - PMA_ABSOLUTE_URI=${PMA_ABSOLUTE_URI}
+      - HIDE_PHP_VERSION=1
+      - TZ=${TZ}
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -fs
+        - http://localhost/
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    labels:
+      - com.centurylinklabs.watchtower.enable=true
+    networks:
+      - code-server-net
+
+### GAP-08: Docker file-based secrets for code-server credentials.
+### Populate: see stacks/code-server/secrets/README.md
+secrets:
+  code_server_password:
+    file: ${STACK_ROOT}/code-server/secrets/code_server_password.txt
+  sudo_password:
+    file: ${STACK_ROOT}/code-server/secrets/sudo_password.txt
+
+volumes: {}
+
+networks:
+  code-server-net:
+    name: code-server-net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.2.0/24
+          gateway: 172.28.2.1

@@ -1,0 +1,88 @@
+services:
+  redis:
+    container_name: SearXNG-Redis
+    image: valkey/valkey:8.0.2-alpine
+    mem_limit: 256m
+    cpu_shares: 512
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    command: valkey-server --save "" --appendonly no
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    healthcheck:
+      test:
+        - CMD
+        - valkey-cli
+        - ping
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    labels:
+      - com.centurylinklabs.watchtower.enable=false
+    networks:
+      - searxng-net
+
+  searxng:
+    container_name: SearXNG
+    image: searxng/searxng:2026.4.29-cba0cffa8
+    user: 0:0
+    mem_limit: 512m
+    cpu_shares: 768
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    ports:
+      - "10.0.1.15:8888:8080"
+    volumes:
+      - ${STACK_ROOT}/searxng/config:/etc/searxng:rw
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - SEARXNG_BASE_URL=${SEARXNG_BASE_URL}
+      - SEARXNG_REDIS_URL=redis://redis:6379/0
+      - UWSGI_WORKERS=${UWSGI_WORKERS}
+      - UWSGI_THREADS=${UWSGI_THREADS}
+      - TZ=${TZ}
+      # Optional MariaDB backing for result caching and history
+      - SEARXNG_DB_URL=mysql+pymysql://${SEARXNG_DB_USER}:${SEARXNG_DB_PASSWORD}@10.0.1.15:3306/searxng
+    healthcheck:
+      test: ["CMD-SHELL", "nc -w 1 127.0.0.1 8080 </dev/null"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    depends_on:
+      redis:
+        condition: service_healthy
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    labels:
+      - com.centurylinklabs.watchtower.enable=true
+    networks:
+      - searxng-net
+
+networks:
+  searxng-net:
+    name: searxng-net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.31.4.0/24
+          gateway: 172.31.4.1
