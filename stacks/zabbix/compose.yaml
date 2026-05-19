@@ -40,9 +40,6 @@ services:
     cpu_shares: 1024
     security_opt:
       - no-new-privileges:true
-    # Replaced unsupported ping_group_range sysctl with native Docker capability
-    cap_add:
-      - NET_RAW
     restart: unless-stopped
     networks:
       - zabbix-net
@@ -128,8 +125,6 @@ services:
     cpu_shares: 256
     security_opt:
       - no-new-privileges:true
-    cap_add:
-      - NET_RAW
     restart: unless-stopped
     depends_on:
       zabbix-server:
