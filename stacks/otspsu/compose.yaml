@@ -24,8 +24,9 @@ services:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
       - TZ=${TZ:-America/New_York}
-      # Move off port 5000 -- conflicts with Synology DSM internal API on DS723+.
-      - ASPNETCORE_URLS=http://+:5100
+      # NOTE: PSU 2026.1.4 ships a baked-in Kestrel IConfiguration that overrides
+      # ASPNETCORE_URLS. Container binds to port 5000 regardless of that env var.
+      # Port 5000 does not conflict with DSM -- Docker network namespaces are isolated.
       - BRIDGE_SHARED_SECRET=${BRIDGE_SHARED_SECRET}
       # Paths inside container for NAS scripts + compose bind roots
       - NAS_REPO_ROOT=${NAS_REPO_ROOT:-/nas-repo}
@@ -84,19 +85,19 @@ services:
       - ${ACME_CERT_ROOT:-/volume2/certs/acme}:/certs/acme:ro
     healthcheck:
       # /api/v1/alive returns 200 OK when PSU is ready; root path redirects to login (curl -f fails on 3xx).
-      # start_period: 180s covers LiteDB init + gallery entrypoint module import on cold start.
-      # Port 5100: moved off 5000 which conflicts with Synology DSM internal API.
+      # start_period: 300s covers LiteDB init + gallery entrypoint module import on cold start.
+      # PSU 2026.1.4 Kestrel baked-in config binds to container port 5000 (not 5100).
       test:
         - CMD
         - curl
         - -fs
-        - http://127.0.0.1:5100/api/v1/alive
+        - http://127.0.0.1:5000/api/v1/alive
       interval: 30s
       timeout: 10s
       retries: 5
       start_period: 300s
     ports:
-      - "10.0.1.15:5570:5100"
+      - "10.0.1.15:5570:5000"
     labels:
       # PSU stores session state + job history in LiteDB (/data). A mid-write Watchtower
       # restart risks database file corruption. Update manually after verifying a clean
@@ -127,7 +128,7 @@ services:
         max-file: "3"
     environment:
       # Internal WebSocket connectivity to psu-server (service key: universal)
-      - PSU_Connections__0__Url=http://universal:5100
+      - PSU_Connections__0__Url=http://universal:5000
       - PSU_Connections__0__Hub=AgentHub
       # PSU_AGENT_TOKEN: App Token created in PSU Admin -> Security -> App Tokens.
       # Requires the "Agent" role. Never embed the value here; set in .env only.
