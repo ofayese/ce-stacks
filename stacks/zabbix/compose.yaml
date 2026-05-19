@@ -1,41 +1,7 @@
 services:
-  postgres:
-    container_name: Zabbix-Postgres
-    image: postgres:15-alpine
-    mem_limit: 768m
-    cpu_shares: 1024
-    security_opt:
-      - no-new-privileges:true
-    restart: unless-stopped
-    networks:
-      - zabbix-net
-    environment:
-      # Stripped bash fallbacks for full Dockhand .env parser compatibility
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TZ}
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-    volumes:
-      - ${STACK_ROOT}/zabbix/db:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD", "pg_isready", "-U", "zabbix", "-d", "zabbix"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
-    logging:
-      driver: json-file
-      options:
-        max-size: 10m
-        max-file: "3"
-    labels:
-      - com.centurylinklabs.watchtower.enable=false
-
   zabbix-server:
     container_name: Zabbix-Server
-    image: zabbix/zabbix-server-pgsql:alpine-7.4.10
+    image: zabbix/zabbix-server-mysql:alpine-7.4.10
     mem_limit: 768m
     cpu_shares: 1024
     security_opt:
@@ -43,20 +9,18 @@ services:
     restart: unless-stopped
     networks:
       - zabbix-net
-    depends_on:
-      postgres:
-        condition: service_healthy
     ports:
       - "10.0.1.15:${ZABBIX_SERVER_PORT}:10051"
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=${TZ}
-      - DB_SERVER_HOST=postgres
-      - DB_SERVER_PORT=5432
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_SERVER_HOST=10.0.1.15
+      - DB_SERVER_PORT=3306
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
     volumes:
       - ${STACK_ROOT}/zabbix/data:/var/lib/zabbix
     healthcheck:
@@ -75,7 +39,7 @@ services:
 
   zabbix-web:
     container_name: Zabbix-Web
-    image: zabbix/zabbix-web-nginx-pgsql:alpine-7.4.10
+    image: zabbix/zabbix-web-nginx-mysql:alpine-7.4.10
     mem_limit: 512m
     cpu_shares: 768
     security_opt:
@@ -84,8 +48,6 @@ services:
     networks:
       - zabbix-net
     depends_on:
-      postgres:
-        condition: service_healthy
       zabbix-server:
         condition: service_healthy
     ports:
@@ -94,11 +56,12 @@ services:
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=${TZ}
-      - DB_SERVER_HOST=postgres
-      - DB_SERVER_PORT=5432
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_SERVER_HOST=10.0.1.15
+      - DB_SERVER_PORT=3306
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - ZBX_SERVER_HOST=zabbix-server
       - ZBX_SERVER_PORT=10051
       - PHP_TZ=${TZ}
@@ -141,10 +104,6 @@ services:
       - ZBX_DONTCREATEPIDFILE=1
     volumes:
       - /var/run:/var/run:ro
-      # /etc/zabbix bind mount removed: the entrypoint (uid 1997) generates zabbix_agent2.conf
-      # and all plugins.d configs from ZBX_* environment variables at startup. Bind-mounting a
-      # root-owned host directory over /etc/zabbix blocked every write → crash-loop. All agent
-      # configuration is fully env-var driven (see ZBX_* below); no host config file is needed.
     healthcheck:
       test: ["CMD", "zabbix_agent2", "-t", "agent.ping"]
       interval: 30s
