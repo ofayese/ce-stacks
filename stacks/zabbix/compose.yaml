@@ -120,47 +120,47 @@ services:
   # The agent tries to set ping_group_range on startup, which fails on Synology Cool mode.
   # Zabbix Server (above) provides core monitoring functionality.
   # To re-enable: set cap_add: [] and remove /proc, /sys volumes, or run on non-Synology host.
-  # zabbix-agent:
-  #   container_name: Zabbix-Agent
-  #   image: zabbix/zabbix-agent2:alpine-7.4.10
-  #   networks:
-  #     - zabbix-net
-  #   mem_limit: 128m
-  #   cpu_shares: 256
-  #   security_opt:
-  #     - no-new-privileges:true
-  #   restart: unless-stopped
-  #   depends_on:
-  #     zabbix-server:
-  #       condition: service_healthy
-  #   environment:
-  #     - PUID=${PUID}
-  #     - PGID=${PGID}
-  #     - TZ=${TZ}
-  #     - ZBX_HOSTNAME=${ZBX_HOSTNAME}
-  #     - ZBX_SERVER_HOST=zabbix-server
-  #     - ZBX_SERVER_PORT=${ZABBIX_SERVER_PORT}
-  #     - ZBX_ACTIVE_ALLOW=true
-  #     - ZBX_PASSIVE_ALLOW=true
-  #     - ZBX_DONTCREATEPIDFILE=1
-  #   volumes:
-  #     - /proc:/proc:ro
-  #     - /sys:/sys:ro
-  #     - /var/run:/var/run:ro
-  #     - ${STACK_ROOT}/zabbix/config:/etc/zabbix:rw
-  #   healthcheck:
-  #     test: ["CMD", "zabbix_agent2", "-t", "agent.ping"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 3
-  #     start_period: 30s
-  #   logging:
-  #     driver: json-file
-  #     options:
-  #       max-size: 10m
-  #       max-file: "3"
-  #   labels:
-  #     - com.centurylinklabs.watchtower.enable=false
+   zabbix-agent:
+    container_name: Zabbix-Agent
+    image: zabbix/zabbix-agent2:alpine-7.4.10
+    networks:
+       - zabbix-net
+    mem_limit: 128m
+    cpu_shares: 256
+    security_opt:
+       - no-new-privileges:true
+    restart: unless-stopped
+    depends_on:
+      zabbix-server:
+        condition: service_healthy
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - ZBX_HOSTNAME=${ZBX_HOSTNAME}
+      - ZBX_SERVER_HOST=zabbix-server
+      - ZBX_SERVER_PORT=${ZABBIX_SERVER_PORT}
+      - ZBX_ACTIVE_ALLOW=true
+      - ZBX_PASSIVE_ALLOW=true
+      - ZBX_DONTCREATEPIDFILE=1
+    volumes:
+      # - /proc:/proc:ro
+      # - /sys:/sys:ro
+      - /var/run:/var/run:ro
+      - ${STACK_ROOT}/zabbix/config:/etc/zabbix:rw
+    healthcheck:
+      test: ["CMD", "zabbix_agent2", "-t", "agent.ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    labels:
+      - com.centurylinklabs.watchtower.enable=false
 
 networks:
   zabbix-net:
