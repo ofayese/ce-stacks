@@ -116,20 +116,18 @@ services:
     labels:
       - com.centurylinklabs.watchtower.enable=false
 
-  # DISABLED: zabbix-agent2 conflicts with Synology DSM read-only /proc/sys
-  # The agent tries to set ping_group_range on startup, which fails on Synology Cool mode.
-  # Zabbix Server (above) provides core monitoring functionality.
-  # To re-enable: set cap_add: [] and remove /proc, /sys volumes, or run on non-Synology host.
-   zabbix-agent:
+  zabbix-agent:
     container_name: Zabbix-Agent
     image: zabbix/zabbix-agent2:alpine-7.4.10
     networks:
-       - zabbix-net
+      - zabbix-net
     mem_limit: 128m
     cpu_shares: 256
     security_opt:
-       - no-new-privileges:true
+      - no-new-privileges:true
     restart: unless-stopped
+    ports:
+      - "10.0.1.15:10050:10050"
     depends_on:
       zabbix-server:
         condition: service_healthy
@@ -144,8 +142,6 @@ services:
       - ZBX_PASSIVE_ALLOW=true
       - ZBX_DONTCREATEPIDFILE=1
     volumes:
-      # - /proc:/proc:ro
-      # - /sys:/sys:ro
       - /var/run:/var/run:ro
       - ${STACK_ROOT}/zabbix/config:/etc/zabbix:rw
     healthcheck:
