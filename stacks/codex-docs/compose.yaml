@@ -45,6 +45,7 @@ services:
       - "10.0.1.15:8896:3000"
     volumes:
       - ${STACK_ROOT}/codex-docs/data:/usr/src/app/uploads:rw
+      - ${STACK_ROOT}/codex-docs/docs-config.yaml:/usr/src/app/docs-config.yaml:ro
     env_file:
       - .env
     environment:

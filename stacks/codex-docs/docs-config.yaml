@@ -1,0 +1,9 @@
+# Codex.Docs application config
+# Database URI and APP_SECRET are injected via environment variables in compose.yaml.
+# This file must exist; the config-loader throws ENOENT if it is absent.
+title: CE Stacks Docs
+startPage: ""
+uploads:
+  driver: local
+  local:
+    path: /usr/src/app/uploads
