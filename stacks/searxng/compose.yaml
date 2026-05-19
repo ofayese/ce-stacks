@@ -65,7 +65,8 @@ services:
     healthcheck:
       # searxng uWSGI listens on 8080; /healthz is not available — probe TCP port directly
       # to bypass strict HTTP Host header validation when SEARXNG_BASE_URL is set.
-      test: ["CMD", "nc", "-z", "127.0.0.1", "8080"]
+      # nc -z is GNU netcat only; BusyBox nc uses -w <timeout> with stdin from /dev/null.
+      test: ["CMD-SHELL", "nc -w 1 127.0.0.1 8080 </dev/null"]
       interval: 30s
       timeout: 10s
       retries: 3
