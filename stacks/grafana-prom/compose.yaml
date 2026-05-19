@@ -42,10 +42,9 @@ services:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
       - TZ=${TIMEZONE:-America/New_York}
-      # Infrastructure Upgrade: PostgreSQL backing for high availability
-      - GF_DATABASE_TYPE=postgres
-      - GF_DATABASE_HOST=${POSTGRES_HOST}
-      - GF_DATABASE_PORT=${POSTGRES_PORT}
+      # MariaDB backing for high availability (local NAS MySQL at 3306)
+      - GF_DATABASE_TYPE=mysql
+      - GF_DATABASE_HOST=${MYSQL_HOST}:${MYSQL_PORT}
       - GF_DATABASE_NAME=${GRAFANA_DB_NAME}
       - GF_DATABASE_USER=${GRAFANA_DB_USER}
       - GF_DATABASE_PASSWORD=${GRAFANA_DB_PASSWORD}

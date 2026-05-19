@@ -58,6 +58,11 @@ scrape_configs:
     static_configs:
       - targets: ["10.0.1.15:6379"]
 
+  - job_name: "memcached"
+    scrape_interval: 30s
+    static_configs:
+      - targets: ["10.0.1.15:11211"]
+
   - job_name: "zabbix-agent"
     scrape_interval: 30s
     static_configs:
