@@ -7,15 +7,14 @@ services:
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped
-    networks:
-      - zabbix-net
+    network_mode: host
     ports:
       - "10.0.1.15:${ZABBIX_SERVER_PORT}:10051"
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=${TZ}
-      - DB_SERVER_HOST=10.0.1.15
+      - DB_SERVER_HOST=127.0.0.1
       - DB_SERVER_PORT=3306
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
@@ -45,8 +44,7 @@ services:
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped
-    networks:
-      - zabbix-net
+    network_mode: host
     depends_on:
       zabbix-server:
         condition: service_healthy
@@ -56,13 +54,13 @@ services:
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=${TZ}
-      - DB_SERVER_HOST=10.0.1.15
+      - DB_SERVER_HOST=127.0.0.1
       - DB_SERVER_PORT=3306
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - ZBX_SERVER_HOST=zabbix-server
+      - ZBX_SERVER_HOST=127.0.0.1
       - ZBX_SERVER_PORT=10051
       - PHP_TZ=${TZ}
     healthcheck:
@@ -82,13 +80,12 @@ services:
   zabbix-agent:
     container_name: Zabbix-Agent
     image: zabbix/zabbix-agent2:alpine-7.4.10
-    networks:
-      - zabbix-net
     mem_limit: 128m
     cpu_shares: 256
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped
+    network_mode: host
     depends_on:
       zabbix-server:
         condition: service_healthy
@@ -97,7 +94,7 @@ services:
       - PGID=${PGID}
       - TZ=${TZ}
       - ZBX_HOSTNAME=${ZBX_HOSTNAME}
-      - ZBX_SERVER_HOST=zabbix-server
+      - ZBX_SERVER_HOST=127.0.0.1
       - ZBX_SERVER_PORT=${ZABBIX_SERVER_PORT}
       - ZBX_ACTIVE_ALLOW=true
       - ZBX_PASSIVE_ALLOW=true
@@ -117,12 +114,3 @@ services:
         max-file: "3"
     labels:
       - com.centurylinklabs.watchtower.enable=false
-
-networks:
-  zabbix-net:
-    name: zabbix-net
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.30.0.0/24
-          gateway: 172.30.0.1
