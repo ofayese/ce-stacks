@@ -56,7 +56,8 @@ services:
       - PORT=3000
       - TZ=America/New_York
     healthcheck:
-      test: ["CMD", "curl", "-fs", "http://localhost:3000/"]
+      # curl is absent from the minimal Node.js image; use wget (present in Alpine/Debian slim).
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ >/dev/null 2>&1 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
