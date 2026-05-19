@@ -17,23 +17,7 @@ scrape_configs:
 
   - job_name: "node-exporter"
     static_configs:
-      # Scrapes your SynoCommunity package directly on the NAS host OS
       - targets: ["10.0.1.15:9100"]
-
-  # ntopng metrics flow through InfluxDB, not Prometheus scrape.
-  # ntopng -> InfluxDB 1.8 (10.0.1.15:8086) -> Grafana (InfluxDB-ntopng datasource)
-  # See stacks/influxdb/ for setup and stacks/grafana-prom/provisioning/datasources/influxdb.yml.
-  #
-  # ntopng >=5.6 (Community) does expose a Prometheus endpoint, but it requires
-  # basic auth and a non-standard path. To enable it, uncomment and configure:
-  #
-  # - job_name: "ntopng"
-  #   metrics_path: /lua/rest/v2/get/metrics/prometheus.lua
-  #   basic_auth:
-  #     username: admin
-  #     password: <ntopng-admin-password>
-  #   static_configs:
-  #     - targets: ["10.0.1.15:3000"]
 
   - job_name: "snmp-exporter"
     static_configs:
@@ -69,9 +53,16 @@ scrape_configs:
     static_configs:
       - targets: ["10.0.1.15:18787"]
 
-  # WireGuard VPN tunnel -- native host kernel module (not containerized).
-  # Requires the wireguard-exporter service in compose.yaml (network_mode: host, port 9586).
-  # Prerequisite: wg0 interface must be up before this exporter starts (wg-quick up wg0).
+  - job_name: "redis"
+    scrape_interval: 30s
+    static_configs:
+      - targets: ["10.0.1.15:6379"]
+
+  - job_name: "zabbix-agent"
+    scrape_interval: 30s
+    static_configs:
+      - targets: ["10.0.1.15:10050"]
+
   - job_name: "wireguard"
     scrape_interval: 30s
     static_configs:

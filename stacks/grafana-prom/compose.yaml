@@ -38,17 +38,22 @@ services:
     volumes:
       - ${STACK_ROOT}/grafana-prom/data/grafana:/var/lib/grafana:rw
       - ${STACK_ROOT}/grafana-prom/provisioning:/etc/grafana/provisioning:ro
-      # Secret file for InfluxDB datasource provisioning.
-      # Create: echo -n '<password>' > secrets/influxdb_grafana_password.txt
-      # Must match INFLUXDB_GRAFANA_PASSWORD in stacks/influxdb/.env.
-      - ${STACK_ROOT}/grafana-prom/secrets/influxdb_grafana_password.txt:/run/secrets/influxdb_grafana_password:ro
     environment:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
       - TZ=${TIMEZONE:-America/New_York}
+      # Infrastructure Upgrade: PostgreSQL backing for high availability
+      - GF_DATABASE_TYPE=postgres
+      - GF_DATABASE_HOST=${POSTGRES_HOST}
+      - GF_DATABASE_PORT=${POSTGRES_PORT}
+      - GF_DATABASE_NAME=${GRAFANA_DB_NAME}
+      - GF_DATABASE_USER=${GRAFANA_DB_USER}
+      - GF_DATABASE_PASSWORD=${GRAFANA_DB_PASSWORD}
+      - GF_DATABASE_SSL_MODE=disable
     restart: unless-stopped
     labels:
       - com.centurylinklabs.watchtower.enable=false
+      - dockhand.url=http://10.0.1.15:${GRAFANA_PORT:-3340}
 
   prometheus:
     image: prom/prometheus:v3.11.3
@@ -74,6 +79,7 @@ services:
     environment:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
+      - TZ=${TIMEZONE:-America/New_York}
     healthcheck:
       test:
         [
@@ -97,6 +103,7 @@ services:
     restart: unless-stopped
     labels:
       - com.centurylinklabs.watchtower.enable=false
+      - dockhand.update=false
     depends_on:
       snmp-exporter:
         condition: service_healthy
@@ -236,23 +243,15 @@ services:
       - grafana-net
     restart: unless-stopped
     labels:
-      - com.centurylinklabs.watchtower.enable=true
+      - com.centurylinklabs.watchtower.enable=false
 
   wireguard-exporter:
     image: docker.io/mindflavor/prometheus-wireguard-exporter:3.6.6
     container_name: Prometheus-WireGuard-Exporter
     hostname: prometheus-wireguard
-    # WireGuard lives in the NAS host kernel -- host networking is required to read the wg0 interface.
-    # The exporter binds on 127.0.0.1:9586 of the host; Prometheus scrapes via 10.0.1.15:9586.
     network_mode: host
     cap_add:
       - NET_ADMIN
-    # mindflavor/prometheus-wireguard-exporter:3.6.6 only supports 4 flags:
-    #   --address, --port, --interfaces, --prepend_sudo true|false
-    # --peers_file is NOT present in this build (confirmed: binary rejects the flag).
-    # CAP_NET_ADMIN is sufficient to read wg0 without sudo.
-    # Peer names will show as truncated public keys in alerts; upgrade image to a build
-    # that supports --peers_file if human-readable names are needed.
     command:
       - --address
       - "127.0.0.1"
@@ -272,10 +271,6 @@ services:
       options:
         max-size: 10m
         max-file: "3"
-    # No healthcheck: mindflavor image is a minimal Rust binary with no wget/curl.
-    # Liveness is monitored by Prometheus via the WireGuardTunnelDown alert
-    # (up{job="wireguard"} == 0 for > 2m fires critical). No compose depends_on
-    # references this service as service_healthy, so removing it is safe.
     labels:
       - com.centurylinklabs.watchtower.enable=true
 
