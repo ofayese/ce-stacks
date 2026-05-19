@@ -23,7 +23,10 @@ services:
     volumes:
       - ${STACK_ROOT}/zabbix/data:/var/lib/zabbix
     healthcheck:
-      test: ["CMD", "zabbix_server", "-R", "diaginfo"]
+      # zabbix_server -R diaginfo fails in container context because the rtc
+      # Unix socket path doesn't match. Use port check instead: port 10051
+      # is only open once the server has fully started and accepted DB schema.
+      test: ["CMD-SHELL", "ss -tlnp 2>/dev/null | grep -q ':10051' || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
