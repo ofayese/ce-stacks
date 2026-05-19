@@ -157,6 +157,8 @@ services:
       - "--docker_only=true"
     container_name: Prometheus-cAdvisor
     hostname: prometheus-cadvisor
+    networks:
+      - prometheus-net
     mem_limit: 256m
     mem_reservation: 64m
     cpu_shares: 512
