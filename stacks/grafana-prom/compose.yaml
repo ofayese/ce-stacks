@@ -245,9 +245,11 @@ services:
     network_mode: host
     cap_add:
       - NET_ADMIN
-    # This build of mindflavor/prometheus-wireguard-exporter:3.6.6 only accepts three flags.
-    # --peers_file / --prepend_sudo / --verbose_errors are not present in this binary.
-    # Liveness is via CAP_NET_ADMIN (no sudo needed); peer-name labels unavailable without peers_file.
+    # mindflavor/prometheus-wireguard-exporter:3.6.6 CLI flags:
+    #   --prepend_sudo true|false  -- true adds `sudo wg show`, false uses CAP_NET_ADMIN directly.
+    #   --peers_file <path>        -- reads [Peer] Name= labels from wg0.conf for human-readable alerts.
+    # CAP_NET_ADMIN is granted below so sudo is not needed; false avoids a sudo dependency.
+    # Peer names from --peers_file populate $labels.name in nas_alerts.yml WireGuard rules.
     command:
       - --address
       - "127.0.0.1"
@@ -255,11 +257,12 @@ services:
       - "9586"
       - --interfaces
       - "wg0"
-    # Volumes disabled: this build does not support --peers_file so peer [Name] labels
-    # are not injected into metrics. Can be re-enabled if upgrading to a build that
-    # supports --peers_file (uncomment and add flag to command: block above).
-    # volumes:
-    #   - /etc/wireguard/wg0.conf:/etc/wireguard/wg0.conf:ro
+      - --prepend_sudo
+      - "false"
+      - --peers_file
+      - /etc/wireguard/wg0.conf
+    volumes:
+      - /etc/wireguard/wg0.conf:/etc/wireguard/wg0.conf:ro
     restart: unless-stopped
     mem_limit: 64m
     cpu_shares: 128
