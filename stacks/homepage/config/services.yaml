@@ -1,307 +1,102 @@
-# ============================================================================
-# Homepage Services Configuration
-# ============================================================================
-#
-# OVERVIEW
-# Each service below uses:
-#   server: my-docker       -> References the socket in docker.yaml
-#   container: ContainerName -> Must match compose.yaml exactly (CASE-SENSITIVE)
-#
-# The 'container:' value is critical. If it doesn't match the actual
-# container_name: in the compose file, the status indicator (green/red dot)
-# won't appear.
-#
-# SEE ALSO
-# For the authoritative mapping of service -> container -> compose file,
-# refer to CONTAINER_MAPPING.md (in this directory).
-#
-# ORGANIZATION
-# Services are grouped by function:
-#   - Infrastructure:  Docker management (Dockhand, Watchtower, GitHub Desktop)
-#   - Management:      Monitoring & admin (Dozzle, Adminer, phpMyAdmin)
-#   - Development:     Code editors, databases (Code-Server, MySQL, PostgreSQL)
-#   - Productivity:    Documentation & tools (Codex Docs, OpenResume)
-#   - AI:              Large language models (Ollama, Open WebUI)
-#   - Search & Tools:  Utilities (SearXNG, IT-Tools, acme.sh)
-#
-# ============================================================================
-
-- Infrastructure:
-    - Dockhand:
-        # Container name from: dockhand/compose.yaml (service: dockhand)
-        icon: docker.png
-        href: http://10.0.1.15:3866/
-        description: Git-backed Docker Compose stack manager
-        server: my-docker
-        container: Dockhand
-        siteMonitor: http://10.0.1.15:3866/
-
-    - Watchtower:
-        # Container name from: watchtower/compose.yaml (service: watchtower)
-        icon: watchtower.png
-        description: Automatic container updates (daily 4 AM EST)
-        server: my-docker
-        container: Watchtower
-        # HTTP API is enabled in watchtower/compose.yaml (WATCHTOWER_HTTP_API_METRICS=1).
-        # WATCHTOWER_BEARER_TOKEN in stacks/homepage/.env:
-        #   cat ${STACK_ROOT}/grafana-prom/secrets/watchtower_bearer_token.txt
-        widget:
-          type: watchtower
-          url: http://10.0.1.15:18787
-          key: ${WATCHTOWER_BEARER_TOKEN}
-
-    - GitHub Desktop:
-        # Container name from: github-desktop/compose.yaml (service: github-desktop)
-        icon: github.png
-        href: http://10.0.1.15:3405/
-        description: GitHub Desktop GUI via KasmVNC browser session
-        server: my-docker
-        container: github-desktop
-        siteMonitor: http://10.0.1.15:3405/
-
-- Management:
-    - Dozzle:
-        # Container name from: dozzle/compose.yaml (service: dozzle)
-        icon: dozzle.png
-        href: http://10.0.1.15:8892/
-        description: Real-time Docker logs aggregator
-        server: my-docker
-        container: Dozzle
-        siteMonitor: http://10.0.1.15:8892/
-
-    - Adminer:
-        # Container name from: databases/compose.yaml (service: adminer)
-        icon: adminer.png
-        href: http://10.0.1.15:8895/
-        description: MariaDB + PostgreSQL admin UI
-        server: my-docker
-        container: Adminer
-        siteMonitor: http://10.0.1.15:8895/
-
-    - phpMyAdmin (Code-Server):
-        # Container name from: code-server/compose.yaml (service: phpmyadmin)
-        # Targets code-server's dev MySQL sidecar (port 3307 internal) on host port 8379.
-        # Use Adminer (port 8895) for native MariaDB/PostgreSQL instead.
-        icon: phpmyadmin.png
-        href: http://10.0.1.15:8379/
-        description: MySQL admin for Code-Server dev database (port 3307)
-        server: my-docker
-        container: CodeServerPMA
-        siteMonitor: http://10.0.1.15:8379/
-
+- Management & Infrastructure:
     - Synology DSM:
         icon: synology.png
-        href: https://10.0.1.15:5001/
+        href: https://otsorundscore.olutechsys.com/
         description: DS723+ control panel
-        siteMonitor: https://10.0.1.15:5001/
+        siteMonitor: http://10.0.1.15:5009/
+    - Dockhand:
+        icon: docker.png
+        href: https://dockhand.olutechsys.com/
+        description: Docker container management
+        server: my-docker
+        container: dockhand
+        siteMonitor: http://10.0.1.15:3866/
+    - Synology SSO:
+        icon: synology.png
+        href: https://sso.olutechsys.com/
+        description: Single Sign-On Portal
+        siteMonitor: http://10.0.1.15:8800/
 
+- Automation & NOC:
+    - n8n:
+        icon: n8n.png
+        href: https://n8n.olutechsys.com/
+        description: Workflow automation platform
+        server: my-docker
+        container: n8n
+        siteMonitor: http://10.0.1.15:5678/healthz
+    - Flowise:
+        icon: flowise.png
+        href: https://flowise.olutechsys.com/
+        description: Visual LangChain AI builder
+        server: my-docker
+        container: flowise
+        siteMonitor: http://10.0.1.15:8459/
+    - PowerShell Universal:
+        icon: powershell.png
+        href: https://psu.olutechsys.com/
+        description: Automation Platform
+        server: my-docker
+        container: psu
+        siteMonitor: http://10.0.1.15:5570/
+
+- Monitoring & Observability:
     - Grafana:
-        # Container name from: grafana-prom/compose.yaml (service: grafana)
         icon: grafana.png
-        href: http://10.0.1.15:3340/
-        description: Metrics dashboards (Prometheus, SNMP, cAdvisor)
+        href: https://grafana.olutechsys.com/
+        description: Observability dashboard
         server: my-docker
         container: Grafana
-        siteMonitor: http://10.0.1.15:3340/
+        siteMonitor: http://10.0.1.15:3340/api/health
         widget:
           type: grafana
           url: http://10.0.1.15:3340
           username: ${GRAFANA_USERNAME}
           password: ${GRAFANA_PASSWORD}
-
-    - Alertmanager:
-        # Container name from: grafana-prom/compose.yaml (service: alertmanager)
-        icon: prometheus.png
-        href: http://10.0.1.15:9093/
-        description: Prometheus alert routing -> Discord
-        server: my-docker
-        container: Alertmanager
-        siteMonitor: http://10.0.1.15:9093/
-
     - Zabbix:
-        # Container name from: zabbix/compose.yaml (service: zabbix-web)
         icon: zabbix.png
-        href: http://10.0.1.15:8532/
-        description: Infrastructure monitoring (SNMP, ICMP, agent)
+        href: https://zabbix.olutechsys.com/
+        description: Enterprise monitoring
         server: my-docker
         container: Zabbix-Web
-        siteMonitor: http://10.0.1.15:8532/
-        # Zabbix widget: shows active problem count and host/trigger stats.
-        # Create a read-only API user: Zabbix -> Administration -> Users -> Create user
-        # Assign role "Zabbix User" (read-only). Set ZABBIX_USERNAME/PASSWORD in .env.
-        widget:
-          type: zabbix
-          url: http://10.0.1.15:8532
-          username: ${ZABBIX_USERNAME}
-          password: ${ZABBIX_PASSWORD}
-
-    - Remotely:
-        # Container name from: remotely/compose.yaml (service: remotely)
-        icon: rdp.png
-        href: http://10.0.1.15:5371/
-        description: Remote support -- screen share & scripting
+        siteMonitor: http://10.0.1.15:8532/ping
+    - Dozzle:
+        icon: dozzle.png
+        href: https://dozzle.olutechsys.com/
+        description: Real-time container logs
         server: my-docker
-        container: remotely
-        siteMonitor: http://10.0.1.15:5371/
+        container: dozzle
 
-    - PSU (PowerShell Universal):
-        # Container name from: otspsu/compose.yaml (service: universal)
-        icon: powershell.png
-        href: http://10.0.1.15:5570/
-        description: NAS automation & NOC dashboard
-        server: my-docker
-        container: otspsu
-        siteMonitor: http://10.0.1.15:5570/
-
-    - Synology API Bridge:
-        # Container name from: synology-api-bridge/compose.yaml (service: synology-api-bridge)
-        # Internal FastAPI shim -- no user-facing UI; status indicator only.
-        icon: api.png
-        description: Internal DSM HTTP shim (FastAPI) for stack automation
-        server: my-docker
-        container: SynologyApiBridge
-
-- Development:
-    - Code-Server:
-        # Container name from: code-server/compose.yaml (service: code-server)
-        icon: vscode.png
-        href: http://10.0.1.15:8377/
-        description: VS Code in the browser (full IDE)
-        server: my-docker
-        container: CodeServer
-        siteMonitor: http://10.0.1.15:8377/
-
-    - MySQL (Code-Server):
-        # Container name from: code-server/compose.yaml (service: db)
-        icon: mysql.png
-        description: Dev database (MySQL 8.3, port 3307 external)
-        server: my-docker
-        container: CodeServerDB
-
-    - MariaDB:
-        # stacks/databases is archived -- MariaDB is now a Synology native package.
-        # No Docker container -> no server:/container: integration (would always show offline).
-        # Connect via DSM -> Package Center, or use Adminer/phpMyAdmin at db-tools.
-        icon: mariadb.png
-        href: http://10.0.1.15:8895/
-        description: Shared application database (MariaDB LTS -- Synology native package, port 3306)
-
-    - PostgreSQL:
-        # stacks/databases is archived -- PostgreSQL is now a Synology native package.
-        # No Docker container -> no server:/container: integration (would always show offline).
-        icon: postgres.png
-        description: Shared application database (PostgreSQL 16 -- Synology native package, port 5432)
-
-- Productivity:
-    - Codex Docs:
-        # Container name from: codex-docs/compose.yaml (service: codex-docs)
-        icon: bookstack.png
-        href: http://10.0.1.15:8896/
-        description: Internal documentation wiki & knowledge base
-        server: my-docker
-        container: CodexDocs
-        siteMonitor: http://10.0.1.15:8896/
-
-    - Codex MongoDB:
-        # Container name from: codex-docs/compose.yaml (service: mongodb)
-        icon: mongodb.png
-        description: Backing database for Codex Docs
-        server: my-docker
-        container: CodexDocs-MongoDB
-
-    - OpenResume:
-        icon: mdi-file-document-edit
-        href: http://10.0.1.15:8889/
-        description: Resume builder (Next.js)
-        server: my-docker
-        container: OpenResume
-        siteMonitor: http://10.0.1.15:8889/
-
-- AI:
+- AI & Search:
     - Open WebUI:
-        # Container name from: ollama/compose.yaml (service: open-webui)
-        icon: open-webui.png
-        href: http://10.0.1.15:8893/
-        description: olutechsys AI -- Chat interface to local LLMs
+        icon: openai.png
+        href: https://ai.olutechsys.com/
+        description: Local LLM Interface
         server: my-docker
-        container: otsai-webui
-        siteMonitor: http://10.0.1.15:8893/
-
-    - Ollama:
-        # Container name from: ollama/compose.yaml (service: ollama)
-        # Homepage v1.12 does not support an Ollama widget type.
-        # Keep this as a plain service card (status + link + site monitor).
-        icon: ollama.png
-        href: http://10.0.1.15:11434/
-        description: Local LLM API server (inference engine)
-        server: my-docker
-        container: otsai
-        siteMonitor: http://10.0.1.15:11434/
-
-- Search & Tools:
+        container: openwebui
     - SearXNG:
-        # Container name from: searxng/compose.yaml (service: searxng)
-        # Widget type: searxng (Homepage must support this plugin)
         icon: searxng.png
-        href: http://10.0.1.15:8888/
-        description: Private metasearch engine (no tracking)
+        href: https://search.olutechsys.com/
+        description: Privacy-respecting metasearch
         server: my-docker
-        container: SearXNG
-        siteMonitor: http://10.0.1.15:8888/
-        widget:
-          type: searxng
-          url: http://10.0.1.15:8888
+        container: searxng
 
-    - IT-Tools:
-        # Container name from: it-tools/compose.yaml (service: it-tools)
+- Development & IT Tools:
+    - Code Server:
+        icon: vscode.png
+        href: https://code.olutechsys.com/
+        description: VS Code in the browser
+        server: my-docker
+        container: codeserver
+    - IT Tools:
         icon: it-tools.png
-        href: http://10.0.1.15:8894/
-        description: Developer & administrator utility belt
+        href: https://tools.olutechsys.com/
+        description: Collection of handy tools
         server: my-docker
-        container: IT-Tools
-        siteMonitor: http://10.0.1.15:8894/
-
-    - acme.sh:
-        # Container name from: acme-sh/compose.yaml (service: acme-sh)
-        icon: lets-encrypt.png
-        description: Let's Encrypt certificate renewal (Cloudflare DNS)
+        container: ittools
+    - Adminer:
+        icon: database.png
+        href: https://adminer.olutechsys.com/
+        description: Database management
         server: my-docker
-        container: AcmeSh
-# ============================================================================
-# HOW TO ADD A NEW SERVICE
-# ============================================================================
-#
-# 1. Deploy the new service via its compose.yaml
-#    Example:
-#      docker compose -f /path/to/compose.yaml up -d
-#
-# 2. Get the exact container name (case-sensitive):
-#      docker ps --filter "name=MyService" --format "{{.Names}}"
-#    OR look in its compose.yaml for the line: container_name: MyService
-#
-# 3. Add to services.yaml with this format:
-#
-#    - My Service:
-#        icon: my-service.png              # icon name from Homepage icon pack
-#        href: http://10.0.1.15:PORT/      # external link (optional)
-#        description: Brief description    # shows under service name
-#        server: my-docker                 # always use the socket
-#        container: MyService              # MUST match compose.yaml exactly (CASE-SENSITIVE)
-#        siteMonitor: http://10.0.1.15:PORT/  # health endpoint (optional)
-#
-# 4. Optionally add a widget (if Homepage has support for this service):
-#    widget:
-#      type: plugin-name                   # e.g., ollama, searxng, portainer
-#      url: http://10.0.1.15:PORT          # internal container address
-#      # ... additional widget config per Homepage docs
-#
-# 5. Update CONTAINER_MAPPING.md with the new service for future reference
-#
-# 6. Restart Homepage:
-#      docker compose -f compose.yaml restart
-#
-# 7. Verify the new service appears:
-#      cd /volume2/docker/ce-stacks/stacks/homepage
-#      bash verify-integration.sh
-#
-# ============================================================================
+        container: adminer

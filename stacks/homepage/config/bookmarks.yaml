@@ -1,67 +1,34 @@
-# ============================================================================
-# Homepage Bookmarks -- Quick Access Links
-# ============================================================================
-#
-# STRUCTURE
-# Bookmarks are organized into logical groups with external links.
-# Each bookmark can link to web UIs, docs, or external services.
-#
-# FORMAT
-# - Category:
-#     - Subcategory (optional):
-#         - Name:
-#             abbr: ABC          # 3-letter abbreviation (shows on dashboard)
-#             href: URL          # Link target
-#
-
 - Synology:
     - DSM:
-        - abbr: DSM
-          href: https://10.0.1.15:5010/
+        abbr: DSM
+        href: https://otsorundscore.olutechsys.com/
     - Package Center:
-        - abbr: PKG
-          href: https://10.0.1.15:5010/?launchApp=SYNO.SDS.PackageCenter
+        abbr: PKG
+        href: https://otsorundscore.olutechsys.com/?launchApp=SYNO.SDS.PackageCenter
     - File Station:
-        - abbr: FS
-          href: https://10.0.1.15:5010/?launchApp=SYNO.SDS.FileStation
+        abbr: FS
+        href: https://otsorundscore.olutechsys.com/?launchApp=SYNO.SDS.FileStation
 
 - Cloud & DNS:
     - Cloudflare Dashboard:
-        - abbr: CF
-          href: https://dash.cloudflare.com/
+        abbr: CF
+        href: https://dash.cloudflare.com/
     - olutechsys Domain:
-        - abbr: OTS
-          href: https://otsorundscore.olutechsys.com/
+        abbr: OTS
+        href: https://otsorundscore.olutechsys.com/
 
 - Stack Documentation:
     - Homepage Config Guide:
-        - abbr: HC
-          href: https://gethomepage.dev/configs/
+        abbr: HC
+        href: https://gethomepage.dev/configs/
     - Docker Compose Docs:
-        - abbr: DC
-          href: https://docs.docker.com/compose/
-    - Synology Docker Setup (Marius Hosting):
-        - abbr: MH
-          href: https://mariushosting.com/how-to-install-homepage-on-your-synology-nas/
+        abbr: DC
+        href: https://docs.docker.com/compose/
 
 - Development References:
     - Docker Hub:
-        - abbr: DH
-          href: https://hub.docker.com/
+        abbr: DH
+        href: https://hub.docker.com/
     - GitHub:
-        - abbr: GH
-          href: https://github.com/
-    - Stack Overflow:
-        - abbr: SO
-          href: https://stackoverflow.com/
-
-- olutechsys Project:
-    - Project SETUP.md:
-        - abbr: SETUP
-          href: file:///volume2/docker/ce-stacks/stacks/SETUP.md
-    - Container Mapping:
-        - abbr: MAP
-          href: file:///volume2/docker/ce-stacks/stacks/homepage/CONTAINER_MAPPING.md
-    - README:
-        - abbr: README
-          href: file:///volume2/docker/ce-stacks/stacks/homepage/README.md
+        abbr: GH
+        href: https://github.com/

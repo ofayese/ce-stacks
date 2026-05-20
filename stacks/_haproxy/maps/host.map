@@ -1,5 +1,5 @@
-otsorundscore.olutechsys.com	homepage-be
-otsorundscore.olutech.systems	homepage-be
+otsorundscore.olutechsys.com	otsorundscore-be
+otsorundscore.olutech.systems	otsorundscore-be
 dozzle.olutechsys.com	dozzle-be
 dozzle.olutech.systems	dozzle-be
 dozzle.otsorundscore.olutechsys.com	dozzle-be
@@ -10,9 +10,6 @@ tools.otsorundscore.olutechsys.com	ittools-be
 tools.otsorundscore.olutech.systems	ittools-be
 search.olutechsys.com	searxng-be
 search.olutech.systems	searxng-be
-# legacy aliases -- *.otsorundscore.* -- no public Cloudflare DNS; LAN split-horizon only.
-# Option B canonical names are service.olutechsys.com above.
-# Remove after DNS audit confirms no devices still resolving sub-subdomain names.
 search.otsorundscore.olutechsys.com	searxng-be
 search.otsorundscore.olutech.systems	searxng-be
 ai.olutechsys.com	openwebui-be
@@ -59,7 +56,6 @@ remotely.olutechsys.com	remotely-be
 remotely.olutech.systems	remotely-be
 desktop.olutechsys.com	github-desktop-be
 desktop.olutech.systems	github-desktop-be
-# node exporter intentionally omitted - internal Prometheus scrape only, no public DNS
 otscal.olutechsys.com	otscal-be
 otscal.olutech.systems	otscal-be
 otscnt.olutechsys.com	otscnt-be

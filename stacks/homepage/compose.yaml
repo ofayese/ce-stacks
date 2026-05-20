@@ -1,10 +1,26 @@
 services:
   homepage:
     container_name: Homepage
+    # TD-06: Pinned image to stable v1.13.1 for stateful UI stability
     image: ghcr.io/gethomepage/homepage:v1.13.1
-    mem_limit: 512m
-    cpu_shares: 512
-    # cpus: removed - Synology DS723+ kernel lacks CFS scheduler cgroup (NanoCPUs unsupported)
+    networks:
+      - homepage-net
+    ports:
+      - "10.0.1.15:${HOMEPAGE_PORT}:3000"
+    environment:
+      # Stripped bash fallbacks for pure Dockhand compatibility
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+      # Required so services.yaml can interpolate credentials for widgets
+      - WATCHTOWER_BEARER_TOKEN=${WATCHTOWER_BEARER_TOKEN}
+      - GRAFANA_USERNAME=${GRAFANA_USERNAME}
+      - GRAFANA_PASSWORD=${GRAFANA_PASSWORD}
+      - ZABBIX_USERNAME=${ZABBIX_USERNAME}
+      - ZABBIX_PASSWORD=${ZABBIX_PASSWORD}
+    volumes:
+      - ${STACK_ROOT}/homepage/config:/app/config:rw
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     security_opt:
       - no-new-privileges:true
     logging:
@@ -13,51 +29,17 @@ services:
         max-size: 10m
         max-file: "3"
     restart: unless-stopped
-    ports:
-      - "${NAS_IP:-10.0.1.15}:${HOMEPAGE_PORT:-7575}:3000"
-    volumes:
-      - ${STACK_ROOT}/homepage/config:/app/config:rw
-      - ${STACK_ROOT}/homepage/data:/app/public/icons:rw
-
-      # /var/run socket context
-      # docker.sock :ro - Homepage reads container metadata only.
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    environment:
-      - PUID=${PUID:-0}
-      - PGID=${PGID:-0}
-      - TZ=${TIMEZONE:-America/New_York}
-      # Allow access from the Synology LAN IP and your domain.
-      # Set HOMEPAGE_ALLOWED_HOSTS in .env; include every hostname/IP used to access the UI.
-      - HOMEPAGE_ALLOWED_HOSTS=${HOMEPAGE_ALLOWED_HOSTS:-10.0.1.15:7575}
-      # Widget credentials: homepage substitutes ${VAR} in config/services.yaml using
-      # container environment. These must be passed here; set values in .env.
-      - GRAFANA_USERNAME=${GRAFANA_USERNAME:-}
-      - GRAFANA_PASSWORD=${GRAFANA_PASSWORD:-}
-      - WATCHTOWER_BEARER_TOKEN=${WATCHTOWER_BEARER_TOKEN:-}
-      - ZABBIX_USERNAME=${ZABBIX_USERNAME:-}
-      - ZABBIX_PASSWORD=${ZABBIX_PASSWORD:-}
-    # Healthcheck type B: own binary probe (image ships CLI tool for this)
-    healthcheck:
-      test:
-        - CMD
-        - wget
-        - -qO-
-        - http://localhost:3000/
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 20s
     labels:
+      # Protects stateful UI from auto-updates
       - com.centurylinklabs.watchtower.enable=false
-    networks:
-      - homepage-net
-    extra_hosts:
-      - otsorundscore.olutechsys.com:10.0.1.15
+      - dockhand.update=false
+      - dockhand.url=http://10.0.1.15:${HOMEPAGE_PORT}
+
 networks:
   homepage-net:
     name: homepage-net
     driver: bridge
     ipam:
       config:
-        - subnet: 172.31.9.0/24
-          gateway: 172.31.9.1
+        - subnet: 172.30.5.0/24
+          gateway: 172.30.5.1

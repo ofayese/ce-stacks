@@ -22,9 +22,8 @@ showStats: true
 statusStyle: "dot"
 
 # SYNOLOGY DS723+ OPTIMIZATION
-# * 4-column layout for Infrastructure/Management/Development/Productivity
-#   Fits well on typical 16:9 monitors at 1920x1080+
-# * 3-column layout for AI and Search & Tools (fewer services)
+# * 3-column layout matches the 3-item groupings perfectly for ultra-clean rows.
+# * AI & Search uses 2 columns since it only has 2 services.
 #
 # If you change monitor resolution or prefer different layout density:
 # * Add more columns for wide displays: columns: 6
@@ -33,32 +32,26 @@ statusStyle: "dot"
 # THEME NOTES
 # * Theme 'dark' is optimized for night use (default)
 # * Color 'slate' provides good contrast
-# * Try other colors: amber, blue, cyan, emerald, fuchsia, gray, green,
-#   indigo, lime, orange, pink, purple, red, rose, sky, teal, violet, yellow
-# * See: https://gethomepage.dev/configs/settings/ for full options
 
 # LAYOUT CONFIGURATION
 # Organizes services into sections with specified column width
 
 layout:
-  Infrastructure:
+  Management & Infrastructure:
     style: row
-    columns: 3 # Dockhand, Watchtower, GitHub Desktop
-  Management:
+    columns: 3
+  Automation & NOC:
     style: row
-    columns: 4 # Adminer, phpMyAdmin, DSM, Grafana, Alertmanager, Zabbix, Remotely, PSU, API Bridge
-  Development:
+    columns: 3
+  Monitoring & Observability:
     style: row
-    columns: 4 # Code-Server, databases, MySQL, PostgreSQL
-  Productivity:
+    columns: 3
+  AI & Search:
     style: row
-    columns: 4 # Codex Docs, OpenResume, MongoDB
-  AI:
+    columns: 2
+  Development & IT Tools:
     style: row
-    columns: 3 # Ollama, Open WebUI, fewer services
-  Search & Tools:
-    style: row
-    columns: 3 # SearXNG, IT-Tools, acme.sh
+    columns: 3
 
 # OPTIONAL: WIDGET PROVIDERS
 # Some Homepage widgets require external API keys.
@@ -68,7 +61,6 @@ layout:
 #  openweathermap: <api_key>    (Weather widget)
 #  github: <token>              (GitHub stats)
 #  mastodon: <instance_url>     (Mastodon feeds)
-# See: https://gethomepage.dev/configs/settings/ for full list
 
 providers:
   # openweathermap: your-api-key-here
@@ -79,11 +71,10 @@ providers:
 # QUICK LAUNCH
 # Start typing anywhere on the homepage to instantly filter services or
 # search the web. Uses your local SearXNG instance as the search engine.
-# Toggle options: set to true/false as preferred.
 quicklaunch:
-  searchDescriptions: true    # search service descriptions, not just names
-  hideInternetSearch: false    # show the web-search fallback option
-  showSearchSuggestions: false # SearXNG does not expose a suggestions API
-  hideVisitURL: false          # allow typing a bare URL to open it directly
+  searchDescriptions: true
+  hideInternetSearch: false
+  showSearchSuggestions: false
+  hideVisitURL: false
   provider: custom
   url: http://10.0.1.15:8888/search?q=
