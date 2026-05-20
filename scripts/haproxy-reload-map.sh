@@ -25,7 +25,7 @@
 
 set -euo pipefail
 
-SOCKET="/var/packages/haproxy/var/run/haproxy.sock"
+SOCKET="/var/packages/haproxy/var/haproxy-api.sock"
 MAP="/volume2/docker/ce-stacks/stacks/_haproxy/maps/host.map"
 DRY_RUN=0
 
