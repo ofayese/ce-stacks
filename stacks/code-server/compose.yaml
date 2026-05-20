@@ -33,6 +33,8 @@ services:
       # Removed bash guard syntax to allow Dockhand to inject these bindings
       - ${CODE_SERVER_HOST_DOCKER_BIND}:/config/workspace/docker:rw
       - ${CODE_SERVER_HOST_HOME_BIND}:/config/workspace/home:rw
+      # Docker socket - required for Continue MCP_DOCKER gateway (docker mcp gateway run)
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
       # Explicitly map all variables and secrets so Dockhand can inject them
       - PUID=${PUID}
