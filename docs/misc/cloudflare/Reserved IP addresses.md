@@ -4,15 +4,15 @@ description: Reference information for Reserved IP addresses in Zero Trust netwo
 image: https://developers.cloudflare.com/zt-preview.png
 ---
 
-> Documentation Index  
-> Fetch the complete documentation index at: https://developers.cloudflare.com/cloudflare-one/llms.txt  
+> Documentation Index
+> Fetch the complete documentation index at: https://developers.cloudflare.com/cloudflare-one/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-[Skip to content](#%5Ftop) 
+[Skip to content](#%5Ftop)
 
 ### Tags
 
-[ IPv4 ](https://developers.cloudflare.com/search/?tags=IPv4)[ IPv6 ](https://developers.cloudflare.com/search/?tags=IPv6) 
+[ IPv4 ](https://developers.cloudflare.com/search/?tags=IPv4)[ IPv6 ](https://developers.cloudflare.com/search/?tags=IPv6)
 
 # Reserved IP addresses
 
@@ -85,7 +85,7 @@ Cloudflare recommends adding back the IPs that are not explicitly used for Cloud
 
 You can use the calculator below to determine which IP ranges to add back based on the Cloudflare One features you use. For example, if your deployment requires [Gateway initial resolved IPs](#gateway-initial-resolved-ips) (`100.80.0.0/16`) and [device IPs](#device-ips) (`100.96.0.0/12`), delete `100.64.0.0/10` from Split Tunnels and add back `100.64.0.0/12`, `100.81.0.0/16`, `100.82.0.0/15`, `100.84.0.0/14`, `100.88.0.0/13`, and `100.112.0.0/12`.
 
-**Base CIDR:** **Subtracted CIDRs:** 
+**Base CIDR:** **Subtracted CIDRs:**
 
 Calculate
 

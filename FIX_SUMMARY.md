@@ -69,7 +69,7 @@ All **11 code review issues** have been identified, fixed, and verified. The inf
 - **File**: `docs/OCI_RUNTIME_FIX.md` (new, comprehensive guide)
 
 ### 9. New Security Linter (MINOR)
-- **Features**: 
+- **Features**:
   - Detects NET_ADMIN + read_only conflicts
   - Validates port binding quoting
   - Checks networks definition completeness

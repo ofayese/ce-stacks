@@ -1,7 +1,7 @@
 # Database Migration Plan: Tier 1 & 2 Stacks to Shared NAS MariaDB
 
-**Target:** Consolidate Zabbix, Code-Server, SearXNG, and Remotely onto `10.0.1.15:3306` (shared NAS MariaDB)  
-**Benefits:** 
+**Target:** Consolidate Zabbix, Code-Server, SearXNG, and Remotely onto `10.0.1.15:3306` (shared NAS MariaDB)
+**Benefits:**
 - Free ~768MB (Zabbix PostgreSQL) + ~1GB (Code-Server MySQL) = ~1.8GB RAM
 - Single database endpoint for all state
 - Simplified backups (one MariaDB instance vs. multiple container DBs)
@@ -342,5 +342,5 @@ docker volume rm zabbix_postgres_db
 | **Remotely** | Add MySQL persistence | 0 (optional) | TIER 2 |
 | **TOTAL** | Consolidate 4 stacks | **~1.8GB** | — |
 
-**Estimated Duration:** 1-2 hours (mostly waiting for Zabbix to initialize)  
+**Estimated Duration:** 1-2 hours (mostly waiting for Zabbix to initialize)
 **Risk Level:** Low (all changes are reversible with backups)

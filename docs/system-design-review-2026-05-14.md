@@ -1,6 +1,6 @@
 # ce-stacks System Design Review
-**Date:** 2026-05-14  
-**Scope:** All stacks under `/volume2/docker/ce-stacks/stacks/` on Synology DS723+  
+**Date:** 2026-05-14
+**Scope:** All stacks under `/volume2/docker/ce-stacks/stacks/` on Synology DS723+
 **Status:** 12 architectural gaps identified, prioritized below
 
 ---

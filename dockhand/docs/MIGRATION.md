@@ -430,22 +430,22 @@ sudo docker logs dockhand | grep -i webhook | tail -20
 
 ## FAQ
 
-**Q: Do I need to recreate all stacks in Dockhand?**  
+**Q: Do I need to recreate all stacks in Dockhand?**
 A: You need to import them, but they already exist in the repo. Just upload the compose.yaml files from `/volume2/docker/ce-stacks/stacks/` into Dockhand.
 
-**Q: Will containers keep running during the migration?**  
+**Q: Will containers keep running during the migration?**
 A: Yes. Containers run independently of the orchestrator. Even if Dockhand crashes, all containers keep running.
 
-**Q: What about persistent data?**  
+**Q: What about persistent data?**
 A: All persistent data lives in volumes (`/volume2/docker/ce-stacks/stacks/*/data/`, databases, etc.). Orchestrator change doesn't affect data.
 
-**Q: Does Dockhand support Docker Swarm?**  
+**Q: Does Dockhand support Docker Swarm?**
 A: No. Dockhand is Docker Compose only. Your setup is single-host, so this isn't a concern.
 
-**Q: What if I push a broken compose.yaml to the repo?**  
+**Q: What if I push a broken compose.yaml to the repo?**
 A: The webhook will fail. Dockhand will log the error; stacks won't redeploy. Fix the compose and push again.
 
-**Q: How do I update a stack after migration?**  
+**Q: How do I update a stack after migration?**
 A: Edit the compose.yaml in `/volume2/docker/ce-stacks/stacks/<stack>/`, commit, and push. If webhooks are enabled, Dockhand auto-syncs. Otherwise, re-import the updated compose file in the UI.
 
 ## Next Steps
