@@ -124,11 +124,11 @@ sudo docker exec AcmeSh /acme-sh-entrypoint.sh --list
 
 After new or renewed PEMs under **`${ACME_CERT_ROOT}`** (profiles such as **`otsorundscore`**, **`misfitsds`** -- see the tree at the top of this file):
 
-1. **HAProxy bundles (host-run, preferred):**  
-   - Script: **`stacks/acme-sh/scripts/deploy_certs.sh`** -- builds combined PEMs and deploys them directly to **`HAPROXY_CERT_STAGE_DIR`** (default **`/var/packages/haproxy/var/crt/`** -- Synology HAProxy package cert directory; **`mkdir -p`** on run). Atomic replace + **`.lkg`** rollback applies when **`haproxy -c`** runs and fails. The script does **not** restart or reload HAProxy.  
-   - **Single profile (optional):** with **`BUNDLE_SPECS` unset**, set **`ACME_PROFILE=otsorundscore`** or **`misfitsds`** to deploy **one** HAProxy bundle using the default filename mapping (see script header).  
-   - **HAProxy validate:** when `HAPROXY_CERT_STAGE_DIR` matches `LIVE_HAPROXY_CERT_DIR` (both default to `/var/packages/haproxy/var/crt/`), **`haproxy -c`** runs against **`HAPROXY_CFG`** (default **`${STACK_ROOT}/_haproxy/haproxy.cfg`**) if **`HAPROXY_BIN`** is executable (Synology package default **`/volume1/@appstore/haproxy/sbin/haproxy`**).  
-   - **HAProxy restart:** after successful **`haproxy -c`**, restart via **DSM -> Package Center -> HAProxy -> Action -> Restart**.  
+1. **HAProxy bundles (host-run, preferred):**
+   - Script: **`stacks/acme-sh/scripts/deploy_certs.sh`** -- builds combined PEMs and deploys them directly to **`HAPROXY_CERT_STAGE_DIR`** (default **`/var/packages/haproxy/var/crt/`** -- Synology HAProxy package cert directory; **`mkdir -p`** on run). Atomic replace + **`.lkg`** rollback applies when **`haproxy -c`** runs and fails. The script does **not** restart or reload HAProxy.
+   - **Single profile (optional):** with **`BUNDLE_SPECS` unset**, set **`ACME_PROFILE=otsorundscore`** or **`misfitsds`** to deploy **one** HAProxy bundle using the default filename mapping (see script header).
+   - **HAProxy validate:** when `HAPROXY_CERT_STAGE_DIR` matches `LIVE_HAPROXY_CERT_DIR` (both default to `/var/packages/haproxy/var/crt/`), **`haproxy -c`** runs against **`HAPROXY_CFG`** (default **`${STACK_ROOT}/_haproxy/haproxy.cfg`**) if **`HAPROXY_BIN`** is executable (Synology package default **`/volume1/@appstore/haproxy/sbin/haproxy`**).
+   - **HAProxy restart:** after successful **`haproxy -c`**, restart via **DSM -> Package Center -> HAProxy -> Action -> Restart**.
    - Rationale: host-run vs in-container ADR (see `stacks/acme-sh/scripts/deploy_certs.sh` header).
 
 2. **TLS edge verify:** **`stacks/acme-sh/scripts/verify_serving.sh`** -- requires **`CONNECT_HOST`**; set **`CONNECT_PORT`** (default **`8281`** -- HAProxy HTTPS), **`SNI`** (defaults to **`CONNECT_HOST`**), **`MIN_VALID_DAYS`** (default **21** for **`openssl x509 -checkend`**), optional **`EXPECTED_SUBJECT`**. On TLS / subject / expiry failure, posts to **`DISCORD_WEBHOOK_URL`** when set (same variable name as **`stacks/acme-sh/.env.example`**).

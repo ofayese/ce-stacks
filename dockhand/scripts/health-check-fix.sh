@@ -108,4 +108,3 @@ echo "     docker inspect dockhand | jq '.State.Health.Status'"
 echo ""
 echo "Expected result: Status should change from 'unhealthy' to 'healthy'"
 echo ""
-
