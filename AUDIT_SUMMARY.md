@@ -1,7 +1,7 @@
 # Ce-Stacks Audit Results - Executive Summary
 
-**Audit Date**: 2026-05-13  
-**Status**: 11 Issues Found - Actionable Fixes Provided  
+**Audit Date**: 2026-05-13
+**Status**: 11 Issues Found - Actionable Fixes Provided
 **Repo Health**: 7.7/10 -> 9.5/10 (after fixes)
 
 ---
@@ -20,20 +20,20 @@
 
 ### 1. Missing ce-internal Network
 
-**Impact**: 4+ stacks won't start  
-**Fix**: One docker command (5 min)  
+**Impact**: 4+ stacks won't start
+**Fix**: One docker command (5 min)
 **Script provided**: Yes
 
 ### 2. Missing .env Files (19 stacks)
 
-**Impact**: Compose files fail validation  
-**Fix**: Create from .env.example, populate values (15 min)  
+**Impact**: Compose files fail validation
+**Fix**: Create from .env.example, populate values (15 min)
 **Script provided**: Yes
 
 ### 3. Invalid Compose Files (4 stacks)
 
-**Impact**: Can't import into Dockhand  
-**Fix**: Create .env files (above)  
+**Impact**: Can't import into Dockhand
+**Fix**: Create .env files (above)
 **Evidence**: github-desktop, code-server, synology-api-bridge
 
 ---
@@ -42,13 +42,13 @@
 
 ### 4. Missing no-new-privileges (1 stack)
 
-- github-desktop  
+- github-desktop
 **Fix**: 2 lines
 
 ### 5. Missing PUID/PGID (2 stacks)
 
 - synology-api-bridge
-- otspsu  
+- otspsu
 **Fix**: 2 lines each
 
 ---
@@ -174,19 +174,19 @@ The repo has:
 
 ## [?] FAQ
 
-**Q: Can I deploy Dockhand without fixing these?**  
+**Q: Can I deploy Dockhand without fixing these?**
 A: No. The ce-internal network must exist, and .env files are required.
 
-**Q: How long will fixes take?**  
+**Q: How long will fixes take?**
 A: ~1.5 hours for all issues. Can do critical fixes (20 min) and defer others.
 
-**Q: Will these fixes break anything?**  
+**Q: Will these fixes break anything?**
 A: No. All changes are additive and non-breaking.
 
-**Q: Should I fix security issues before deploying?**  
+**Q: Should I fix security issues before deploying?**
 A: Yes. PHASE 2 (20 min) should be done. PHASE 3 & 4 can wait.
 
-**Q: Can I automate the fixes?**  
+**Q: Can I automate the fixes?**
 A: Partially. PHASE 1 & 2 have scripts. PHASE 3 requires manual edits.
 
 ---

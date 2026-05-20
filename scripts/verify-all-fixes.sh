@@ -15,7 +15,7 @@ test_result() {
     local test_name="$1"
     local expected="$2"
     local got="$3"
-    
+
     if [[ "$got" == "$expected" ]]; then
         echo "  ✅ PASS: $test_name"
         PASS=$((PASS + 1))

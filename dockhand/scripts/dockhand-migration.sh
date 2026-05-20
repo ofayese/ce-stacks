@@ -80,17 +80,17 @@ STACKS_TO_MIGRATE=()
 
 for stack_dir in "$STACK_ROOT"/stacks/*/; do
     stack_name=$(basename "$stack_dir")
-    
+
     # Skip hidden directories and archives
     if [[ "$stack_name" == _* ]] || [ "$stack_name" = "archives" ]; then
         continue
     fi
-    
+
     compose_file="$stack_dir/compose.yaml"
     if [ ! -f "$compose_file" ]; then
         continue
     fi
-    
+
     # Validate compose syntax
     if $DOCKER compose -f "$compose_file" config >/dev/null 2>&1; then
         echo "  ${GREEN}[OK]${NC} $stack_name"
@@ -124,13 +124,13 @@ EOF
 for i in "${!STACKS_TO_MIGRATE[@]}"; do
     stack_name="${STACKS_TO_MIGRATE[$i]}"
     stack_dir="$STACK_ROOT/stacks/$stack_name"
-    
+
     echo "    {" >> "$EXPORT_FILE"
     echo "      \"name\": \"$stack_name\"," >> "$EXPORT_FILE"
     echo "      \"path\": \"stacks/$stack_name/compose.yaml\"," >> "$EXPORT_FILE"
     echo "      \"has_env_file\": $([ -f "$stack_dir/.env.example" ] && echo 'true' || echo 'false')," >> "$EXPORT_FILE"
     echo "      \"has_secrets\": $([ -d "$stack_dir/secrets" ] && echo 'true' || echo 'false')" >> "$EXPORT_FILE"
-    
+
     if [ $i -lt $((${#STACKS_TO_MIGRATE[@]} - 1)) ]; then
         echo "    }," >> "$EXPORT_FILE"
     else
@@ -157,13 +157,13 @@ echo ""
 # === Optional: Test Import of Low-Risk Stack ===
 if [ "$test_import" = true ]; then
     echo "[5/5] Testing import of low-risk stack (it-tools)..."
-    
+
     if [ -f "$STACK_ROOT/stacks/it-tools/compose.yaml" ]; then
         echo "  Preparing test import..."
         # Copy to temp location for Dockhand import
         TEST_COMPOSE="/tmp/test-import-it-tools.yaml"
         cp "$STACK_ROOT/stacks/it-tools/compose.yaml" "$TEST_COMPOSE"
-        
+
         echo "  Test compose file: $TEST_COMPOSE"
         echo "  Manual steps:"
         echo "    1. Access Dockhand: http://10.0.1.15:3866/stacks"
