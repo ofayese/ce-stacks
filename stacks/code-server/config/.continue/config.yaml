@@ -1,0 +1,77 @@
+name: olutechsys
+version: 1.0.0
+schema: v1
+
+models:
+  # ── Remote Ollama on Synology NAS (10.0.1.15) ────────────────────────────────
+  - name: Llama 3.2 (remote)
+    provider: ollama
+    model: llama3.2:latest
+    apiBase: http://10.0.1.15:11434
+    roles:
+      - chat
+      - edit
+      - apply
+    defaultCompletionOptions:
+      temperature: 0.7
+
+  - name: Gemma 4 (remote)
+    provider: ollama
+    model: gemma4:latest
+    apiBase: http://10.0.1.15:11434
+    roles:
+      - chat
+      - edit
+      - apply
+    defaultCompletionOptions:
+      temperature: 0.7
+
+  - name: GPT-OSS (autocomplete)
+    provider: ollama
+    model: gpt-oss:latest
+    apiBase: http://10.0.1.15:11434
+    roles:
+      - chat
+      - edit
+      - apply
+      - autocomplete
+    autocompleteOptions:
+      debounceDelay: 300
+      maxPromptTokens: 1024
+    defaultCompletionOptions:
+      temperature: 0.3
+
+  - name: Nomic Embed
+    provider: ollama
+    model: nomic-embed-text:latest
+    apiBase: http://10.0.1.15:11434
+    roles:
+      - embed
+
+  # ── Cloud ─────────────────────────────────────────────────────────────────────
+  - uses: anthropic/claude-sonnet-4-6
+    with:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+context:
+  - provider: code
+  - provider: docs
+  - provider: diff
+  - provider: terminal
+  - provider: folder
+  - provider: codebase
+
+rules:
+  - Give concise, focused responses
+  - Follow existing code style and conventions
+  - Prefer explicit types over implicit ones
+
+mcpServers:
+  - name: MCP_DOCKER
+    command: docker
+    args:
+      - mcp
+      - gateway
+      - run
+      - --profile
+      - ai_coding
