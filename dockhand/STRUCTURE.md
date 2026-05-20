@@ -1,6 +1,6 @@
 # Dockhand Directory Structure & File Locations
 
-**Updated**: 2026-05-13  
+**Updated**: 2026-05-13
 **Structure**: New organized layout with `scripts/` and `docs/` subdirectories
 
 ---
@@ -151,12 +151,12 @@ sudo /usr/local/etc/rc.d/dockhand.sh
 
 All scripts now reference `/volume2/docker/dockhand/` when deployed, not relative ce-stacks paths:
 
-[OK] `dockhand-start.sh` - Updated source path in header comment  
-[OK] `APPLY_HEALTH_CHECK_FIX.sh` - Uses `/volume2/docker/dockhand/scripts/` paths  
-[OK] `docs/DEPLOYMENT.md` - References new `scripts/` subdirectory  
-[OK] `docs/MIGRATION.md` - References `/volume2/docker/dockhand/scripts/`  
-[OK] `docs/HEALTH_CHECK_FIX.md` - References new paths  
-[OK] `docs/HEALTH_CHECK_SOLUTION.md` - Updated references  
+[OK] `dockhand-start.sh` - Updated source path in header comment
+[OK] `APPLY_HEALTH_CHECK_FIX.sh` - Uses `/volume2/docker/dockhand/scripts/` paths
+[OK] `docs/DEPLOYMENT.md` - References new `scripts/` subdirectory
+[OK] `docs/MIGRATION.md` - References `/volume2/docker/dockhand/scripts/`
+[OK] `docs/HEALTH_CHECK_FIX.md` - References new paths
+[OK] `docs/HEALTH_CHECK_SOLUTION.md` - Updated references
 
 ---
 

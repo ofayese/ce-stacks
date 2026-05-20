@@ -63,7 +63,7 @@ for stack in acme-sh agents_gateway_data code-server databases dozzle \
              github-desktop grafana-prom homepage it-tools mcp-tools-config \
              ollama openresume otspsu remotely searxng synology-api-bridge \
              watchtower zabbix; do
-  
+
   if [ -f "stacks/$stack/.env.example" ] && [ ! -f "stacks/$stack/.env" ]; then
     cp "stacks/$stack/.env.example" "stacks/$stack/.env"
     echo "[OK] Created stacks/$stack/.env - EDIT WITH ACTUAL VALUES"
@@ -122,7 +122,7 @@ INVALID=0
 
 for compose in $(find ./stacks -name "compose.yaml" -o -name "docker-compose.yml"); do
   STACK=$(dirname "$compose" | xargs basename)
-  
+
   if docker compose -f "$compose" config >/dev/null 2>&1; then
     echo "[OK] $STACK"
     VALID=$((VALID + 1))

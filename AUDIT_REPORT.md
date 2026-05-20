@@ -36,7 +36,7 @@ The ce-stacks repository is **well-structured** with solid patterns, but has **1
 
 #### Issue #1: Invalid Compose Files (3 stacks)
 
-**Severity**: CRITICAL  
+**Severity**: CRITICAL
 **Stacks Affected**:
 
 - `github-desktop` - Missing required env var `GITHUB_DESKTOP_USER`
@@ -58,10 +58,10 @@ done
 **Evidence**:
 
 ```
-github-desktop: error while interpolating services.github-desktop.environment.[]: 
+github-desktop: error while interpolating services.github-desktop.environment.[]:
   required variable GITHUB_DESKTOP_USER is missing a value
 
-code-server: error while interpolating services.code-server.volumes.[]: 
+code-server: error while interpolating services.code-server.volumes.[]:
   required variable CODE_SERVER_HOST_DOCKER_BIND is missing a value
 
 synology-api-bridge: env file .env not found
@@ -71,7 +71,7 @@ synology-api-bridge: env file .env not found
 
 #### Issue #2: Missing .env Files (19 of 20 stacks)
 
-**Severity**: CRITICAL  
+**Severity**: CRITICAL
 **Affected Stacks**: 19 stacks missing `.env` (only `codex-docs` has one)
 
 **Reason**: All `.env` files are properly git-ignored (good for security), but `.env.example` files exist and need to be populated.
@@ -101,7 +101,7 @@ done
 
 #### Issue #3: External Networks Not Created
 
-**Severity**: CRITICAL  
+**Severity**: CRITICAL
 **Affected Networks**: `ce-internal` (required by 4+ stacks)
 
 **External Network References**:
@@ -132,7 +132,7 @@ docker network create \
 
 #### Issue #4: Missing Security Options
 
-**Severity**: HIGH  
+**Severity**: HIGH
 **Affected Stacks**:
 
 - `github-desktop` - Has `seccomp:unconfined` (relaxed!) but NO `no-new-privileges`
@@ -152,7 +152,7 @@ security_opt:
 
 #### Issue #5: Missing PUID/PGID Environment Variables
 
-**Severity**: HIGH  
+**Severity**: HIGH
 **Affected Stacks**:
 
 - `synology-api-bridge` - No PUID/PGID (binds to host filesystem)
@@ -172,7 +172,7 @@ environment:
 
 #### Issue #6: Missing Health Checks
 
-**Severity**: HIGH  
+**Severity**: HIGH
 **Affected Stacks**: `ollama` (missing health check but performs health check in compose)
 
 Wait, re-check: Actually ALL 20 stacks HAVE health checks. [OK] **NO ISSUE HERE**
@@ -183,7 +183,7 @@ Wait, re-check: Actually ALL 20 stacks HAVE health checks. [OK] **NO ISSUE HERE*
 
 #### Issue #7: Network Subnet Proliferation (19 subnets)
 
-**Severity**: MEDIUM  
+**Severity**: MEDIUM
 **Current Subnets**:
 
 ```text
@@ -215,7 +215,7 @@ Wait, re-check: Actually ALL 20 stacks HAVE health checks. [OK] **NO ISSUE HERE*
 
 #### Issue #8: HAProxy Stack Missing Compose File
 
-**Severity**: MEDIUM  
+**Severity**: MEDIUM
 **Stack**: `_haproxy`
 
 **Issue**: `_haproxy` is bare-metal HAProxy (not containerized), so no `compose.yaml` exists. Documented but confusing in file listing.
@@ -228,7 +228,7 @@ Wait, re-check: Actually ALL 20 stacks HAVE health checks. [OK] **NO ISSUE HERE*
 
 #### Issue #9: Dockhand Documentation Missing Network Setup
 
-**Severity**: LOW  
+**Severity**: LOW
 **File**: `dockhand/DEPLOYMENT.md` and `dockhand/MIGRATION.md`
 
 **Gap**: Steps 1-2 don't mention creating `ce-internal` network before importing stacks.
@@ -253,7 +253,7 @@ docker network create \
 
 #### Issue #10: Inconsistent Volume Path Handling
 
-**Severity**: LOW  
+**Severity**: LOW
 **Affected Stacks**: Commands/binaries in volumes (false positives in grep):
 
 - `ollama` - `/usr/bin/ollama` (command, not volume)
@@ -273,7 +273,7 @@ volumes:
 
 #### Issue #11: Solution Architect Document Not Referenced
 
-**Severity**: LOW  
+**Severity**: LOW
 **File**: `solution-architect.md` exists but not linked in `README.md`
 
 **Remediation**:

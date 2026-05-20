@@ -3,9 +3,9 @@
 ## Error Message
 
 ```
-Error response from daemon: failed to create task for container: 
-failed to create shim task: OCI runtime create failed: runc create failed: 
-unable to start container process: error during container init: 
+Error response from daemon: failed to create task for container:
+failed to create shim task: OCI runtime create failed: runc create failed:
+unable to start container process: error during container init:
 open /proc/sys/net/ipv4/ping_group_range: read-only file system: unknown
 ```
 

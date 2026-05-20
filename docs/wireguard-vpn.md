@@ -1,6 +1,6 @@
 # WireGuard VPN -- otsorundscore NAS
 
-**Status:** Phase 4 -- kernel module confirmed loaded (`wireguard 155831 0`).  
+**Status:** Phase 4 -- kernel module confirmed loaded (`wireguard 155831 0`).
 WireGuard runs as a **native host service** on the NAS (not containerized). Monitoring is
 provided by `Prometheus-WireGuard-Exporter` in the `grafana-prom` stack.
 
@@ -70,8 +70,8 @@ wg show     # verify interface + peers
 DSM does not run `rc.d` scripts at boot. Use Task Scheduler instead:
 
 1. DSM → Control Panel → Task Scheduler → Create → Triggered Task → User-defined script
-2. **Event:** Boot-up  
-3. **User:** root  
+2. **Event:** Boot-up
+3. **User:** root
 4. **Task:** `wg-quick up wg0`
 5. Save. The interface comes up automatically after each NAS restart.
 

@@ -49,11 +49,11 @@ See **`/volume2/docker/dockhand/docs/MIGRATION.md`** for detailed, step-by-step 
 
 ## Key Advantages
 
-[OK] **Git-backed deployments** -- Auto-sync stacks on repo push via webhooks  
-[OK] **Modern UI** -- SvelteKit 5 frontend (faster than Portainer's Angular)  
-[OK] **Lighter footprint** -- Bun runtime vs Go (better for resource-constrained NAS)  
-[OK] **Privacy-focused** -- Wolfi OS base, minimal supply chain  
-[OK] **OIDC support** -- Enterprise-grade authentication  
+[OK] **Git-backed deployments** -- Auto-sync stacks on repo push via webhooks
+[OK] **Modern UI** -- SvelteKit 5 frontend (faster than Portainer's Angular)
+[OK] **Lighter footprint** -- Bun runtime vs Go (better for resource-constrained NAS)
+[OK] **Privacy-focused** -- Wolfi OS base, minimal supply chain
+[OK] **OIDC support** -- Enterprise-grade authentication
 
 ## Important Notes
 
