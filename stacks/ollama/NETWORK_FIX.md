@@ -118,7 +118,7 @@ curl http://10.0.1.15:8893
 
 - Services on the **same bridge network** can reach each other via container hostname
 - `otsai-server` hostname resolves to Ollama's internal bridge IP (e.g., 172.27.0.2)
-- Open WebUI at 172.27.0.3 can reach `http://otsai-server:11434`
+- Open WebUI at 172.27.0.3 can reach `http://otsai:11434`
 - External clients still reach port 11434 via `10.0.1.15:11434` port binding
 
 **Synology Docker DNS**:
