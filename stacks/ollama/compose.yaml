@@ -85,6 +85,8 @@ services:
     depends_on:
       ollama:
         condition: service_healthy
+      pipelines:
+        condition: service_healthy
     healthcheck:
       test:
         - CMD-SHELL
@@ -99,6 +101,47 @@ services:
       - dockhand.url=${WEBUI_URL}
     extra_hosts:
       - otsorundscore.olutechsys.com:10.0.1.15
+    networks:
+      - ollama-net
+
+  pipelines:
+    image: ghcr.io/open-webui/pipelines:main
+    container_name: otsai-pipelines
+    # DS723+: Pipelines is a lightweight FastAPI process; 512m is generous for
+    # pipeline scripts. Raise if running heavy NLP pipelines locally.
+    mem_limit: 512m
+    cpu_shares: 512
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    restart: unless-stopped
+    ports:
+      - "${NAS_IP:-10.0.1.15}:9099:9099"
+    volumes:
+      - ${STACK_ROOT}/ollama/data/pipelines:/app/pipelines:rw
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      # API key Open WebUI uses to authenticate to this pipelines instance.
+      # Set PIPELINES_API_KEY in .env; add the same key in Open WebUI:
+      #   Admin → Settings → Connections → add OpenAI-compatible URL:
+      #   http://pipelines:9099  key: <PIPELINES_API_KEY>
+      - PIPELINES_API_KEY=${PIPELINES_API_KEY}
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - curl -fs http://localhost:9099/ >/dev/null 2>&1 || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    labels:
+      - com.centurylinklabs.watchtower.enable=false
     networks:
       - ollama-net
 

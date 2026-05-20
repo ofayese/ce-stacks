@@ -1,0 +1,64 @@
+services:
+  n8n:
+    image: n8nio/n8n:2.20.6
+    container_name: n8n
+    hostname: n8n
+    user: "0:0"
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 768m
+    cpu_shares: 768
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:5678/healthz || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+    ports:
+      - "${NAS_IP:-10.0.1.15}:5678:5678"
+    volumes:
+      - ${STACK_ROOT}/n8n/data/n8n:/root/.n8n:rw
+      - ${STACK_ROOT}/n8n/data/files:/files:rw
+    environment:
+      - TZ=${TZ:-America/New_York}
+      - GENERIC_TIMEZONE=${TZ:-America/New_York}
+      - N8N_HOST=${N8N_HOST}
+      - WEBHOOK_URL=${N8N_WEBHOOK_URL}
+      - N8N_EDITOR_BASE_URL=${N8N_WEBHOOK_URL}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=https
+      - N8N_PROXY_HOPS=1
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+      - N8N_SECURE_COOKIE=true
+      - NODE_ENV=production
+      - N8N_DIAGNOSTICS_ENABLED=false
+      - N8N_RUNNERS_ENABLED=true
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      - N8N_RESTRICT_FILE_ACCESS_TO=/files
+      # Native Synology MariaDB 10.11 on host (no sidecar needed)
+      - DB_TYPE=mysqldb
+      - DB_MYSQLDB_DATABASE=n8n
+      - DB_MYSQLDB_HOST=${NAS_IP:-10.0.1.15}
+      - DB_MYSQLDB_PORT=3306
+      - DB_MYSQLDB_USER=${N8N_DB_USER:-n8nuser}
+      - DB_MYSQLDB_PASSWORD=${N8N_DB_PASSWORD}
+    restart: unless-stopped
+    networks:
+      - n8n-net
+    labels:
+      - com.centurylinklabs.watchtower.enable=false
+      - dockhand.url=${N8N_WEBHOOK_URL}
+
+networks:
+  n8n-net:
+    name: n8n-net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+          gateway: 172.30.0.1

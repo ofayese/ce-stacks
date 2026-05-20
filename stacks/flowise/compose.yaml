@@ -1,0 +1,66 @@
+services:
+  flowise:
+    image: flowiseai/flowise:3.0.12
+    container_name: FlowiseAI
+    hostname: flowise
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 1g
+    cpu_shares: 768
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    ports:
+      - "${NAS_IP:-10.0.1.15}:8459:3000"
+    volumes:
+      - ${STACK_ROOT}/flowise/data/flowise:/root/.flowise:rw
+    environment:
+      - TZ=${TZ:-America/New_York}
+      - DEBUG=false
+      - PORT=3000
+      - FLOWISE_USERNAME=${FLOWISE_USERNAME}
+      - FLOWISE_PASSWORD=${FLOWISE_PASSWORD}
+      - APP_URL=${FLOWISE_APP_URL}
+      - JWT_AUTH_TOKEN_SECRET=${FLOWISE_JWT_SECRET}
+      # Native Synology MariaDB 10.11 on host (no sidecar needed)
+      - DATABASE_TYPE=mysql
+      - DATABASE_HOST=${NAS_IP:-10.0.1.15}
+      - DATABASE_PORT=3306
+      - DATABASE_NAME=flowise
+      - DATABASE_USER=${FLOWISE_DB_USER:-flowiseuser}
+      - DATABASE_PASSWORD=${FLOWISE_DB_PASSWORD}
+      - DATABASE_PATH=/root/.flowise
+      - APIKEY_PATH=/root/.flowise
+      - SECRETKEY_PATH=/root/.flowise
+      - LOG_LEVEL=info
+      - LOG_PATH=/root/.flowise/logs
+      # SMTP (optional — leave blank to disable email features)
+      - SMTP_HOST=${FLOWISE_SMTP_HOST:-}
+      - SMTP_PORT=${FLOWISE_SMTP_PORT:-587}
+      - SMTP_USER=${FLOWISE_SMTP_USER:-}
+      - SMTP_PASSWORD=${FLOWISE_SMTP_PASSWORD:-}
+      - SMTP_SECURE=${FLOWISE_SMTP_SECURE:-STARTTLS}
+      - SENDER_EMAIL=${FLOWISE_SMTP_USER:-}
+    restart: unless-stopped
+    networks:
+      - flowise-net
+    labels:
+      - com.centurylinklabs.watchtower.enable=false
+      - dockhand.url=${FLOWISE_APP_URL}
+
+networks:
+  flowise-net:
+    name: flowise-net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.1.0/24
+          gateway: 172.30.1.1
