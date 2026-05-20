@@ -22,18 +22,18 @@ Network Controller (three nodes)	4 vCPUs			4GB min(8 GB recommended)		75GB for o
 
 SLB/MUX (three nodes)			8 vCPUs			8GB recommended				75GB for operating system drive
 
-RAS Gateway				8 vCPUs			8 GB recommended			75GB for operating system drive(single pool of three nodes 
+RAS Gateway				8 vCPUs			8 GB recommended			75GB for operating system drive(single pool of three nodes
 gateways, two active, one passive)
 
 RAS Gateway BGP router			2 vCPUs			2 GB					75GB for operating system drive
 for SLB/MUX peering
 (alternatively use ToR switch
-as BGP Router)	
+as BGP Router)
 
 
 Feature					Deployment requirements			Network requirements
 
-Inbound/Outbound NAT			Network Controller			BGP on HNV PA network 
+Inbound/Outbound NAT			Network Controller			BGP on HNV PA network
 Load Balancing				SLB/MUX					Private and Public VIP subnets
 
 

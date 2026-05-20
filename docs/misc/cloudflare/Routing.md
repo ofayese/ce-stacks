@@ -4,21 +4,21 @@ description: Route traffic to private networks and services through Cloudflare T
 image: https://developers.cloudflare.com/core-services-preview.png
 ---
 
-> Documentation Index  
-> Fetch the complete documentation index at: https://developers.cloudflare.com/tunnel/llms.txt  
+> Documentation Index
+> Fetch the complete documentation index at: https://developers.cloudflare.com/tunnel/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-[Skip to content](#%5Ftop) 
+[Skip to content](#%5Ftop)
 
 ### Tags
 
-[ DNS ](https://developers.cloudflare.com/search/?tags=DNS)[ WebSockets ](https://developers.cloudflare.com/search/?tags=WebSockets) 
+[ DNS ](https://developers.cloudflare.com/search/?tags=DNS)[ WebSockets ](https://developers.cloudflare.com/search/?tags=WebSockets)
 
 # Routing
 
 Cloudflare Tunnel routes traffic from Cloudflare's network to services running behind `cloudflared`. When you [publish an application](https://developers.cloudflare.com/tunnel/setup/#publish-an-application), you map a public hostname to a local service — for example, `app.example.com` to `http://localhost:8080` — and Cloudflare applies CDN caching, WAF, and DDoS protection before forwarding the request to your origin.
 
-![Multiple outbound connections from cloudflared are spread across Cloudflare data centers for reliability and failover.](https://developers.cloudflare.com/_astro/cf1-ref-arch-7.Dk3BnKM8_UmiKN.svg) 
+![Multiple outbound connections from cloudflared are spread across Cloudflare data centers for reliability and failover.](https://developers.cloudflare.com/_astro/cf1-ref-arch-7.Dk3BnKM8_UmiKN.svg)
 
 ## Published applications
 
@@ -62,12 +62,12 @@ To create a DNS record for a Cloudflare Tunnel:
 * [ Dashboard ](#tab-panel-8785)
 * [ CLI ](#tab-panel-8786)
 
-1. Log in to the [Cloudflare dashboard ↗](https://dash.cloudflare.com/) and go to **DNS Records** for your domain.  
+1. Log in to the [Cloudflare dashboard ↗](https://dash.cloudflare.com/) and go to **DNS Records** for your domain.
 [ Go to **Records** ](https://dash.cloudflare.com/?to=/:account/:zone/dns/records)
 2. Select **Add record**.
-3. Enter the following values:  
-   * **Type**: _CNAME_  
-   * **Name**: Subdomain of your application  
+3. Enter the following values:
+   * **Type**: _CNAME_
+   * **Name**: Subdomain of your application
    * **Target**: `<UUID>.cfargotunnel.com`
 4. Select **Save**.
 
@@ -133,26 +133,26 @@ A Cloudflare Tunnel with at least one [published application route](https://deve
 
 To create a load balancer for Cloudflare Tunnel published applications:
 
-1. In the Cloudflare dashboard, go to the **Load Balancing** page.  
+1. In the Cloudflare dashboard, go to the **Load Balancing** page.
 [ Go to **Load Balancing** ](https://dash.cloudflare.com/?to=/:account/load-balancing)
 2. Select **Create load balancer**, then select **Public load balancer**.
 3. Under **Select website**, select the domain of your published application route.
 4. On the **Hostname** page, enter a hostname for the load balancer (for example, `lb.example.com`).
 5. On the **Pools** page, select **Create a pool** and enter a descriptive name.
-6. Add a tunnel endpoint with the following values:  
-   * **Endpoint Name**: Name of the server running the application  
-   * **Endpoint Address**: `<UUID>.cfargotunnel.com` (find the Tunnel ID in the \[Cloudflare dashboard\](https://dash.cloudflare.com/) under \*\*Networking\*\* > \*\*Tunnels\*\*)  
-   * **Header value**: Hostname of your published application route (for example, `app.example.com`)  
-   * **Weight**: `1` (if only one endpoint)  
-Note  
+6. Add a tunnel endpoint with the following values:
+   * **Endpoint Name**: Name of the server running the application
+   * **Endpoint Address**: `<UUID>.cfargotunnel.com` (find the Tunnel ID in the \[Cloudflare dashboard\](https://dash.cloudflare.com/) under \*\*Networking\*\* > \*\*Tunnels\*\*)
+   * **Header value**: Hostname of your published application route (for example, `app.example.com`)
+   * **Weight**: `1` (if only one endpoint)
+Note
 A single origin pool cannot reference the same tunnel UUID twice.
 7. Choose a **Fallback pool**. Refer to [traffic steering policies](https://developers.cloudflare.com/load-balancing/understand-basics/traffic-steering/steering-policies/) for routing options.
-8. (Recommended) On the **Monitors** page, attach a monitor to the endpoint. For an HTTP or HTTPS application, create an HTTPS monitor:  
-   * **Type**: _HTTPS_  
-   * **Path**: `/`  
-   * **Port**: `443`  
-   * **Expected Code(s)**: `200`  
-   * **Header Name**: `Host`  
+8. (Recommended) On the **Monitors** page, attach a monitor to the endpoint. For an HTTP or HTTPS application, create an HTTPS monitor:
+   * **Type**: _HTTPS_
+   * **Path**: `/`
+   * **Port**: `443`
+   * **Expected Code(s)**: `200`
+   * **Header Name**: `Host`
    * **Value**: `app.example.com`
 9. Save and deploy the load balancer.
 
@@ -162,16 +162,16 @@ Monitor TCP tunnel origins
 
 TCP monitors are not supported for tunnel endpoints. Instead, create a health check endpoint on the `cloudflared` host and use an HTTPS monitor. For example, you can use `cloudflared` to return a fixed HTTP status response:
 
-1. [Add a published application route](https://developers.cloudflare.com/tunnel/setup/#publish-an-application) for the health check:  
-   * **Hostname**: `health-check.example.com`  
-   * **Service Type**: _HTTP\_STATUS_  
+1. [Add a published application route](https://developers.cloudflare.com/tunnel/setup/#publish-an-application) for the health check:
+   * **Hostname**: `health-check.example.com`
+   * **Service Type**: _HTTP\_STATUS_
    * **HTTP Status Code**: `200`
-2. [Create a monitor](https://developers.cloudflare.com/load-balancing/monitors/create-monitor/) with these settings:  
-   * **Type**: _HTTPS_  
-   * **Path**: `/`  
-   * **Port**: `443`  
-   * **Expected Code(s)**: `200`  
-   * **Header Name**: `Host`  
+2. [Create a monitor](https://developers.cloudflare.com/load-balancing/monitors/create-monitor/) with these settings:
+   * **Type**: _HTTPS_
+   * **Path**: `/`
+   * **Port**: `443`
+   * **Expected Code(s)**: `200`
+   * **Header Name**: `Host`
    * **Value**: `health-check.example.com`
 
 This monitor verifies that `cloudflared` is reachable. It does not check whether the upstream service is accepting requests.

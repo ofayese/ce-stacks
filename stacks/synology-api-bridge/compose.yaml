@@ -16,7 +16,7 @@ services:
     environment:
       # Use pure syntax for Dockhand parser compatibility
       - PUID=${PUID}
-      - PGID=${PGID}  
+      - PGID=${PGID}
       # Explicitly map secrets and overridden variables so they reach the container
       - BRIDGE_SHARED_SECRET=${BRIDGE_SHARED_SECRET}
       - DSM_BASE_URL=${DSM_BASE_URL}
