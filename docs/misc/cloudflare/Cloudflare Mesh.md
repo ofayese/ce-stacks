@@ -4,15 +4,15 @@ description: How Cloudflare Mesh works in Zero Trust networking.
 image: https://developers.cloudflare.com/zt-preview.png
 ---
 
-> Documentation Index  
-> Fetch the complete documentation index at: https://developers.cloudflare.com/cloudflare-one/llms.txt  
+> Documentation Index
+> Fetch the complete documentation index at: https://developers.cloudflare.com/cloudflare-one/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-[Skip to content](#%5Ftop) 
+[Skip to content](#%5Ftop)
 
 ### Tags
 
-[ Private networks ](https://developers.cloudflare.com/search/?tags=Private%20networks) 
+[ Private networks ](https://developers.cloudflare.com/search/?tags=Private%20networks)
 
 # Cloudflare Mesh
 
@@ -22,7 +22,7 @@ Every enrolled device and node receives a private IP address (Mesh IP) and can r
 
 Mesh nodes are Linux servers running the [Cloudflare One Client](https://developers.cloudflare.com/cloudflare-one/team-and-resources/devices/cloudflare-one-client/) (`warp-cli`) in headless mode. Client devices are laptops and phones running the same client with a UI.
 
-![The Mesh network map in the Cloudflare dashboard showing nodes and devices connected through Cloudflare](https://developers.cloudflare.com/_astro/mesh-network-map.CED6jNHK_ZlOsym.webp) 
+![The Mesh network map in the Cloudflare dashboard showing nodes and devices connected through Cloudflare](https://developers.cloudflare.com/_astro/mesh-network-map.CED6jNHK_ZlOsym.webp)
 
 Note
 

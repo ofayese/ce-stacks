@@ -4,15 +4,15 @@ description: Resolve common Cloudflare Tunnel connection and configuration issue
 image: https://developers.cloudflare.com/core-services-preview.png
 ---
 
-> Documentation Index  
-> Fetch the complete documentation index at: https://developers.cloudflare.com/tunnel/llms.txt  
+> Documentation Index
+> Fetch the complete documentation index at: https://developers.cloudflare.com/tunnel/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-[Skip to content](#%5Ftop) 
+[Skip to content](#%5Ftop)
 
 ### Tags
 
-[ Debugging ](https://developers.cloudflare.com/search/?tags=Debugging) 
+[ Debugging ](https://developers.cloudflare.com/search/?tags=Debugging)
 
 # Troubleshooting
 
@@ -316,29 +316,29 @@ This commonly occurs when the origin uses a self-signed certificate or when an S
 
 To resolve, use one of the following approaches:
 
-* Set [originServerName](https://developers.cloudflare.com/tunnel/configuration/#originservername) to the hostname on the origin certificate in your tunnel route. If you are using a locally-managed tunnel, here is an example of a [configuration file](https://developers.cloudflare.com/tunnel/other-tunnel-types/local-management/configuration-file/):  
-```  
-ingress:  
-  - hostname: app.example.com  
-    service: https://localhost:443  
-    originRequest:  
-      originServerName: app.example.com  
+* Set [originServerName](https://developers.cloudflare.com/tunnel/configuration/#originservername) to the hostname on the origin certificate in your tunnel route. If you are using a locally-managed tunnel, here is an example of a [configuration file](https://developers.cloudflare.com/tunnel/other-tunnel-types/local-management/configuration-file/):
 ```
-* Provide the CA certificate using [caPool](https://developers.cloudflare.com/tunnel/configuration/#capool):  
-```  
-ingress:  
-  - hostname: app.example.com  
-    service: https://localhost:443  
-    originRequest:  
-      caPool: /path/to/ca-cert.pem  
+ingress:
+  - hostname: app.example.com
+    service: https://localhost:443
+    originRequest:
+      originServerName: app.example.com
 ```
-* As a last resort, disable TLS verification with [noTLSVerify](https://developers.cloudflare.com/tunnel/configuration/#notlsverify). This is not recommended for production environments.  
-```  
-ingress:  
-  - hostname: app.example.com  
-    service: https://localhost:443  
-    originRequest:  
-      noTLSVerify: true  
+* Provide the CA certificate using [caPool](https://developers.cloudflare.com/tunnel/configuration/#capool):
+```
+ingress:
+  - hostname: app.example.com
+    service: https://localhost:443
+    originRequest:
+      caPool: /path/to/ca-cert.pem
+```
+* As a last resort, disable TLS verification with [noTLSVerify](https://developers.cloudflare.com/tunnel/configuration/#notlsverify). This is not recommended for production environments.
+```
+ingress:
+  - hostname: app.example.com
+    service: https://localhost:443
+    originRequest:
+      noTLSVerify: true
 ```
 
 ## I see `ERR_TOO_MANY_REDIRECTS` when attempting to connect to an Access self-hosted app.
@@ -387,23 +387,23 @@ This buffer size increase is reported by the [quic-go library ↗](https://githu
 
 To set the maximum receive buffer size on Linux:
 
-1. Create a new file under `/etc/sysctl.d/`:  
-Terminal window  
-```  
-sudo vi 98-core-rmem-max.conf  
+1. Create a new file under `/etc/sysctl.d/`:
+Terminal window
 ```
-2. In the file, define the desired buffer size:  
-```  
-net.core.rmem_max=2500000  
+sudo vi 98-core-rmem-max.conf
+```
+2. In the file, define the desired buffer size:
+```
+net.core.rmem_max=2500000
 ```
 3. Reboot the host machine running `cloudflared`.
-4. To validate that these changes have taken effect, use the `grep` command:  
-Terminal window  
-```  
-sudo sysctl -a | grep net.core.rmem_max  
-```  
-```  
-net.core.rmem_max = 2500000  
+4. To validate that these changes have taken effect, use the `grep` command:
+Terminal window
+```
+sudo sysctl -a | grep net.core.rmem_max
+```
+```
+net.core.rmem_max = 2500000
 ```
 
 ## Cloudflare Tunnel is buffering my streaming response instead of streaming it live.
@@ -436,15 +436,15 @@ Acme Corp attempted to establish a tunnel connection on October 30, 2025, at app
 
 To capture verbose output for troubleshooting:
 
-* **Locally-managed tunnels**: Run `cloudflared` with the `--loglevel debug` flag:  
-Terminal window  
-```  
-cloudflared tunnel --loglevel debug run  
-```  
-To persist logs to a file, add the `--logfile` flag:  
-Terminal window  
-```  
-cloudflared tunnel --loglevel debug --logfile /var/log/cloudflared/cloudflared.log run  
+* **Locally-managed tunnels**: Run `cloudflared` with the `--loglevel debug` flag:
+Terminal window
+```
+cloudflared tunnel --loglevel debug run
+```
+To persist logs to a file, add the `--logfile` flag:
+Terminal window
+```
+cloudflared tunnel --loglevel debug --logfile /var/log/cloudflared/cloudflared.log run
 ```
 * **Remotely-managed tunnels** (created via the dashboard): Configure logging in the tunnel's [run parameters](https://developers.cloudflare.com/tunnel/advanced/run-parameters/#loglevel). You can also stream logs in real time using the [remote log streaming](https://developers.cloudflare.com/tunnel/monitoring/#remote-log-streaming) feature.
 
