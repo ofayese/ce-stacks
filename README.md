@@ -96,7 +96,7 @@ Verify: `docker network inspect ce-internal`
 
 ```bash
 # Create missing .env files from .env.example
-for stack in acme-sh agents_gateway_data code-server databases dozzle \
+for stack in acme-sh agents_gateway_data code-server dozzle \
              github-desktop grafana-prom homepage it-tools mcp-tools-config \
              ollama openresume otspsu remotely searxng synology-api-bridge \
              watchtower zabbix; do
@@ -176,7 +176,7 @@ All bridge networks use explicit `/24` subnets to prevent Docker's auto-assigned
 | code-server | code-server-net | 172.28.2.0/24 | |
 | grafana-prom | grafana-net | 172.29.0.0/24 | |
 | grafana-prom | prometheus-net | 172.29.1.0/24 | |
-| otspsu | otspsu-net | 172.32.0.0/24 | Moved from 172.25; 172.30 taken by zabbix |
+| otspsu | otspsu-net | 172.31.10.0/24 | RFC1918 /24 next in sequence after zabbix 172.30.0.0/24 |
 | dozzle | dozzle-net | 172.31.0.0/24 | |
 | watchtower | watchtower-net | 172.31.1.0/24 | |
 | agents_gateway_data | agents-gateway-net | 172.31.7.0/24 | |

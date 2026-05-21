@@ -28,8 +28,8 @@ services:
       - TZ=${TZ:-America/New_York}
       - GENERIC_TIMEZONE=${TZ:-America/New_York}
       - N8N_HOST=${N8N_HOST}
-      - WEBHOOK_URL=${N8N_WEBHOOK_URL}
-      - N8N_EDITOR_BASE_URL=${N8N_WEBHOOK_URL}
+      - WEBHOOK_URL=${N8N_WEBHOOK_URL:-https://n8n.olutechsys.com}
+      - N8N_EDITOR_BASE_URL=${N8N_WEBHOOK_URL:-https://n8n.olutechsys.com}
       - N8N_PORT=5678
       - N8N_PROTOCOL=https
       - N8N_PROXY_HOPS=1
@@ -55,7 +55,7 @@ services:
       - n8n-net
     labels:
       - com.centurylinklabs.watchtower.enable=false
-      - dockhand.url=${N8N_WEBHOOK_URL}
+      - dockhand.url=${N8N_WEBHOOK_URL:-https://n8n.olutechsys.com}
       - haproxy.enable=true
       - haproxy.host=n8n.olutechsys.com,n8n.olutech.systems
       - haproxy.port=5678
