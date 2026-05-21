@@ -45,6 +45,11 @@ services:
       - PASSWORD=${CODE_SERVER_PASSWORD}
       - SUDO_PASSWORD=${SUDO_PASSWORD}
       - PROXY_DOMAIN=${PROXY_DOMAIN}
+    labels:
+      - haproxy.enable=true
+      - haproxy.host=code.olutechsys.com,code.olutech.systems,code.otsorundscore.olutechsys.com,code.otsorundscore.olutech.systems
+      - haproxy.port=8377
+      - haproxy.backend=codeserver-be
     networks:
       - code-server-net
 
@@ -144,6 +149,10 @@ services:
         condition: service_healthy
     labels:
       - com.centurylinklabs.watchtower.enable=true
+      - haproxy.enable=true
+      - haproxy.host=pma.olutechsys.com,pma.olutech.systems,pma.otsorundscore.olutechsys.com,pma.otsorundscore.olutech.systems
+      - haproxy.port=8379
+      - haproxy.backend=phpmyadmin-be
     networks:
       - code-server-net
 

@@ -29,6 +29,10 @@ services:
         max-file: "3"
     labels:
       - com.centurylinklabs.watchtower.enable=true
+      - haproxy.enable=true
+      - haproxy.host=dozzle.olutechsys.com,dozzle.olutech.systems,dozzle.otsorundscore.olutechsys.com,dozzle.otsorundscore.olutech.systems
+      - haproxy.port=8892
+      - haproxy.backend=dozzle-be
     networks:
       - dozzle-net
     healthcheck:

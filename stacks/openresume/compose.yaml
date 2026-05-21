@@ -33,6 +33,10 @@ services:
       start_period: 20s
     labels:
       - com.centurylinklabs.watchtower.enable=true
+      - haproxy.enable=true
+      - haproxy.host=resume.olutechsys.com,resume.olutech.systems,resume.otsorundscore.olutechsys.com,resume.otsorundscore.olutech.systems
+      - haproxy.port=8889
+      - haproxy.backend=openresume-be
     networks:
       - openresume-net
     logging:

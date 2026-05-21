@@ -16,6 +16,10 @@ services:
       - TZ=${TZ:-America/New_York}
     labels:
       - com.centurylinklabs.watchtower.enable=true
+      - haproxy.enable=true
+      - haproxy.host=tools.olutechsys.com,tools.olutech.systems,tools.otsorundscore.olutechsys.com,tools.otsorundscore.olutech.systems
+      - haproxy.port=8894
+      - haproxy.backend=ittools-be
     networks:
       - it-tools-net
     healthcheck:

@@ -53,6 +53,11 @@ services:
     labels:
       - com.centurylinklabs.watchtower.enable=false
       - dockhand.url=http://10.0.1.15:${GRAFANA_PORT:-3340}
+      - haproxy.enable=true
+      - haproxy.host=grafana.olutechsys.com,grafana.olutech.systems
+      - haproxy.port=${GRAFANA_PORT:-3340}
+      - haproxy.backend=grafana-be
+      - haproxy.check.path=/api/health
 
   prometheus:
     image: prom/prometheus:v3.11.3

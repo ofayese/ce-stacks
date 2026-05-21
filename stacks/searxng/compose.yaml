@@ -87,6 +87,10 @@ services:
         max-file: "3"
     labels:
       - com.centurylinklabs.watchtower.enable=true
+      - haproxy.enable=true
+      - haproxy.host=search.olutechsys.com,search.olutech.systems,search.otsorundscore.olutechsys.com,search.otsorundscore.olutech.systems
+      - haproxy.port=8888
+      - haproxy.backend=searxng-be
     networks:
       - searxng-net
 

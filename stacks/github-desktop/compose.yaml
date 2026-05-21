@@ -48,6 +48,10 @@ services:
         max-file: "3"
     labels:
       - com.centurylinklabs.watchtower.enable=true
+      - haproxy.enable=true
+      - haproxy.host=desktop.olutechsys.com,desktop.olutech.systems
+      - haproxy.port=${GITHUB_DESKTOP_PORT:-3405}
+      - haproxy.backend=github-desktop-be
     networks:
       - github-desktop-net
 networks:

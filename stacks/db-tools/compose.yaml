@@ -35,5 +35,9 @@ services:
       start_period: 20s
     labels:
       - com.centurylinklabs.watchtower.enable=true
+      - haproxy.enable=true
+      - haproxy.host=adminer.olutechsys.com,adminer.olutech.systems,adminer.otsorundscore.olutechsys.com,adminer.otsorundscore.olutech.systems
+      - haproxy.port=${ADMINER_PORT:-8895}
+      - haproxy.backend=adminer-be
   # phpMyAdmin removed -- Adminer covers both MariaDB and PostgreSQL in one container.
   # CodeServerPMA (stacks/code-server, port 8379) handles the code-server MySQL sidecar.

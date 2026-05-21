@@ -79,6 +79,11 @@ services:
         max-file: "3"
     labels:
       - com.centurylinklabs.watchtower.enable=false
+      - haproxy.enable=true
+      - haproxy.host=zabbix.olutechsys.com,zabbix.olutech.systems
+      - haproxy.port=${ZABBIX_WEB_PORT:-8532}
+      - haproxy.backend=zabbix-be
+      - haproxy.check.path=/ping
 
   zabbix-agent:
     container_name: Zabbix-Agent

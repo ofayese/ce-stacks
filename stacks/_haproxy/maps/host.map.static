@@ -1,0 +1,37 @@
+# host.map.static — native Synology packages and bare-metal services
+# Managed manually. Docker service entries are generated from haproxy.* compose labels.
+# Run: bash /volume2/docker/ce-stacks/scripts/generate-haproxy.sh
+#
+# Format: <hostname><TAB><backend-name>
+
+# Synology DSM (default fallback — any unmatched host hits DSM)
+otsorundscore.olutechsys.com	otsorundscore-be
+otsorundscore.olutech.systems	otsorundscore-be
+
+# Dockhand (bare-metal RC script)
+dockhand.olutechsys.com	dockhand-be
+dockhand.olutech.systems	dockhand-be
+
+# SaltGUI (SynoCommunity salt-master)
+saltgui.olutechsys.com	saltgui-be
+saltgui.olutech.systems	saltgui-be
+
+# ntopng (native NAS package)
+ntopng.olutechsys.com	ntopng-be
+ntopng.olutech.systems	ntopng-be
+
+# OTS native Synology services
+otscal.olutechsys.com	otscal-be
+otscal.olutech.systems	otscal-be
+otscnt.olutechsys.com	otscnt-be
+otscnt.olutech.systems	otscnt-be
+otsfst.olutechsys.com	otsfst-be
+otsfst.olutech.systems	otsfst-be
+otsnt.olutechsys.com	otsnt-be
+otsnt.olutech.systems	otsnt-be
+sso.olutechsys.com	sso-be
+sso.olutech.systems	sso-be
+otspht.olutechsys.com	otspht-be
+otspht.olutech.systems	otspht-be
+otsvmm.olutechsys.com	otsvmm-be
+otsvmm.olutech.systems	otsvmm-be

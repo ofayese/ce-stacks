@@ -67,6 +67,10 @@ services:
       # SQLite-backed service -- Watchtower restart mid-write risks WAL corruption.
       # Update manually: docker pull immybot/remotely:latest && docker compose up -d (or refresh digest pin)
       - com.centurylinklabs.watchtower.enable=false
+      - haproxy.enable=true
+      - haproxy.host=remotely.olutechsys.com,remotely.olutech.systems
+      - haproxy.port=5371
+      - haproxy.backend=remotely-be
     networks:
       - remotely-net
 networks:

@@ -99,6 +99,10 @@ services:
       - com.centurylinklabs.watchtower.enable=true
       # Creates a clickable quick-launch link in the Dockhand dashboard
       - dockhand.url=${WEBUI_URL}
+      - haproxy.enable=true
+      - haproxy.host=ai.olutechsys.com,ai.olutech.systems,ai.otsorundscore.olutechsys.com,ai.otsorundscore.olutech.systems
+      - haproxy.port=8893
+      - haproxy.backend=openwebui-be
     extra_hosts:
       - otsorundscore.olutechsys.com:10.0.1.15
     networks:

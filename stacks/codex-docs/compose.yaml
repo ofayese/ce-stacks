@@ -74,6 +74,10 @@ services:
       - "otsorundscore.olutechsys.com:10.0.1.15"
     labels:
       - com.centurylinklabs.watchtower.enable=true
+      - haproxy.enable=true
+      - haproxy.host=docs.olutechsys.com,docs.olutech.systems,docs.otsorundscore.olutechsys.com,docs.otsorundscore.olutech.systems
+      - haproxy.port=8896
+      - haproxy.backend=codexdocs-be
     networks:
       - codex-docs-net
 networks:

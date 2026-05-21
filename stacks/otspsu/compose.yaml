@@ -103,6 +103,10 @@ services:
       # restart risks database file corruption. Update manually after verifying a clean
       # job-queue state and noting the new digest tag for rollback.
       - com.centurylinklabs.watchtower.enable=false
+      - haproxy.enable=true
+      - haproxy.host=psu.olutechsys.com,psu.olutech.systems
+      - haproxy.port=5570
+      - haproxy.backend=psu-be
     networks:
       - otspsu-net
 

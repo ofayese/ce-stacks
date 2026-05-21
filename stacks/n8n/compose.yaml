@@ -53,6 +53,11 @@ services:
     labels:
       - com.centurylinklabs.watchtower.enable=false
       - dockhand.url=${N8N_WEBHOOK_URL}
+      - haproxy.enable=true
+      - haproxy.host=n8n.olutechsys.com,n8n.olutech.systems
+      - haproxy.port=5678
+      - haproxy.backend=n8n-be
+      - haproxy.check.path=/healthz
 
 networks:
   n8n-net:
