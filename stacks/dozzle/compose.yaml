@@ -16,7 +16,7 @@ services:
       # /var/run socket context
       # docker.sock :ro -- Dozzle reads container metadata and logs only.
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ${STACK_ROOT}/dozzle:/data:rw
+      - ${STACK_ROOT}/dozzle/data:/data:rw
     environment:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}

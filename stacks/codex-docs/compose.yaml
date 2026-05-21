@@ -33,7 +33,7 @@ services:
 
   codex-docs:
     container_name: CodexDocs
-    # Upstream publishes rolling tags; pin when a semver tag is available.
+    # Image pinned to SHA256 digest for immutability — strongest form of pinning.
     image: ghcr.io/codex-team/codex.docs@sha256:c25f47c7f5af84206cef1fcedb2debcd25ba9ce1d4c6e5a33a0f273faff5a41f
     mem_limit: 256m
     cpu_shares: 256
@@ -71,7 +71,7 @@ services:
         max-size: "10m"
         max-file: "3"
     extra_hosts:
-      - "otsorundscore.olutechsys.com:10.0.1.15"
+      - "${NAS_HOSTNAME:-otsorundscore.olutechsys.com}:${NAS_IP:-10.0.1.15}"
     labels:
       - com.centurylinklabs.watchtower.enable=true
       - haproxy.enable=true

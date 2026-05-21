@@ -37,10 +37,10 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
       # Explicitly map all variables and secrets so Dockhand can inject them
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TZ}
-      - DOCKER_USER=${DOCKER_USER}
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - TZ=${TZ:-America/New_York}
+      - DOCKER_USER=${DOCKER_USER:-coder}
       - BRIDGE_SHARED_SECRET=${BRIDGE_SHARED_SECRET}
       - PASSWORD=${CODE_SERVER_PASSWORD}
       - SUDO_PASSWORD=${SUDO_PASSWORD}
@@ -80,7 +80,7 @@ services:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${PMA_CONTROLPASS}
+      - MYSQL_PASSWORD=${MYSQL_APP_PASSWORD}
       - TZ=${TZ}
     healthcheck:
       test:

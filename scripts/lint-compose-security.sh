@@ -102,7 +102,7 @@ while IFS= read -r f; do
     rel="${f#"${ROOT}/"}"
     
     # If services reference networks: but no networks: block exists at root
-    if grep -q 'networks:' "$f" | head -3; then
+    if grep -q 'networks:' "$f"; then
         if ! grep -q '^networks:' "$f"; then
             printf '  WARN  %-50s (networks: referenced but no networks: block defined)\n' "${rel}" >&2
             missing_net=$((missing_net + 1))

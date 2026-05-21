@@ -6,12 +6,12 @@ services:
     networks:
       - homepage-net
     ports:
-      - "10.0.1.15:${HOMEPAGE_PORT}:3000"
+      - "10.0.1.15:${HOMEPAGE_PORT:-7575}:3000"
     environment:
       # Stripped bash fallbacks for pure Dockhand compatibility
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TIMEZONE}
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - TZ=${TIMEZONE:-America/New_York}
       # Required so services.yaml can interpolate credentials for widgets
       - WATCHTOWER_BEARER_TOKEN=${WATCHTOWER_BEARER_TOKEN}
       - GRAFANA_USERNAME=${GRAFANA_USERNAME}
@@ -33,11 +33,11 @@ services:
       # Protects stateful UI from auto-updates
       - com.centurylinklabs.watchtower.enable=false
       - dockhand.update=false
-      - dockhand.url=http://10.0.1.15:${HOMEPAGE_PORT}
+      - dockhand.url=http://10.0.1.15:${HOMEPAGE_PORT:-7575}
       - haproxy.enable=true
       - haproxy.host=homepage.olutechsys.com,homepage.olutech.systems
       - haproxy.port=${HOMEPAGE_PORT:-7575}
-      - haproxy.backend=homepages-be
+      - haproxy.backend=homepage-be
 
 networks:
   homepage-net:

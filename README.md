@@ -96,12 +96,7 @@ Verify: `docker network inspect ce-internal`
 
 ```bash
 # Create missing .env files from .env.example
-for stack in acme-sh agents_gateway_data code-server dozzle \
-             github-desktop grafana-prom homepage it-tools mcp-tools-config \
-             ollama openresume otspsu remotely searxng synology-api-bridge \
-             watchtower zabbix; do
-  [ -f "stacks/$stack/.env" ] || cp "stacks/$stack/.env.example" "stacks/$stack/.env"
-done
+find stacks/ -name .env.example -exec sh -c 'cp "$1" "${1%.example}"' _ {} \;
 ```
 
 Edit each `.env` with actual values (passwords, API keys) -- do not commit `.env` files to git.
@@ -181,7 +176,7 @@ All bridge networks use explicit `/24` subnets to prevent Docker's auto-assigned
 | watchtower | watchtower-net | 172.31.1.0/24 | |
 | agents_gateway_data | agents-gateway-net | 172.31.7.0/24 | |
 | mcp-tools-config | mcp-tools-net | 172.31.8.0/24 | |
-| zabbix | zabbix-net | 172.30.0.0/24 | Moved from 172.24 (openresume /16 collision) |
+| zabbix | zabbix-net | 172.30.0.0/24 | Moved from 172.24 to avoid subnet collision |
 
 The Docker default bridge `172.17.0.0/16` is reserved and must not be re-used.
 

@@ -61,19 +61,6 @@ if [[ ! -f "${STACKS}/codex-docs/.env" ]]; then
 	created_env_files+=("${STACKS}/codex-docs/.env")
 fi
 
-# holyclaude stack was removed from the repo - skip .env creation if the directory
-# does not exist (avoids "No such file or directory" error from cat redirect on set -e).
-if [[ -d "${STACKS}/holyclaude" && ! -f "${STACKS}/holyclaude/.env" ]]; then
-	cat >"${STACKS}/holyclaude/.env" <<EOF
-PUID=0
-PGID=0
-DISCORD_WEBHOOK_URL=
-NOTIFY_DISCORD=false
-STACK_ROOT=${STACKS}
-EOF
-	created_env_files+=("${STACKS}/holyclaude/.env")
-fi
-
 if [[ ! -f "${STACKS}/code-server/.env" ]]; then
 	cat >"${STACKS}/code-server/.env" <<EOF
 STACK_ROOT=${STACKS}

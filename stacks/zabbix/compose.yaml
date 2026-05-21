@@ -9,15 +9,15 @@ services:
     restart: unless-stopped
     network_mode: host
     ports:
-      - "10.0.1.15:${ZABBIX_SERVER_PORT}:10051"
+      - "10.0.1.15:${ZABBIX_SERVER_PORT:-10051}:10051"
     environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TZ}
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - TZ=${TZ:-America/New_York}
       - DB_SERVER_HOST=127.0.0.1
       - DB_SERVER_PORT=3306
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-zabbix}
+      - MYSQL_USER=${MYSQL_USER:-zabbix}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
     volumes:
@@ -26,7 +26,7 @@ services:
       # zabbix_server -R diaginfo fails in container context because the rtc
       # Unix socket path doesn't match. Use port check instead: port 10051
       # is only open once the server has fully started and accepted DB schema.
-      test: ["CMD-SHELL", "ss -tlnp 2>/dev/null | grep -q ':10051' || exit 1"]
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 10051 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -54,18 +54,18 @@ services:
     ports:
       - "10.0.1.15:${ZABBIX_WEB_PORT}:8080"
     environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TZ}
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - TZ=${TZ:-America/New_York}
       - DB_SERVER_HOST=127.0.0.1
       - DB_SERVER_PORT=3306
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-zabbix}
+      - MYSQL_USER=${MYSQL_USER:-zabbix}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - ZBX_SERVER_HOST=127.0.0.1
-      - ZBX_SERVER_PORT=10051
-      - PHP_TZ=${TZ}
+      - ZBX_SERVER_PORT=${ZABBIX_SERVER_PORT:-10051}
+      - PHP_TZ=${TZ:-America/New_York}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/ping"]
       interval: 30s
@@ -98,12 +98,12 @@ services:
       zabbix-server:
         condition: service_healthy
     environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TZ}
-      - ZBX_HOSTNAME=${ZBX_HOSTNAME}
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - TZ=${TZ:-America/New_York}
+      - ZBX_HOSTNAME=${ZBX_HOSTNAME:-zabbix-agent}
       - ZBX_SERVER_HOST=127.0.0.1
-      - ZBX_SERVER_PORT=${ZABBIX_SERVER_PORT}
+      - ZBX_SERVER_PORT=${ZABBIX_SERVER_PORT:-10051}
       - ZBX_ACTIVE_ALLOW=true
       - ZBX_PASSIVE_ALLOW=true
       - ZBX_DONTCREATEPIDFILE=1

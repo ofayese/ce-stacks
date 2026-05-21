@@ -19,7 +19,7 @@ services:
       - NEXT_PUBLIC_BASE_URL=${NEXT_PUBLIC_BASE_URL:-https://resume.olutechsys.com}
       - TZ=${TZ:-America/New_York}
     extra_hosts:
-      - "otsorundscore.olutechsys.com:10.0.1.15"
+      - "${NAS_HOSTNAME:-otsorundscore.olutechsys.com}:${NAS_IP:-10.0.1.15}"
     # Healthcheck type: B -- HTTP probe (node http; verify after image bumps via scripts/audit-healthcheck-tools.sh)
     healthcheck:
       test:

@@ -15,12 +15,12 @@ services:
       - no-new-privileges:true
     environment:
       # Use pure syntax for Dockhand parser compatibility
-      - PUID=${PUID}
-      - PGID=${PGID}  
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
       # Explicitly map secrets and overridden variables so they reach the container
       - BRIDGE_SHARED_SECRET=${BRIDGE_SHARED_SECRET}
       - DSM_BASE_URL=${DSM_BASE_URL}
-      - DSM_HTTP_TIMEOUT_SECONDS=${DSM_HTTP_TIMEOUT_SECONDS}
+      - DSM_HTTP_TIMEOUT_SECONDS=${DSM_HTTP_TIMEOUT_SECONDS:-5}
     logging:
       driver: json-file
       options:

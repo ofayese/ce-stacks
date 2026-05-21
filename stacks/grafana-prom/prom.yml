@@ -68,6 +68,11 @@ scrape_configs:
     static_configs:
       - targets: ["10.0.1.15:10050"]
 
+  - job_name: "zabbix-server-tcp"
+    scrape_interval: 30s
+    static_configs:
+      - targets: ["10.0.1.15:10051"]
+
   - job_name: "wireguard"
     scrape_interval: 30s
     static_configs:

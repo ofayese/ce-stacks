@@ -40,6 +40,7 @@ services:
       - ${STACK_ROOT}/grafana-prom/provisioning:/etc/grafana/provisioning:ro
       # MariaDB Unix socket — avoids TCP/firewall issues entirely
       - /run/mysqld/mysqld10.sock:/run/mysqld/mysqld.sock:ro
+      - ${STACK_ROOT}/grafana-prom/secrets/influxdb_grafana_password.txt:/run/secrets/influxdb_grafana_password:ro
     environment:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
@@ -99,6 +100,7 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
+      start_period: 60s
     volumes:
       - ${STACK_ROOT}/grafana-prom/data/prometheus:/prometheus:rw
       - ${STACK_ROOT}/grafana-prom/prom.yml:/etc/prometheus/prometheus.yml:ro
@@ -244,7 +246,7 @@ services:
     environment:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
-      - TZ=${TIMEZONE:-America/New_York}
+      - TZ=${TZ:-America/New_York}
     networks:
       - grafana-net
     restart: unless-stopped

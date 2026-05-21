@@ -28,17 +28,17 @@ services:
     environment:
       - INFLUXDB_HTTP_AUTH_ENABLED=true
       # Admin -- management only; do not use for application writes or reads
-      - INFLUXDB_ADMIN_USER=${INFLUXDB_ADMIN_USER}
-      - INFLUXDB_ADMIN_PASSWORD=${INFLUXDB_ADMIN_PASSWORD}
+      - INFLUXDB_ADMIN_USER=${INFLUXDB_ADMIN_USER:?set INFLUXDB_ADMIN_USER in .env}
+      - INFLUXDB_ADMIN_PASSWORD=${INFLUXDB_ADMIN_PASSWORD:?set INFLUXDB_ADMIN_PASSWORD in .env}
       # Default database created on first start.
       # Must match the database name configured in ntopng -> Settings -> Timeseries -> InfluxDB.
       - INFLUXDB_DB=${INFLUXDB_DATABASE:-ntopng}
       # Write-only user for ntopng -- use these credentials in ntopng's InfluxDB export config
       - INFLUXDB_WRITE_USER=ntopng
-      - INFLUXDB_WRITE_USER_PASSWORD=${INFLUXDB_NTOPNG_PASSWORD}
+      - INFLUXDB_WRITE_USER_PASSWORD=${INFLUXDB_NTOPNG_PASSWORD:?set INFLUXDB_NTOPNG_PASSWORD in .env}
       # Read-only user for Grafana -- auto-provisioned via grafana-prom/provisioning/datasources/influxdb.yml
       - INFLUXDB_READ_USER=grafana
-      - INFLUXDB_READ_USER_PASSWORD=${INFLUXDB_GRAFANA_PASSWORD}
+      - INFLUXDB_READ_USER_PASSWORD=${INFLUXDB_GRAFANA_PASSWORD:?set INFLUXDB_GRAFANA_PASSWORD in .env}
       - TZ=${TZ:-America/New_York}
     healthcheck:
       # /ping returns HTTP 204 without requiring authentication -- safe with auth enabled

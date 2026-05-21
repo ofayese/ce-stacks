@@ -31,14 +31,14 @@ services:
       - ${STACK_ROOT}/ollama/scripts/entrypoint.sh:/entrypoint.sh:ro
     environment:
       # Restored pure variable syntax for Dockhand parser
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TZ}
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - TZ=${TZ:-America/New_York}
       # Mapped for the entrypoint.sh auto-pull logic
       - MODELS=${OLLAMA_MODELS}
-      - OLLAMA_NUM_PARALLEL=${OLLAMA_NUM_PARALLEL}
-      - OLLAMA_MAX_LOADED_MODELS=${OLLAMA_MAX_LOADED_MODELS}
-      - OLLAMA_KEEP_ALIVE=${OLLAMA_KEEP_ALIVE}
+      - OLLAMA_NUM_PARALLEL=${OLLAMA_NUM_PARALLEL:-1}
+      - OLLAMA_MAX_LOADED_MODELS=${OLLAMA_MAX_LOADED_MODELS:-1}
+      - OLLAMA_KEEP_ALIVE=${OLLAMA_KEEP_ALIVE:-30m}
       - OLLAMA_FLASH_ATTENTION=1
     labels:
       - com.centurylinklabs.watchtower.enable=false
@@ -73,9 +73,9 @@ services:
       - ${STACK_ROOT}/ollama/data/open-webui:/app/backend/data:rw
     environment:
       # Restored pure variable syntax for Dockhand parser
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TZ}
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - TZ=${TZ:-America/New_York}
       - OLLAMA_BASE_URL=http://otsai:11434
       - BRIDGE_SHARED_SECRET=${BRIDGE_SHARED_SECRET}
       - WEBUI_AUTH=1
@@ -98,18 +98,18 @@ services:
     labels:
       - com.centurylinklabs.watchtower.enable=true
       # Creates a clickable quick-launch link in the Dockhand dashboard
-      - dockhand.url=${WEBUI_URL}
+      - dockhand.url=${WEBUI_URL:-https://ai.olutechsys.com}
       - haproxy.enable=true
       - haproxy.host=ai.olutechsys.com,ai.olutech.systems,ai.otsorundscore.olutechsys.com,ai.otsorundscore.olutech.systems
       - haproxy.port=8893
       - haproxy.backend=openwebui-be
     extra_hosts:
-      - otsorundscore.olutechsys.com:10.0.1.15
+      - "${NAS_HOSTNAME:-otsorundscore.olutechsys.com}:${NAS_IP:-10.0.1.15}"
     networks:
       - ollama-net
 
   pipelines:
-    image: ghcr.io/open-webui/pipelines:main
+    image: ghcr.io/open-webui/pipelines:0.5.26
     container_name: otsai-pipelines
     # DS723+: Pipelines is a lightweight FastAPI process; 512m is generous for
     # pipeline scripts. Raise if running heavy NLP pipelines locally.
@@ -128,9 +128,9 @@ services:
     volumes:
       - ${STACK_ROOT}/ollama/data/pipelines:/app/pipelines:rw
     environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TZ}
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - TZ=${TZ:-America/New_York}
       # API key Open WebUI uses to authenticate to this pipelines instance.
       # Set PIPELINES_API_KEY in .env; add the same key in Open WebUI:
       #   Admin → Settings → Connections → add OpenAI-compatible URL:

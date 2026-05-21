@@ -36,9 +36,9 @@ services:
       start_period: 15s
     environment:
       # Pure syntax required for full Dockhand .env parser compatibility
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TZ}
+      - PUID=${PUID:-0}
+      - PGID=${PGID:-0}
+      - TZ=${TZ:-America/New_York}
       - OLLAMA_API_BASE_URL=${OLLAMA_API_BASE_URL}
       - BRIDGE_SHARED_SECRET=${BRIDGE_SHARED_SECRET}
     labels:

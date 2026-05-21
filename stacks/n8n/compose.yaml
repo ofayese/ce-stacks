@@ -27,7 +27,7 @@ services:
     environment:
       - TZ=${TZ:-America/New_York}
       - GENERIC_TIMEZONE=${TZ:-America/New_York}
-      - N8N_HOST=${N8N_HOST}
+      - N8N_HOST=${N8N_HOST:-n8n.olutechsys.com}
       - WEBHOOK_URL=${N8N_WEBHOOK_URL:-https://n8n.olutechsys.com}
       - N8N_EDITOR_BASE_URL=${N8N_WEBHOOK_URL:-https://n8n.olutechsys.com}
       - N8N_PORT=5678
