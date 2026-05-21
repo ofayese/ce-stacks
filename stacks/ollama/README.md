@@ -58,6 +58,8 @@ Pull an extra model manually:
 docker exec otsai-server ollama pull <model>
 ```
 
+docker exec otsai-pipelines pip install llama-index-llms-ollama llama-index-core
+
 ## Resource ceiling
 
 Without `mem_limit`, model loading can eat all NAS RAM. The compose enforces:
