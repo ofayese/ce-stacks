@@ -3,7 +3,12 @@
         icon: synology.png
         href: https://otsorundscore.olutechsys.com/
         description: DS723+ control panel
-        siteMonitor: http://10.0.1.15:5009/
+        siteMonitor: https://10.0.1.15:5010/
+    - HAProxy:
+        icon: haproxy.png
+        href: https://haproxy.olutechsys.com/
+        description: Load balancer — stats & management UI
+        siteMonitor: http://10.0.1.15:8281/
     - Dockhand:
         icon: docker.png
         href: https://dockhand.olutechsys.com/
@@ -15,7 +20,7 @@
         icon: synology.png
         href: https://sso.olutechsys.com/
         description: Single Sign-On Portal
-        siteMonitor: http://10.0.1.15:8800/
+        siteMonitor: https://10.0.1.15:8843/
 
 - Automation & NOC:
     - n8n:
