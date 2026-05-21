@@ -4,8 +4,8 @@
 # =============================================================================
 # Reads haproxy.* labels from every stacks/*/compose.yaml, combines them with
 # the static infrastructure template (haproxy.cfg.head) and the static host
-# entries (host.map.static), then writes a complete, validated haproxy.cfg and
-# host.map ready to paste into DSM.
+# entries (host.map.static), then writes a complete haproxy.cfg and host.map
+# ready for the operator to paste into DSM.
 #
 # Label convention (add to the proxied service in compose.yaml):
 #
@@ -19,14 +19,22 @@
 #     - haproxy.ssl=false               # optional; true = ssl verify none (Synology native HTTPS)
 #
 # Usage:
-#   bash scripts/generate-haproxy.sh              # write cfg + map, validate
+#   bash scripts/generate-haproxy.sh              # write cfg + map, print paste instructions
 #   bash scripts/generate-haproxy.sh --dry-run    # print generated content, no writes
-#   bash scripts/generate-haproxy.sh --apply      # write + validate + restart HAProxy on NAS
 #   bash scripts/generate-haproxy.sh --help
 #
-# Files produced (default mode):
-#   stacks/_haproxy/haproxy.cfg       <- paste into DSM -> HAProxy -> Edit configuration
-#   stacks/_haproxy/maps/host.map     <- written automatically; live-reload via haproxy-reload-map.sh
+# Files produced:
+#   stacks/_haproxy/haproxy.cfg       <- paste into DSM -> HAProxy -> Edit configuration -> Validate -> Apply
+#   stacks/_haproxy/maps/host.map     <- already on the NAS live path; live-reload via haproxy-reload-map.sh
+#
+# Operator workflow after running this script:
+#   1) DSM -> Package Center -> HAProxy -> Edit configuration
+#   2) Select all, paste content of stacks/_haproxy/haproxy.cfg
+#   3) Click "Validate" — confirm no errors
+#   4) Click "Apply"
+#   5) Action -> Restart  (first run: Action -> Stop, then Start)
+#   6) For host.map-only changes (no backend changes): skip steps 1-5,
+#      just run:  bash scripts/haproxy-reload-map.sh
 #
 # Requires: python3, pyyaml (pip3 install pyyaml --break-system-packages)
 # =============================================================================
@@ -55,7 +63,6 @@ OUT_MAP="${HAPROXY_DIR}/maps/host.map"
 
 NAS_IP="10.0.1.15"
 DRY_RUN=0
-APPLY=0
 
 # ---------------------------------------------------------------------------
 # Argument parsing
@@ -63,9 +70,8 @@ APPLY=0
 for arg in "$@"; do
     case "${arg}" in
         --dry-run)  DRY_RUN=1 ;;
-        --apply)    APPLY=1 ;;
         -h|--help)
-            sed -n '2,35p' "$0"
+            sed -n '2,42p' "$0"
             exit 0
             ;;
         *)
@@ -279,54 +285,24 @@ else
     echo "generate-haproxy: WARNING: validate-haproxy-proposal.sh not found/executable — skipping"
 fi
 
-# ---------------------------------------------------------------------------
-# Apply: write to NAS live paths + restart HAProxy
-# ---------------------------------------------------------------------------
-if [[ "${APPLY}" -eq 1 ]]; then
-    LIVE_CFG="/var/packages/haproxy/var/haproxy.cfg"
-    LIVE_MAP="/volume2/docker/ce-stacks/stacks/_haproxy/maps/host.map"
-
-    echo "generate-haproxy: --apply: writing to NAS live paths..."
-
-    if [[ ! -f "${LIVE_CFG}" ]]; then
-        echo "generate-haproxy: ERROR: live config not found at ${LIVE_CFG}" >&2
-        echo "generate-haproxy: is HAProxy installed via DSM Package Center?" >&2
-        exit 1
-    fi
-
-    # Validate against live haproxy binary before overwriting
-    if command -v haproxy >/dev/null 2>&1; then
-        echo "generate-haproxy: validating against live haproxy binary..."
-        # Write to temp first, validate, then move
-        TMP_CFG=$(mktemp /tmp/haproxy-XXXXXX.cfg)
-        trap 'rm -f "${TMP_CFG}"' EXIT
-        echo "${_CFG}" > "${TMP_CFG}"
-        haproxy -c -f "${TMP_CFG}" || {
-            echo "generate-haproxy: ERROR: haproxy -c validation failed — aborting apply" >&2
-            exit 1
-        }
-    fi
-
-    cp "${OUT_CFG}" "${LIVE_CFG}"
-    cp "${OUT_MAP}" "${LIVE_MAP}"
-    echo "generate-haproxy: copied cfg and map to live paths"
-
-    # Restart HAProxy via Synology package manager
-    if command -v synopkg >/dev/null 2>&1; then
-        echo "generate-haproxy: restarting HAProxy via synopkg..."
-        synopkg restart HAProxy
-        echo "generate-haproxy: HAProxy restarted"
-    else
-        echo "generate-haproxy: WARNING: synopkg not found — restart HAProxy manually via DSM"
-    fi
-fi
-
 echo "generate-haproxy: done"
 echo ""
-echo "Next steps:"
-if [[ "${APPLY}" -eq 0 ]]; then
-    echo "  1) DSM -> Package Center -> HAProxy -> Edit configuration"
-    echo "     Paste ${OUT_CFG}, click Validate -> Apply -> Action -> Restart"
-    echo "  OR run with --apply on the NAS to apply automatically"
-fi
-echo "  2) For host.map-only changes: bash scripts/haproxy-reload-map.sh (no restart needed)"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  Operator: paste the generated config into DSM HAProxy GUI"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+echo "  Config file (select all + copy):"
+echo "    ${OUT_CFG}"
+echo ""
+echo "  Steps:"
+echo "    1) DSM -> Package Center -> HAProxy -> Edit configuration"
+echo "    2) Select all, paste the content of the file above"
+echo "    3) Click  Validate  — confirm no errors"
+echo "    4) Click  Apply"
+echo "    5) Action -> Restart  (or Stop + Start on first deploy)"
+echo ""
+echo "  host.map is already at its live path — no GUI action needed."
+echo "  For map-only changes (no new backends): skip steps 1-5 and run:"
+echo "    bash scripts/haproxy-reload-map.sh"
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
