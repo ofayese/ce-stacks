@@ -26,7 +26,7 @@ services:
       - WATCHTOWER_HTTP_API_UPDATE=1
       - WATCHTOWER_HTTP_API_PERIODIC_POLLS=1
       - WATCHTOWER_HTTP_API_METRICS=1
-      - WATCHTOWER_HTTP_API_TOKEN_FILE=/run/secrets/watchtower_bearer
+      - WATCHTOWER_HTTP_API_TOKEN=/run/secrets/watchtower_bearer
     secrets:
       - watchtower_bearer
     networks:
