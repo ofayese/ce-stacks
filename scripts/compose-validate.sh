@@ -43,6 +43,7 @@ done
 
 mkdir -p /tmp/workspace 2>/dev/null || true
 mkdir -p "${STACKS}/code-server/host-docker-bind" "${STACKS}/code-server/host-home-bind" 2>/dev/null || true
+mkdir -p "${STACKS}/flowise/data/flowise" 2>/dev/null || true
 
 created_env_files=()
 cleanup() {
@@ -77,6 +78,18 @@ DSM_BASE_URL=
 DSM_HTTP_TIMEOUT_SECONDS=5
 EOF
 	created_env_files+=("${STACKS}/synology-api-bridge/.env")
+fi
+
+if [[ ! -f "${STACKS}/flowise/.env" ]]; then
+	cat >"${STACKS}/flowise/.env" <<EOF
+FLOWISE_USERNAME=admin
+FLOWISE_PASSWORD=ci_dummy_password
+FLOWISE_APP_URL=https://flowise.example.com
+FLOWISE_JWT_SECRET=ci_dummy_jwt_secret_at_least_32_chars_long
+FLOWISE_DB_USER=flowiseuser
+FLOWISE_DB_PASSWORD=ci_dummy_db_password
+EOF
+	created_env_files+=("${STACKS}/flowise/.env")
 fi
 
 while IFS= read -r f; do
