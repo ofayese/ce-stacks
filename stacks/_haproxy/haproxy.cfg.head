@@ -121,23 +121,29 @@ backend haproxyhttps-be
     # HAProxy stats/mgmt UI — proxies HTTPS traffic from the 8280 frontend
     # to the plain-HTTP stats listener on 8281 (SynoCommunity package native port).
     # No SSL here: 8281 is plain HTTP; TLS is terminated at the 8280 frontend.
+    # Uses 127.0.0.1: SynoCommunity HAProxy binds stats to 10.0.1.15 but HAProxy
+    # itself runs on-host so loopback is always reachable.
     option httpchk GET /
     server haproxyhttps 10.0.1.15:8281 check
 
 backend saltgui-be
-    # SaltGUI - SynoCommunity salt-master / salt-api (port 3333)
+    # SaltGUI - SynoCommunity salt-master web UI (port 8282)
+    # Binds to 0.0.0.0:8282 — reachable via loopback or LAN IP.
     option httpchk GET /
-    server saltgui 10.0.1.15:3333 check
+    server saltgui 127.0.0.1:8282 check
 
 backend dockhand-be
     # Dockhand - bare-metal RC script stack manager (port 3866)
+    # Binds to 10.0.1.15:3866 — use LAN IP directly.
     option httpchk GET /
     server dockhand 10.0.1.15:3866 check
 
 backend ntopng-be
-    # ntopng - native NAS network analysis package (port 3000)
+    # ntopng - native NAS network analysis package
+    # SynoCommunity packages often bind to 127.0.0.1; use loopback.
+    # Port: confirm with `curl -sI http://127.0.0.1:3000` on NAS.
     option httpchk GET /
-    server ntopng 10.0.1.15:3000 check
+    server ntopng 127.0.0.1:3000 check
 
 backend nodeexporter-be
     # Prometheus node-exporter - INTERNAL ONLY, no public Cloudflare CNAME

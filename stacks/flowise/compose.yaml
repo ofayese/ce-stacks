@@ -30,9 +30,12 @@ services:
       - FLOWISE_PASSWORD=${FLOWISE_PASSWORD}
       - APP_URL=${FLOWISE_APP_URL}
       - JWT_AUTH_TOKEN_SECRET=${FLOWISE_JWT_SECRET}
-      # Native Synology MariaDB 10.11 on host (no sidecar needed)
+      # Native Synology MariaDB 10.11 on host (no sidecar needed).
+      # Use the flowise-net bridge gateway (172.30.1.1) NOT the LAN IP (10.0.1.15).
+      # The Synology firewall blocks Docker subnets from reaching 10.0.1.15:3306;
+      # the gateway IP routes through the Docker bridge interface instead.
       - DATABASE_TYPE=mysql
-      - DATABASE_HOST=${NAS_IP:-10.0.1.15}
+      - DATABASE_HOST=172.30.1.1
       - DATABASE_PORT=3306
       - DATABASE_NAME=flowise
       - DATABASE_USER=${FLOWISE_DB_USER:-flowiseuser}

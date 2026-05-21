@@ -40,10 +40,13 @@ services:
       - N8N_RUNNERS_ENABLED=true
       - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
       - N8N_RESTRICT_FILE_ACCESS_TO=/files
-      # Native Synology MariaDB 10.11 on host (no sidecar needed)
+      # Native Synology MariaDB 10.11 on host (no sidecar needed).
+      # Use the n8n-net bridge gateway (172.30.2.1) NOT the LAN IP (10.0.1.15).
+      # The Synology firewall blocks Docker subnets from reaching 10.0.1.15:3306;
+      # the gateway IP routes through the Docker bridge interface instead.
       - DB_TYPE=mysqldb
       - DB_MYSQLDB_DATABASE=n8n
-      - DB_MYSQLDB_HOST=${NAS_IP:-10.0.1.15}
+      - DB_MYSQLDB_HOST=172.30.2.1
       - DB_MYSQLDB_PORT=3306
       - DB_MYSQLDB_USER=${N8N_DB_USER:-n8nuser}
       - DB_MYSQLDB_PASSWORD=${N8N_DB_PASSWORD}

@@ -38,13 +38,15 @@ services:
     volumes:
       - ${STACK_ROOT}/grafana-prom/data/grafana:/var/lib/grafana:rw
       - ${STACK_ROOT}/grafana-prom/provisioning:/etc/grafana/provisioning:ro
+      # MariaDB Unix socket — avoids TCP/firewall issues entirely
+      - /run/mysqld/mysqld10.sock:/run/mysqld/mysqld.sock:ro
     environment:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
       - TZ=${TIMEZONE:-America/New_York}
-      # MariaDB backing for high availability (local NAS MySQL at 3306)
+      # MariaDB via Unix socket (Synology MariaDB 10 package)
       - GF_DATABASE_TYPE=mysql
-      - GF_DATABASE_HOST=${MYSQL_HOST}:${MYSQL_PORT}
+      - GF_DATABASE_HOST=${MYSQL_HOST:-/run/mysqld/mysqld.sock}
       - GF_DATABASE_NAME=${GRAFANA_DB_NAME}
       - GF_DATABASE_USER=${GRAFANA_DB_USER}
       - GF_DATABASE_PASSWORD=${GRAFANA_DB_PASSWORD}

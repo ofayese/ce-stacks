@@ -20,7 +20,7 @@
 #   directly under the repo root outside stacks/; use APPLE_CLEANUP_ROOT for that):
 #     DRY_RUN=1 APPLE_CLEANUP_STACKS_ROOT=/volume2/docker/ce-stacks/stacks bash scripts/maintenance/remove_apple_hidden_files.sh
 #   Both (e.g. git corruption at repo root plus per-stack pass; repo root walk also covers stacks, stacks pass is redundant):
-#     DRY_RUN=1 APPLE_CLEANUP_ROOT=/volume2/docker/ce-stacks APPLE_CLEANUP_STACKS_ROOT=/volume2/docker/ce-stacks/stacks bash scripts/maintenance/remove_apple_hidden_files.sh
+#     DRY_RUN=0 APPLE_CLEANUP_ROOT=/volume2/docker/ce-stacks APPLE_CLEANUP_STACKS_ROOT=/volume2/docker/ce-stacks/stacks bash scripts/maintenance/remove_apple_hidden_files.sh
 #   Explicit path list:
 #     DRY_RUN=0 APPLE_CLEANUP_PATHS_FILE=/path/to/paths.list bash scripts/maintenance/remove_apple_hidden_files.sh
 #
