@@ -36,7 +36,7 @@
 #   6) For host.map-only changes (no backend changes): skip steps 1-5,
 #      just run:  bash scripts/haproxy-reload-map.sh
 #
-# Requires: python3, pyyaml (pip3 install pyyaml --break-system-packages)
+# Requires: python3 (stdlib only — no third-party packages needed)
 # =============================================================================
 
 set -euo pipefail
@@ -92,68 +92,140 @@ done
     echo "generate-haproxy: ERROR: static map not found: ${STATIC_MAP}" >&2
     exit 1
 }
-if ! python3 -c "import yaml" 2>/dev/null; then
-    echo "generate-haproxy: ERROR: pyyaml not available" >&2
-    echo "generate-haproxy: install via: pip3 install pyyaml --break-system-packages" >&2
-    exit 1
-fi
-
 # ---------------------------------------------------------------------------
-# Python: parse labels, emit backends + host.map entries
+# Python: parse labels, emit backends + host.map entries (stdlib only — no pyyaml)
 # ---------------------------------------------------------------------------
 _GENERATED=$(python3 - "${STACKS_DIR}" "${NAS_IP}" <<'PYEOF'
 #!/usr/bin/env python3
 """
 Parse haproxy.* labels from stacks/*/compose.yaml.
-Outputs two blocks separated by a sentinel line:
+Stdlib only — no pyyaml required. Uses an indentation-aware line parser
+that handles both list-style (- key=value) and dict-style (key: value) labels.
+
+Outputs two blocks separated by sentinel lines:
   === BACKENDS ===
   <backend stanzas>
   === HOSTMAP ===
   <host.map lines>
 """
-import re, sys, yaml
+import re, sys
 from pathlib import Path
 
 STACKS_DIR = Path(sys.argv[1])
 NAS_IP     = sys.argv[2]
 
-# Resolve ${VAR:-default} / ${VAR} patterns to default value (or raw var name)
+# Resolve ${VAR:-default} / ${VAR} patterns
 _env_re = re.compile(r'\$\{([^}:]+)(?::-(.*?))?\}')
 
 def resolve(val):
-    """Return best-effort resolved string (use :-default when available)."""
     def sub(m):
         default = m.group(2)
         return default if default is not None else m.group(1)
     return _env_re.sub(sub, str(val))
 
-# backend_name -> dict(port, ssl, method, path, hosts, stack, svc, comment)
-backends = {}
+def indent_of(line):
+    return len(line) - len(line.lstrip(' '))
+
+def extract_labels(filepath):
+    """
+    Minimal Docker Compose label extractor (no external deps).
+    Returns: dict mapping service_name -> {label_key: label_value}
+    Handles list-style labels (- key=value) and dict-style (key: value).
+    """
+    try:
+        lines = filepath.read_text().splitlines()
+    except Exception as e:
+        print(f"# WARNING: cannot read {filepath}: {e}", file=sys.stderr)
+        return {}
+
+    services     = {}
+    in_services  = False
+    current_svc  = None
+    svc_indent   = None
+    in_labels    = False
+    lbl_item_ind = None
+    current_lbls = {}
+
+    for raw in lines:
+        line    = raw.rstrip()
+        stripped = line.strip()
+
+        if not stripped or stripped.startswith('#'):
+            continue
+
+        ind = indent_of(line)
+
+        # ── top-level keys (indent 0) ──────────────────────────────────────
+        if ind == 0 and stripped.endswith(':'):
+            if stripped == 'services:':
+                in_services = True
+            else:
+                if current_svc is not None:
+                    services[current_svc] = dict(current_lbls)
+                in_services = False
+                current_svc = None
+                in_labels   = False
+            continue
+
+        if not in_services:
+            continue
+
+        # ── service name (indent 2, ends with ':') ─────────────────────────
+        if ind == 2 and stripped.endswith(':') and not stripped.startswith('-'):
+            if current_svc is not None:
+                services[current_svc] = dict(current_lbls)
+            current_svc  = stripped[:-1]
+            svc_indent   = ind
+            in_labels    = False
+            lbl_item_ind = None
+            current_lbls = {}
+            continue
+
+        if current_svc is None:
+            continue
+
+        # ── 'labels:' key (indent svc+2 = 4) ──────────────────────────────
+        if ind == svc_indent + 2 and stripped == 'labels:':
+            in_labels    = True
+            lbl_item_ind = ind + 2   # list/dict items expected at indent 6+
+            continue
+
+        # exit labels block when we return to service-property level
+        if in_labels and ind <= svc_indent + 2 and stripped != 'labels:':
+            in_labels = False
+
+        if not in_labels:
+            continue
+
+        if ind < lbl_item_ind:
+            in_labels = False
+            continue
+
+        # list-style:  - haproxy.enable=true   or  - "haproxy.host=a,b"
+        if stripped.startswith('-'):
+            item = stripped[1:].strip().strip('"\'')
+            if '=' in item:
+                k, _, v = item.partition('=')
+                current_lbls[k.strip()] = v.strip()
+        # dict-style:  haproxy.enable: true
+        elif ':' in stripped:
+            k, _, v = stripped.partition(':')
+            current_lbls[k.strip()] = v.strip().strip('"\'')
+
+    if current_svc is not None:
+        services[current_svc] = dict(current_lbls)
+
+    return services
+
+# ── main: walk stacks ───────────────────────────────────────────────────────
+backends = {}   # be_name -> {port, ssl, method, path, hosts, stack, svc}
 
 for compose_file in sorted(STACKS_DIR.glob("*/compose.yaml")):
     stack = compose_file.parent.name
     if stack.startswith("_"):
         continue
-    try:
-        data = yaml.safe_load(compose_file.read_text()) or {}
-    except Exception as e:
-        print(f"# WARNING: could not parse {compose_file}: {e}", file=sys.stderr)
-        continue
 
-    for svc_name, svc in (data.get("services") or {}).items():
-        if not svc:
-            continue
-
-        # Labels can be dict or list-of-"KEY=VALUE"
-        raw = svc.get("labels") or {}
-        if isinstance(raw, list):
-            labels = {}
-            for item in raw:
-                k, _, v = str(item).partition("=")
-                labels[k.strip()] = v.strip()
-        else:
-            labels = {str(k): str(v) for k, v in raw.items()}
-
+    for svc_name, labels in extract_labels(compose_file).items():
         if labels.get("haproxy.enable", "").lower() not in ("true", "1", "yes"):
             continue
 
@@ -169,7 +241,6 @@ for compose_file in sorted(STACKS_DIR.glob("*/compose.yaml")):
             )
             continue
 
-        # Validate port is numeric after resolution
         try:
             int(port)
         except ValueError:
@@ -187,29 +258,25 @@ for compose_file in sorted(STACKS_DIR.glob("*/compose.yaml")):
         hosts   = [h.strip() for h in host_str.split(",") if h.strip()]
 
         if be_name in backends:
-            # Merge hostnames onto existing backend (e.g. multi-service label sets)
             backends[be_name]["hosts"].extend(hosts)
         else:
             backends[be_name] = {
-                "port":    port,
-                "ssl":     ssl,
-                "method":  method,
-                "path":    path,
-                "hosts":   hosts,
-                "stack":   stack,
-                "svc":     svc_name,
+                "port":   port,
+                "ssl":    ssl,
+                "method": method,
+                "path":   path,
+                "hosts":  hosts,
+                "stack":  stack,
+                "svc":    svc_name,
             }
 
-# ---------------------------------------------------------------------------
-# Emit
-# ---------------------------------------------------------------------------
+# ── emit ────────────────────────────────────────────────────────────────────
 print("=== BACKENDS ===")
 for be_name in sorted(backends):
     be  = backends[be_name]
     ssl = " ssl verify none" if be["ssl"] else ""
-    svc_label = f"{be['stack']}/{be['svc']}"
     print(f"backend {be_name}")
-    print(f"    # {svc_label} — auto-generated from haproxy.* labels")
+    print(f"    # {be['stack']}/{be['svc']} — auto-generated from haproxy.* labels")
     print(f"    option httpchk {be['method']} {be['path']}")
     server = be_name.replace("-be", "")
     print(f"    server {server} {NAS_IP}:{be['port']}{ssl} check")
@@ -217,8 +284,7 @@ for be_name in sorted(backends):
 
 print("=== HOSTMAP ===")
 for be_name in sorted(backends):
-    be = backends[be_name]
-    for host in be["hosts"]:
+    for host in backends[be_name]["hosts"]:
         print(f"{host}\t{be_name}")
 
 PYEOF
