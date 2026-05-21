@@ -4,9 +4,20 @@
 #
 # Format: <hostname><TAB><backend-name>
 
-# Synology DSM (default fallback — any unmatched host hits DSM)
+# ---------------------------------------------------------------------------
+# DSM dashboard — default fallback for all unmatched hostnames
+# ---------------------------------------------------------------------------
 otsorundscore.olutechsys.com	otsorundscore-be
 otsorundscore.olutech.systems	otsorundscore-be
+
+# ---------------------------------------------------------------------------
+# HAProxy management UI — proxied via HTTPS frontend on port 8280
+# haproxyhttps-be terminates TLS at 8280 and forwards plain HTTP to 8281.
+# Direct LAN access (http://10.0.1.15:8281) hits the listen stats block
+# directly — no host.map entry needed for that path.
+# ---------------------------------------------------------------------------
+haproxy.olutechsys.com	haproxyhttps-be
+haproxy.olutech.systems	haproxyhttps-be
 
 # Dockhand (bare-metal RC script)
 dockhand.olutechsys.com	dockhand-be

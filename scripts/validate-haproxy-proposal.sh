@@ -24,8 +24,13 @@ fi
 
 run_haproxy_check() {
 	local haproxy_cfg="$1"
-	if command -v haproxy >/dev/null 2>&1; then
-		haproxy -c -f "${haproxy_cfg}"
+	# Prefer the native haproxy binary — check PATH first, then the Synology package location.
+	local _haproxy
+	_haproxy="$(command -v haproxy 2>/dev/null \
+		|| { [[ -x /var/packages/haproxy/target/sbin/haproxy ]] && echo /var/packages/haproxy/target/sbin/haproxy; } \
+		|| true)"
+	if [[ -n "${_haproxy}" ]]; then
+		"${_haproxy}" -c -f "${haproxy_cfg}"
 		return
 	fi
 	if [[ -x "${DOCKER}" ]]; then
