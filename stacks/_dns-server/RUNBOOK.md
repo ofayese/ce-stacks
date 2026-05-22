@@ -237,6 +237,52 @@ nslookup olutechsys.com 1.1.1.1
 
 ---
 
+## File paths on the NAS (DSM 7.3 / DS723+)
+
+> These paths were verified 2026-05-22. They differ from Synology documentation.
+
+| Purpose | Path |
+|---|---|
+| BIND main config | `/var/packages/DNSServer/target/named/etc/named.conf` |
+| Zone load file (edit this) | `/var/packages/DNSServer/target/named/etc/zone/zone.load.conf` |
+| Zone declarations (managed by UI) | `/var/packages/DNSServer/target/named/etc/zone/data/<zonename>` |
+| Zone master records (managed by UI) | `/var/packages/DNSServer/target/named/etc/zone/master/<zonename>` |
+
+**Reload BIND after manual edits:**
+```bash
+sudo kill -HUP $(pgrep named)
+```
+
+> `synoservicectl` does **not** exist on DS723+ / DSM 7.3. `named-checkzone` is also
+> not installed. Use the Synology DNS Server UI or direct file edits + HUP reload.
+
+---
+
+## BIND view structure
+
+The DSM DNS Server creates three BIND views in `zone.load.conf`:
+
+| View | `match-clients` | Purpose |
+|---|---|---|
+| `internal` | `10.0.0.0/22` | LAN clients — served olutechsys.com, lan, reverse |
+| `wireguard` | `172.16.0.0/12` | Docker containers & VPN peers — same zones |
+| `external` | `none` | Matches nobody — kept by DSM UI, effectively disabled |
+
+**Critical:** zones added via the UI land in `data/` with an include only in the view
+DSM chose (often `external` with `match-clients {none;}`). After adding a new zone via UI,
+verify it is also included in `internal` and `wireguard` views in `zone.load.conf`,
+otherwise LAN and Docker clients won't see it.
+
+To add a zone to a view manually:
+```bash
+# Add include line to both internal and wireguard views
+sudo nano /var/packages/DNSServer/target/named/etc/zone/zone.load.conf
+# Then reload:
+sudo kill -HUP $(pgrep named)
+```
+
+---
+
 ## Adding hosts / services
 
 **New LAN device with a fixed IP:**

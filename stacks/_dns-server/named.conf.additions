@@ -1,71 +1,89 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# named.conf additions for Synology DNS Server (BIND)
-# Apply to: /var/packages/DNSServer/target/etc/named.conf
+# DNS Server — Live configuration reference for Synology DS723+ (10.0.1.15)
 #
-# Instructions:
-#   1. Backup first:
-#        cp /var/packages/DNSServer/target/etc/named.conf \
-#           /var/packages/DNSServer/target/etc/named.conf.bak
-#   2. Add the acl block near the top (before the options block).
-#   3. Add the four zone blocks at the bottom.
-#   4. Validate: named-checkconf /var/packages/DNSServer/target/etc/named.conf
-#   5. Reload:   synoservicectl --reload named
+# HOW SYNOLOGY DNS SERVER ACTUALLY WORKS (discovered 2026-05-22):
+#
+#   named.conf path:    /var/packages/DNSServer/target/named/etc/named.conf
+#   Zone load file:     /var/packages/DNSServer/target/named/etc/zone/zone.load.conf
+#   Zone declarations:  /var/packages/DNSServer/target/named/etc/zone/data/<zonename>
+#   Zone master files:  /var/packages/DNSServer/target/named/etc/zone/master/<zonename>
+#
+#   named.conf includes zone.load.conf. zone.load.conf has the real config.
+#   Do NOT edit named.conf directly — edits go in zone.load.conf.
+#
+#   The DSM DNS Server UI manages data/ and master/ automatically.
+#   Reload BIND after manual edits:
+#       sudo kill -HUP $(pgrep named)
+#
+#   NOTE: synoservicectl does NOT exist on DS723+ / DSM 7.3. Do not use it.
+#         named-checkzone is also not installed. Use the UI or direct file edits.
 #
 # SAFETY NOTES:
 #   - Do NOT use .local TLD zones — reserved for mDNS/Bonjour (RFC 6762).
 #     Overriding it breaks Avahi/Apple device discovery on the LAN.
-#     Use .lan instead (see zone "lan" block below).
+#     Use .lan instead (see zone "lan" below).
 #   - ACL uses 172.16.0.0/12 (covers 172.16–172.31.x.x) so all Docker bridge
-#     networks (grafana-net, flowise-net, n8n-net, zabbix-net, homepage-net,
-#     agents-gateway-net, etc.) can reach this DNS server for split-horizon
-#     resolution. Do NOT narrow to /16 — that blocks most container subnets.
+#     networks can reach this DNS server for split-horizon resolution.
+#     Do NOT narrow to /16 — that blocks most container subnets.
 # ─────────────────────────────────────────────────────────────────────────────
 
-# ── ACL (add near top, before options block) ──────────────────────────────────
-acl "trusted" {
-    127.0.0.0/8;        # loopback
-    10.0.1.0/24;        # NAS LAN subnet
-    172.16.0.0/12;      # All Docker bridge networks + VPN/WireGuard peers
-                        # (covers 172.16.0.0 – 172.31.255.255)
-};
-
-# ── In the options block, add these lines if not already present ──────────────
-# (find your existing options { ... }; and add inside it)
+# ── LIVE zone.load.conf structure (as of 2026-05-22) ─────────────────────────
 #
-#   allow-query     { trusted; };
-#   allow-recursion { trusted; };
-#   recursion yes;
+# BIND uses three views. Zones must be added to every view that should serve them.
+# LAN clients (10.0.0.0/22) hit "internal". Docker clients (172.16.0.0/12) hit
+# "wireguard". The "external" view has match-clients {none;} — it matches nobody
+# and is effectively disabled (kept by DSM UI, do not remove).
+#
+# To add a new zone to all internal clients, add its include line to BOTH
+# "internal" and "wireguard" views, then reload BIND.
 
-# ── Zone blocks (add at bottom of named.conf) ─────────────────────────────────
+# view "internal" {
+# 	match-clients {10.0.0.0/22;};
+# 	forwarders {127.0.0.1;10.0.1.1;};
+# 	forward first;
+# 	include "/var/packages/DNSServer/target/named/etc/zone/data/lan";
+# 	include "/var/packages/DNSServer/target/named/etc/zone/data/olutechsys.com";
+# 	include "/var/packages/DNSServer/target/named/etc/zone/data/1.0.10.in-addr.arpa";
+# };
+# view "external" {
+# 	match-clients {none;};
+# 	forwarders {8.8.8.8;1.1.1.1;};
+# 	forward first;
+# 	include "/var/packages/DNSServer/target/named/etc/zone/data/olutechsys.com";
+# 	include "/var/packages/DNSServer/target/named/etc/zone/data/1.0.10.in-addr.arpa";
+# };
+# view "wireguard" {
+# 	match-clients {172.16.0.0/12;};
+# 	forwarders {10.0.1.1;8.8.8.8;};
+# 	forward first;
+# 	include "/var/packages/DNSServer/target/named/etc/zone/data/lan";
+# 	include "/var/packages/DNSServer/target/named/etc/zone/data/olutechsys.com";
+# 	include "/var/packages/DNSServer/target/named/etc/zone/data/0.16.172.in-addr.arpa";
+# };
 
-zone "olutechsys.com" IN {
-    type master;
-    file "/var/packages/DNSServer/target/named/olutechsys.com.zone";
-    allow-query   { trusted; };
-    allow-update  { none; };
-};
+# ── Zone declaration format (data/ files) ────────────────────────────────────
+#
+# Each data/<zonename> file contains a zone {} block. Example (olutechsys.com):
+#
+# zone "olutechsys.com" {
+# 	type master;
+# 	file "/var/packages/DNSServer/target/named/etc/zone/master/olutechsys.com";
+# 	allow-transfer {none;};
+# 	allow-update {none;};
+# 	allow-query {any;};
+# };
 
-# .lan zone — safe internal alias (avoids .local mDNS conflict per RFC 6762)
-zone "lan" IN {
-    type master;
-    file "/var/packages/DNSServer/target/named/lan.zone";
-    allow-query   { trusted; };
-    allow-update  { none; };
-};
+# ── Zone file format (master/ files) ─────────────────────────────────────────
+#
+# The actual DNS records live in master/<zonename> (no file extension).
+# See stacks/_dns-server/zones/ in this repo for the reference copies.
+# After editing a master/ file manually, always bump the serial and reload:
+#
+#   sudo kill -HUP $(pgrep named)
 
-# Reverse zone for LAN subnet 10.0.1.0/24
-zone "1.0.10.in-addr.arpa" IN {
-    type master;
-    file "/var/packages/DNSServer/target/named/10.0.1.rev.zone";
-    allow-query   { trusted; };
-    allow-update  { none; };
-};
-
-# Reverse zone for VPN/WireGuard peers (172.16.0.x range)
-# Create additional /24 reverse zones (1.16.172, 2.16.172 etc.) as peers expand
-zone "0.16.172.in-addr.arpa" IN {
-    type master;
-    file "/var/packages/DNSServer/target/named/172.16.0.rev.zone";
-    allow-query   { trusted; };
-    allow-update  { none; };
-};
+# ── Verification commands ─────────────────────────────────────────────────────
+#
+# nslookup olutechsys.com 10.0.1.15         # → 10.0.1.15
+# nslookup grafana.olutechsys.com 10.0.1.15 # → 10.0.1.15 (wildcard)
+# nslookup otsorundscore.lan 10.0.1.15      # → 10.0.1.15
+# nslookup -type=PTR 10.0.1.15 10.0.1.15   # → otsorundscore.olutechsys.com

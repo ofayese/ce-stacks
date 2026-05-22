@@ -3,8 +3,19 @@
 ; Managed via: Synology DNS Server UI (http://10.0.1.15:5010)
 ; Serial: 2026052201 (date format)
 ;
-; This file is a REFERENCE COPY — actual zone is managed by the DSM DNS
-; Server package. Update here when you change the UI.
+; This file is a REFERENCE COPY — actual zone lives on the NAS at:
+;   /var/packages/DNSServer/target/named/etc/zone/master/olutechsys.com
+;   (no file extension — that is the DSM convention)
+;
+; Zone declaration is at:
+;   /var/packages/DNSServer/target/named/etc/zone/data/olutechsys.com
+;
+; After editing the live file, bump the serial and reload:
+;   sudo kill -HUP $(pgrep named)
+;
+; IMPORTANT: This zone must appear in BOTH the "internal" and "wireguard"
+; views in zone.load.conf. The "external" view has match-clients {none;} and
+; serves nobody — do not rely on it for LAN or Docker resolution.
 
 $TTL 300
 $ORIGIN olutechsys.com.
