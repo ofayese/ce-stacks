@@ -1,0 +1,24 @@
+; Zone: lan
+; Type: Forward / Master
+; Managed via: Synology DNS Server UI (http://10.0.1.15:5010)
+; Serial: 2026052201
+;
+; Replaces the originally planned `local` zone.
+; RFC 6762 reserves `.local` for mDNS/Bonjour/Avahi — overriding it with
+; unicast DNS causes Apple device and Avahi discovery conflicts.
+; `.lan` has no such reservation and is safe for private unicast use.
+
+$TTL 300
+$ORIGIN lan.
+
+@   IN  SOA  otsorundscore.lan. admin.lan. (
+              2026052201
+              3600
+              900
+              604800
+              300 )
+
+@               IN  NS   otsorundscore.lan.
+
+otsorundscore   IN  A    10.0.1.15
+misfitsds       IN  A    10.0.1.24

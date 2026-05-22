@@ -59,6 +59,6 @@ These are the **calculated** budgets the plan and the `scripts/lint-host-budget.
 ## See also
 
 - [`dsm-732-runtime-quirks.md`](./dsm-732-runtime-quirks.md) -- Container Manager / BTRFS / Cool-mode operational quirks
-- [`implementation_plan_dockhand_drift.md`](./implementation_plan_dockhand_drift.md) -- prior, completed plan
+- [`../implementation_plan.md`](../implementation_plan.md) -- completed dockhand-drift reconciliation (archived in root plan)
 - [`../implementation_plan.md`](../implementation_plan.md) -- current active plan (this file is referenced from there)
 - [`../README.md`](../README.md) -- repo overview

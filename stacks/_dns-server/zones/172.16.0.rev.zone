@@ -1,0 +1,39 @@
+; Zone: 0.16.172.in-addr.arpa
+; Type: Reverse / Master
+; Managed via: Synology DNS Server UI (http://10.0.1.15:5010)
+; Serial: 2026052201
+;
+; SCOPE: 172.16.0.0/24 — first /24 of the VPN / WireGuard peer range.
+; The ACL in named.conf.additions covers 172.16.0.0/12, but this zone file only
+; handles 172.16.0.x. If peers are in 172.16.1.x or beyond, create an additional
+; /24 reverse zone in the Synology UI (domain "1.16.172") and add a matching zone
+; block in named.conf.additions.
+;
+; Zone name in Synology UI: enter "0.16.172" (UI appends .in-addr.arpa automatically).
+; Synology stores the zone file as: 0.16.172.in-addr.arpa
+;
+; This zone does NOT cover the NAS LAN IP (10.0.1.15) —
+; LAN reverse lookups are in 1.0.10.in-addr.arpa (10.0.1.rev.zone).
+;
+; PTR host field = last octet only (it is a /24 zone):
+;   172.16.0.2  →  host field: 2
+;   172.16.0.15 →  host field: 15
+;
+; Neighboring /24 zones to create as peers expand beyond 172.16.0.x:
+;   1.16.172.in-addr.arpa  →  covers 172.16.1.x
+;   2.16.172.in-addr.arpa  →  covers 172.16.2.x
+
+$TTL 7200
+$ORIGIN 0.16.172.in-addr.arpa.
+
+@   IN  SOA  otsorundscore.olutechsys.com. admin.olutechsys.com. (
+              2026052201
+              3600
+              900
+              604800
+              300 )
+
+@           IN  NS   otsorundscore.olutechsys.com.
+
+; Add PTRs as WireGuard/VPN peers get fixed assignments in 172.16.0.x:
+; 2           IN  PTR  peer2.olutechsys.com.

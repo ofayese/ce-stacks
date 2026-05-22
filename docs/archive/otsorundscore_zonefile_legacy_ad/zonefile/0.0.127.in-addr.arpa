@@ -1,0 +1,13 @@
+$ORIGIN 0.0.127.in-addr.arpa.
+$TTL 86400
+0.0.127.in-addr.arpa. IN SOA ns.0.0.127.in-addr.arpa. mail.0.0.127.in-addr.arpa. (
+	5
+	43200
+	180
+	1209600
+	10800
+)
+1.0.0.127.in-addr.arpa.	900	PTR	_msdcs.olutechsys.com.
+1.0.0.127.in-addr.arpa.	900	PTR	gc._msdcs.olutechsys.com.
+1.0.0.127.in-addr.arpa.	900	PTR	otsorundscore.olutechsys.com.
+0.0.127.in-addr.arpa.	900	NS	otsorundscore.olutechsys.com.

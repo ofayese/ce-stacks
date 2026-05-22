@@ -47,7 +47,7 @@ services:
         max-size: 10m
         max-file: "3"
     labels:
-      - com.centurylinklabs.watchtower.enable=true
+      - com.centurylinklabs.watchtower.enable=false
       - haproxy.enable=true
       - haproxy.host=desktop.olutechsys.com,desktop.olutech.systems
       - haproxy.port=${GITHUB_DESKTOP_PORT:-3405}

@@ -1,0 +1,33 @@
+; Zone: olutechsys.com
+; Type: Forward / Master
+; Managed via: Synology DNS Server UI (http://10.0.1.15:5010)
+; Serial: 2026052201 (date format)
+;
+; This file is a REFERENCE COPY — actual zone is managed by the DSM DNS
+; Server package. Update here when you change the UI.
+
+$TTL 300
+$ORIGIN olutechsys.com.
+
+@   IN  SOA  otsorundscore.olutechsys.com. admin.olutechsys.com. (
+              2026052201  ; serial
+              3600        ; refresh
+              900         ; retry
+              604800      ; expire
+              300 )       ; negative TTL
+
+; Nameserver
+@               IN  NS   otsorundscore.olutechsys.com.
+
+; Apex → NAS/HAProxy (all LAN clients hit 10.0.1.15 for the bare domain)
+@               IN  A    10.0.1.15
+
+; NAS host
+otsorundscore   IN  A    10.0.1.15
+
+; Wildcard — catches every subdomain (grafana, search, dozzle, etc.)
+; and routes them all to HAProxy on 10.0.1.15 automatically
+*               IN  A    10.0.1.15
+
+; misfitsds — explicit record required (different IP, wildcard would be wrong)
+misfitsds       IN  A    10.0.1.24

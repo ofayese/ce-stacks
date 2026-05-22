@@ -148,7 +148,7 @@ services:
       db:
         condition: service_healthy
     labels:
-      - com.centurylinklabs.watchtower.enable=true
+      - com.centurylinklabs.watchtower.enable=false
       - haproxy.enable=true
       - haproxy.host=pma.olutechsys.com,pma.olutech.systems,pma.otsorundscore.olutechsys.com,pma.otsorundscore.olutech.systems
       - haproxy.port=8379

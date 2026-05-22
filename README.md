@@ -29,19 +29,20 @@ Two linters enforce host-profile rules in CI (chained from `scripts/compose-vali
 ```
 ce-stacks/
 +--- stacks/                  # One subdirectory per stack
+|   +--- _dns-server/         # DNS zone files + BIND config (DSM native package, not compose)
 |   +--- _haproxy/            # HAProxy reverse proxy (bare-metal, not compose)
 |   +--- acme-sh/             # Let's Encrypt certificate automation
-|   +--- agents_gateway_data/ # AI agent gateway + DuckDuckGo search
 |   +--- code-server/         # VS Code in the browser
 |   +--- codex-docs/          # Documentation platform
-|   +--- databases/           # Shared database services
 |   +--- dozzle/              # Docker log viewer
+|   +--- flowise/             # LLM workflow builder (FlowiseAI)
 |   +--- github-desktop/      # GitHub Desktop (containerised)
 |   +--- grafana-prom/        # Grafana + Prometheus monitoring
 |   +--- homepage/            # Dashboard / service portal
+|   +--- influxdb/            # Time-series DB (ntopng metrics → Grafana)
 |   +--- it-tools/            # IT utility toolkit
-|   +--- mcp-tools-config/    # MCP tool configuration
-|   +--- ollama/              # Local LLM inference (Ollama)
+|   +--- n8n/                 # Workflow automation (n8n)
+|   +--- ollama/              # Local LLM inference (Ollama, CPU-only)
 |   +--- openresume/          # Resume builder
 |   +--- otspsu/              # PSU OTS application
 |   +--- remotely/            # Remote desktop / support
@@ -50,6 +51,9 @@ ce-stacks/
 |   +--- watchtower/          # Automated image update management
 |   +--- zabbix/              # Infrastructure monitoring
 |   +--- archives/            # Retired stacks (kept for reference)
+|
+|   Native DSM packages (no compose stack needed):
+|     Adminer, MariaDB, PostgreSQL — managed via Synology Package Center
 |
 +--- scripts/                 # Operational scripts
 |   +--- dockhand-sync.sh     # Re-sync dockhand/ -> /volume2/docker/dockhand
@@ -161,30 +165,34 @@ bash /volume2/docker/ce-stacks/scripts/verify-repo-layout.sh
 
 ## Network Subnets
 
-All bridge networks use explicit `/24` subnets to prevent Docker's auto-assigned `/16` ranges from creating collisions.
+All bridge networks use explicit `/24` subnets to prevent Docker's auto-assigned `/16` ranges from creating collisions. The DNS server ACL covers `172.16.0.0/12` to allow all Docker bridge subnets to resolve internal hostnames.
 
 | Stack | Network name | Subnet | Notes |
 |---|---|---|---|
 | *(backbone)* | ce-internal | 172.26.0.0/24 | External; created by `init-nas.sh` |
-| ollama | ollama-net | 172.27.0.0/24 | |
-| databases | db-net | 172.28.0.0/24 | |
+| github-desktop | github-desktop-net | 172.20.0.0/24 | KasmVNC browser container |
+| ollama | ollama-net | 172.27.0.0/24 | CPU-only inference |
 | code-server | code-server-net | 172.28.2.0/24 | |
 | grafana-prom | grafana-net | 172.29.0.0/24 | |
 | grafana-prom | prometheus-net | 172.29.1.0/24 | |
-| otspsu | otspsu-net | 172.31.10.0/24 | RFC1918 /24 next in sequence after zabbix 172.30.0.0/24 |
+| zabbix | zabbix-net | 172.30.0.0/24 | |
+| flowise | flowise-net | 172.30.1.0/24 | LLM workflow builder |
+| n8n | n8n-net | 172.30.2.0/24 | Workflow automation |
+| homepage | homepage-net | 172.30.5.0/24 | Dashboard |
 | dozzle | dozzle-net | 172.31.0.0/24 | |
 | watchtower | watchtower-net | 172.31.1.0/24 | |
-| agents_gateway_data | agents-gateway-net | 172.31.7.0/24 | |
-| mcp-tools-config | mcp-tools-net | 172.31.8.0/24 | |
-| zabbix | zabbix-net | 172.30.0.0/24 | Moved from 172.24 to avoid subnet collision |
+| otspsu | otspsu-net | 172.31.10.0/24 | |
+| *(influxdb)* | ce-internal | 172.26.0.0/24 | Shares backbone; Grafana reaches influxdb:8086 |
 
 The Docker default bridge `172.17.0.0/16` is reserved and must not be re-used.
+
+**Retired stacks**: `databases`, `db-tools`, `agents_gateway_data`, and `mcp-tools-config` have been removed. MariaDB, PostgreSQL, and Adminer run as native DSM packages. Subnets `172.31.7.0/24` and `172.31.8.0/24` are now unallocated and available for new stacks.
 
 ## External vs Internal Networks
 
 **Important**: `ce-internal` is the only external (pre-created) network and must be created manually before importing stacks.
 
-- `ce-internal` (172.26.0.0/24) -- External backbone network shared by: agents_gateway_data, databases, grafana-prom, ollama, synology-api-bridge. Create it once on the NAS using `docker network create` (see Pre-Deployment Setup).
+- `ce-internal` (172.26.0.0/24) -- External backbone network shared by: grafana-prom, influxdb, ollama, synology-api-bridge. Create it once on the NAS using `docker network create` (see Pre-Deployment Setup).
 
 - All other networks listed above are created by their respective stacks at `docker compose up` time (internal to the stack) and do not require manual creation.
 

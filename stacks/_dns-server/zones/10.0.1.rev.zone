@@ -1,0 +1,29 @@
+; Zone: 1.0.10.in-addr.arpa
+; Type: Reverse / Master
+; Managed via: Synology DNS Server UI (http://10.0.1.15:5010)
+; Serial: 2026052201
+;
+; Covers the actual LAN subnet: 10.0.1.0/24
+; In the Synology UI the "Reverse IP" / host field = last octet only:
+;   10.0.1.15  →  host field: 15
+
+$TTL 7200
+$ORIGIN 1.0.10.in-addr.arpa.
+
+@   IN  SOA  otsorundscore.olutechsys.com. admin.olutechsys.com. (
+              2026052201
+              3600
+              900
+              604800
+              300 )
+
+@           IN  NS   otsorundscore.olutechsys.com.
+
+; 10.0.1.15 → NAS
+15          IN  PTR  otsorundscore.olutechsys.com.
+
+; 10.0.1.24 → misfitsds
+24          IN  PTR  misfitsds.olutechsys.com.
+
+; Add other LAN hosts below as needed:
+; 1           IN  PTR  router.olutechsys.com.
