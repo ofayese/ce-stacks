@@ -38,7 +38,7 @@ import { workflow, node, links } from '@n8n-as-code/transformer';
  *   GET  /health
  */
 
-const AGENTDB = { serviceUrl: 'http://localhost:4010' };
+const AGENTDB = { serviceUrl: process.env.AGENTDB_SERVICE_URL || 'http://localhost:4010' };
 
 @workflow({
   name: 'AgentDB Decision Transformer Learning Loop',
@@ -102,13 +102,15 @@ export class AgentdbLearningLoop {
     language: 'javascript',
     runOnceForAllItems: true,
     jsCode: `// ── Hook your real metrics here ────────────────────────────────────
+// Example error rate calculation (uncomment and adapt to your metrics):
 // const errorRate = $json.allItems.filter(i => i.json.status >= 400).length
 //                    / $json.allItems.length;
 // const reward    = errorRate < 0.01 ? 1.0 : errorRate < 0.05 ? 0.5 : -1.0;
 
+// For now, using a simple placeholder - replace with actual KPI
 const today  = new Date().toISOString().slice(0, 10);
-const state  = JSON.stringify({ date: today /* , errorRate */ });
-const reward = 1.0;                                             // TODO: real signal
+const state  = JSON.stringify({ date: today });
+const reward = 0.5; // Neutral placeholder reward
 
 return [{
   json: {
@@ -136,7 +138,7 @@ return [{
   })
   LogExperience = {
     method: 'POST',
-    url:    AGENTDB.serviceUrl + '/experience',
+    url:    `${AGENTDB.serviceUrl}/experience`,
     authentication: 'none',
     sendBody: true,
     contentType: 'json',
@@ -161,7 +163,7 @@ return [{
   })
   TrainModel = {
     method: 'POST',
-    url:    AGENTDB.serviceUrl + '/train',
+    url:    `${AGENTDB.serviceUrl}/train`,
     authentication: 'none',
     sendBody: true,
     contentType: 'json',
@@ -184,13 +186,9 @@ return [{
   })
   GetRecommendation = {
     method: 'GET',
-    url:
-      AGENTDB.serviceUrl
-      + '/recommend?state={{ $("Build Today Payload").item.json.state }}&k=5'
-      + '&domain=daily-workflow-summary',
+    url: `${AGENTDB.serviceUrl}/recommend?state={{ $("Build Today Payload").item.json.state }}&k=5&domain=daily-workflow-summary`,
     authentication: 'none',
     sendQuery: true,
-    queryParameters: { parameters: [] },
     options: [],
   };
 
