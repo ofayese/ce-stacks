@@ -1,0 +1,24 @@
+{
+  "version": 4,
+  "activeEnvironmentId": "mbpron8n",
+  "environmentTargets": [
+    {
+      "id": "managed",
+      "name": "managed",
+      "kind": "managed-instance",
+      "managedInstanceId": "managed-127b6147"
+    }
+  ],
+  "environments": [
+    {
+      "id": "mbpron8n",
+      "name": "mbpron8n",
+      "syncSlug": "mbpron8n",
+      "environmentTargetId": "managed",
+      "projectId": "personal",
+      "projectName": "Personal",
+      "workflowsPath": "workflows/*",
+      "folderSync": true
+    }
+  ]
+}
