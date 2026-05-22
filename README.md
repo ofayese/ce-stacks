@@ -226,8 +226,10 @@ Dockhand lifecycle is managed exclusively by the RC script -- not by a compose s
 
 ## Architecture & Design
 
-- [`solution-architect.md`](./solution-architect.md) -- agent role description used to produce design plans for this repo.
-- [`implementation_plan.md`](./implementation_plan.md) -- current active plan reconciling dockhand path/config drift.
+- [`docs/host-profile-otsorundscore.md`](./docs/host-profile-otsorundscore.md) -- NAS hardware spec, memory budget, and derived resource ceilings.
+- [`stacks/_dns-server/RUNBOOK.md`](./stacks/_dns-server/RUNBOOK.md) -- DNS split-horizon setup, BIND view structure, and validation steps.
+- [`stacks/_haproxy/README.md`](./stacks/_haproxy/README.md) -- HAProxy reverse proxy configuration, cert deployment, and DNS integration.
+- [`docs/archive/`](./docs/archive/) -- superseded plans and audit reports (historical reference only).
 
 ## License
 

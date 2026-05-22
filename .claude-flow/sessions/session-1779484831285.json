@@ -1,0 +1,16 @@
+{
+  "id": "session-1779484831285",
+  "startedAt": "2026-05-22T21:20:31.285Z",
+  "platform": "darwin",
+  "cwd": "/Users/laolufayese/dev/ce-stacks",
+  "context": {},
+  "metrics": {
+    "edits": 0,
+    "commands": 0,
+    "tasks": 0,
+    "errors": 0
+  },
+  "restoredAt": "2026-05-22T21:20:32.210Z",
+  "endedAt": "2026-05-22T21:20:32.565Z",
+  "duration": 1304
+}

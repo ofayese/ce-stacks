@@ -89,15 +89,20 @@ Check the following to ensure all physical LAN clients and internal Docker conta
 ```text
 ✓ LAN
 ✓ Custom  →  172.16.0.0/12
+```
+
+```text
 Settings → Forwarders (Global Fallback):
 10.0.1.1    (Local Router / Gateway)
 1.1.1.1     (Cloudflare Public DNS)
 8.8.8.8     (Google Public DNS)
-5. Tool Execution & Completion Criteria (What "Done" Looks Like)
-The task is only complete when the configuration is verified
-. Use your shell execution tool to run the following validation tests
-. If any test fails, you must patch the failing section and re-test
-.
+```
+
+## 5. Tool Execution & Completion Criteria (What "Done" Looks Like)
+
+The task is only complete when the configuration is verified. Use your shell execution tool to run the following validation tests. If any test fails, you must patch the failing section and re-test.
+
+```bash
 # 1. Verify apex domain routes to NAS, not localhost
 nslookup olutechsys.com 10.0.1.15
 # Expected Address: 10.0.1.15
@@ -113,10 +118,14 @@ nslookup otsorundscore.lan 10.0.1.15
 # 4. Verify reverse IP lookup
 nslookup -type=PTR 10.0.1.15 10.0.1.15
 # Expected Name: otsorundscore.olutechsys.com
-6. External Reference Links
+```
+
+## 6. External Reference Links
+
 If asked to configure the public internet boundary, direct the user to the following official documentation without executing changes:
-Cloudflare DNS Setup (Full Setup): https://developers.cloudflare.com/dns/zone-setups/full-setup/
-Cloudflare Tunnel (Secure Ingress): https://developers.cloudflare.com/tunnel/setup/
+
+- Cloudflare DNS Setup (Full Setup): https://developers.cloudflare.com/dns/zone-setups/full-setup/
+- Cloudflare Tunnel (Secure Ingress): https://developers.cloudflare.com/tunnel/setup/
 
 ---
 

@@ -1,2 +1,4 @@
 # Operator TLS material (never commit)
 certs/*.pem
+# DSM configuration export dump (binary/large, not source of truth — use haproxy.cfg)
+haproxy_configuration.txt

@@ -11,7 +11,7 @@
 | File / Dir | Purpose |
 |---|---|
 | `RUNBOOK.md` | Step-by-step UI walkthrough for configuring all zones from scratch |
-| `named.conf.additions` | BIND config snippet to paste into `/var/packages/DNSServer/target/etc/named.conf` |
+| `named.conf.additions` | Reference doc for BIND config and file paths on this NAS |
 | `zones/` | Reference copies of all zone files (single source of truth for zone content) |
 
 The files in `zones/` are **reference copies** — the live zone data lives inside the DSM DNS Server package at `/var/packages/DNSServer/target/named/`. Keep these files in sync when you make UI changes.
@@ -56,20 +56,25 @@ for the public internet; the NAS DNS is internal only, directed via DHCP.
 ## DSM package upgrade warning
 
 Synology package updates for DNS Server **may overwrite**
-`/var/packages/DNSServer/target/etc/named.conf`, resetting any manual BIND
-configuration added from `named.conf.additions`. After every DSM DNS Server
-package update:
+`/var/packages/DNSServer/target/named/etc/zone/zone.load.conf`, resetting view
+and zone declarations. After every DSM DNS Server package update:
 
-1. Check whether `named.conf` was reset:
+1. Check whether the views and zone includes survived:
    ```bash
-   grep "trusted" /var/packages/DNSServer/target/etc/named.conf
+   sudo grep -c "olutechsys.com" \
+     /var/packages/DNSServer/target/named/etc/zone/zone.load.conf
+   # Expected: 3 (one per view: internal, external, wireguard)
    ```
-2. If missing, re-apply the additions:
+2. If reset, re-apply the zone includes to all three views (see `RUNBOOK.md`
+   **BIND view structure** section) and reload:
    ```bash
-   # Follow instructions at top of stacks/_dns-server/named.conf.additions
-   named-checkconf /var/packages/DNSServer/target/etc/named.conf
-   synoservicectl --reload named
+   sudo kill -HUP $(pgrep named)
    ```
+
+> **DS723+ / DSM 7.3 note:** `synoservicectl` and `named-checkconf` /
+> `named-checkzone` do **not** exist on this NAS. The only safe reload
+> method is `sudo kill -HUP $(pgrep named)`. The correct named.conf path
+> is `/var/packages/DNSServer/target/named/etc/named.conf` (not `target/etc/`).
 
 ---
 
