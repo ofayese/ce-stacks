@@ -24,10 +24,6 @@ otsvmm.olutechsys.com	otsvmm-be
 otsvmm.olutech.systems	otsvmm-be
 
 # Docker service entries (auto-generated)
-adminer.olutechsys.com	adminer-be
-adminer.olutech.systems	adminer-be
-adminer.otsorundscore.olutechsys.com	adminer-be
-adminer.otsorundscore.olutech.systems	adminer-be
 code.olutechsys.com	codeserver-be
 code.olutech.systems	codeserver-be
 code.otsorundscore.olutechsys.com	codeserver-be

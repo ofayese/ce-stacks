@@ -22,7 +22,7 @@ HAProxy is installed as a **bare-metal service** on the Synology NAS (not contai
 **Key Sections**:
 
 1. **Global settings** -- timeouts, logging, SSL defaults
-2. **Frontend sections** -- listen on port 8280 (HTTP redirect) / 8281 (HTTPS) / 8282 (stats)
+2. **Frontend sections** -- `8280` HTTPS ingress (public gateway) / `8281` stats UI (plain HTTP)
 3. **Backend sections** -- upstream targets (container IPs/ports); routing via `maps/host.map`
 
 ### Typical Backend Entry
@@ -41,21 +41,19 @@ backend services
 
 **Certificates** deployed by `stacks/acme-sh/scripts/deploy_certs.sh` to `/var/packages/haproxy/var/crt/` (PEM bundles = fullchain + key, one file per cert profile).
 
-**Binding HTTPS**:
+**Binding HTTPS** (port 8280 — HTTPS ingress):
 
 ```
 frontend https-in
-    bind 10.0.1.15:8281 ssl crt /var/packages/haproxy/var/crt/ alpn h2,http/1.1
+    bind 10.0.1.15:8280 ssl crt /volume2/certs/acme/otsorundscore/haproxy.pem alpn h2,http/1.1
     mode http
 ```
 
-**Force HTTP -> HTTPS**:
+> Port **8280** is HTTPS. Port **8281** is the plain-HTTP stats/mgmt UI (SynoCommunity
+> package hardcodes 8281 — do not swap these).
 
-```
-frontend http-redirect
-    bind 10.0.1.15:8280
-    redirect scheme https code 301
-```
+There is no separate HTTP→HTTPS redirect frontend. HTTP is not exposed on port 8280;
+the bind is SSL-only.
 
 ---
 
@@ -84,7 +82,7 @@ frontend http-redirect
 7. **Verify TLS** from SSH:
 
    ```bash
-   CONNECT_HOST=10.0.1.15 CONNECT_PORT=8281 \
+   CONNECT_HOST=10.0.1.15 CONNECT_PORT=8280 \
      SNI=psu.olutechsys.com MIN_VALID_DAYS=21 \
      bash /volume2/docker/ce-stacks/stacks/acme-sh/scripts/verify_serving.sh
    ```
@@ -147,7 +145,7 @@ When `acme-sh` renews certificates:
 3. **Verify**:
 
    ```bash
-   CONNECT_HOST=10.0.1.15 CONNECT_PORT=8281 \
+   CONNECT_HOST=10.0.1.15 CONNECT_PORT=8280 \
      SNI=olutechsys.com MIN_VALID_DAYS=21 \
      bash /volume2/docker/ce-stacks/stacks/acme-sh/scripts/verify_serving.sh
    ```
@@ -258,13 +256,35 @@ After Synology App Store updates HAProxy, the live config may be reset to the st
 
 ---
 
+## DNS / Split-Horizon Integration
+
+HAProxy relies on internal split-horizon DNS to intercept `*.olutechsys.com` before
+the request leaves the LAN:
+
+- **BIND on 10.0.1.15** serves a wildcard A record: `*.olutechsys.com → 10.0.1.15`
+- LAN clients (10.0.0.0/22) and Docker containers (172.16.0.0/12) hit the `"internal"`
+  and `"wireguard"` BIND views respectively — both see `10.0.1.15` for all subdomains
+- Traffic arrives at HAProxy on port 8280 (HTTPS); `host.map` routes to the right backend
+- Cloudflare remains the public authoritative NS; external clients see Cloudflare proxy IPs
+
+**If a new subdomain doesn't resolve internally**, check:
+1. `nslookup <subdomain>.olutechsys.com 10.0.1.15` — should return `10.0.1.15`
+2. If not, verify the wildcard `*` A record exists in the `olutechsys.com` zone in Synology DNS Server UI
+3. Also verify the zone include is present in both `"internal"` and `"wireguard"` views in
+   `/var/packages/DNSServer/target/named/etc/zone/zone.load.conf`
+
+See `stacks/_dns-server/RUNBOOK.md` for full DNS troubleshooting steps.
+
+---
+
 ## Related Documentation
 
 - **ce-stacks README.md** -> Network subnets, port bindings
+- **stacks/_dns-server/RUNBOOK.md** -> DNS split-horizon setup, BIND view structure
 - **acme-sh stack** -> Certificate generation, renewal, and deployment (`deploy_certs.sh`)
 - **Homepage stack** -> Service portal routing examples
 - **`maps/host.map`** -> Hostname -> backend routing table
 
 ---
 
-**Last Updated**: 2026-05-16
+**Last Updated**: 2026-05-22
