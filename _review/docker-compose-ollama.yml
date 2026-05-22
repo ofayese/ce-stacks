@@ -1,0 +1,81 @@
+name: ollama
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama-server
+    ports:
+      - "11434:11434"
+    environment:
+      - OLLAMA_HOST=0.0.0.0:11434
+    volumes:
+      - ollama_data:/root/.ollama
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - ollama-network
+
+  model-puller:
+    image: ollama/ollama:latest
+    container_name: ollama-model-puller
+    # Override the ollama entrypoint so we can run a shell script
+    entrypoint: ["/bin/sh", "-c"]
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    command:
+      - |
+        echo "Pulling models (optimised for M4 Max 64GB)..."
+
+        # Embeddings — Qwen3 8B for best RAG quality at 64GB
+        ollama pull qwen3-embedding:8b && echo "✓ qwen3-embedding:8b" || echo "✗ qwen3-embedding:8b failed" &
+        ollama pull nomic-embed-text && echo "✓ nomic-embed-text" || echo "✗ nomic-embed-text failed" &
+
+        # Fast / lightweight — still useful for low-latency tool calls
+        ollama pull qwen3:4b && echo "✓ qwen3:4b" || echo "✗ qwen3:4b failed" &
+        ollama pull phi4-mini && echo "✓ phi4-mini" || echo "✗ phi4-mini failed" &
+        ollama pull mistral && echo "✓ mistral" || echo "✗ mistral failed" &
+
+        # General — 64GB allows 14B+ as everyday models
+        ollama pull qwen3:14b && echo "✓ qwen3:14b" || echo "✗ qwen3:14b failed" &
+        ollama pull qwen3.5:35b && echo "✓ qwen3.5:35b" || echo "✗ qwen3.5:35b failed" &
+        ollama pull gemma3:27b && echo "✓ gemma3:27b" || echo "✗ gemma3:27b failed" &
+
+        # Coding — 30B coding model now viable
+        ollama pull qwen3-coder:30b && echo "✓ qwen3-coder:30b" || echo "✗ qwen3-coder:30b failed" &
+        ollama pull codegemma:7b && echo "✓ codegemma:7b" || echo "✗ codegemma:7b failed" &
+
+        # Reasoning — 14B for deeper analysis
+        ollama pull deepseek-r1:14b && echo "✓ deepseek-r1:14b" || echo "✗ deepseek-r1:14b failed" &
+
+        wait
+        echo "Model pulling complete!"
+        ollama list
+    restart: "no"
+    networks:
+      - ollama-network
+
+volumes:
+  ollama_data:
+    driver: local
+
+networks:
+  ollama-network:
+    driver: bridge

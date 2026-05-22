@@ -1,3 +1,5 @@
+name: zabbix
+
 services:
   zabbix-server:
     container_name: Zabbix-Server
@@ -7,14 +9,16 @@ services:
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped
-    network_mode: host
+    networks:
+      - zabbix-net
     ports:
       - "10.0.1.15:${ZABBIX_SERVER_PORT:-10051}:10051"
     environment:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
       - TZ=${TZ:-America/New_York}
-      - DB_SERVER_HOST=127.0.0.1
+      # Bridge mode: DB is on NAS host — must use LAN IP, not 127.0.0.1
+      - DB_SERVER_HOST=10.0.1.15
       - DB_SERVER_PORT=3306
       - MYSQL_DATABASE=${MYSQL_DATABASE:-zabbix}
       - MYSQL_USER=${MYSQL_USER:-zabbix}
@@ -23,9 +27,9 @@ services:
     volumes:
       - ${STACK_ROOT}/zabbix/data:/var/lib/zabbix
     healthcheck:
-      # zabbix_server -R diaginfo fails in container context because the rtc
-      # Unix socket path doesn't match. Use port check instead: port 10051
-      # is only open once the server has fully started and accepted DB schema.
+      # zabbix_server -R diaginfo fails in container context (rtc Unix socket
+      # path mismatch). Port check is reliable: 10051 opens only after DB
+      # schema is accepted and the server is fully ready.
       test: ["CMD-SHELL", "nc -z 127.0.0.1 10051 || exit 1"]
       interval: 30s
       timeout: 10s
@@ -47,7 +51,8 @@ services:
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped
-    network_mode: host
+    networks:
+      - zabbix-net
     depends_on:
       zabbix-server:
         condition: service_healthy
@@ -57,13 +62,15 @@ services:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
       - TZ=${TZ:-America/New_York}
-      - DB_SERVER_HOST=127.0.0.1
+      # Bridge mode: DB on NAS host
+      - DB_SERVER_HOST=10.0.1.15
       - DB_SERVER_PORT=3306
       - MYSQL_DATABASE=${MYSQL_DATABASE:-zabbix}
       - MYSQL_USER=${MYSQL_USER:-zabbix}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - ZBX_SERVER_HOST=127.0.0.1
+      # Bridge mode: reach server by container name
+      - ZBX_SERVER_HOST=zabbix-server
       - ZBX_SERVER_PORT=${ZABBIX_SERVER_PORT:-10051}
       - PHP_TZ=${TZ:-America/New_York}
     healthcheck:
@@ -93,7 +100,8 @@ services:
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped
-    network_mode: host
+    networks:
+      - zabbix-net
     depends_on:
       zabbix-server:
         condition: service_healthy
@@ -102,7 +110,8 @@ services:
       - PGID=${PGID:-0}
       - TZ=${TZ:-America/New_York}
       - ZBX_HOSTNAME=${ZBX_HOSTNAME:-zabbix-agent}
-      - ZBX_SERVER_HOST=127.0.0.1
+      # Bridge mode: reach server by container name
+      - ZBX_SERVER_HOST=zabbix-server
       - ZBX_SERVER_PORT=${ZABBIX_SERVER_PORT:-10051}
       - ZBX_ACTIVE_ALLOW=true
       - ZBX_PASSIVE_ALLOW=true
@@ -122,3 +131,12 @@ services:
         max-file: "3"
     labels:
       - com.centurylinklabs.watchtower.enable=false
+
+networks:
+  zabbix-net:
+    name: zabbix-net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+          gateway: 172.30.0.1
