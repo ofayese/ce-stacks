@@ -30,6 +30,12 @@ services:
     volumes:
       # linuxserver unified config dir - replaces separate .config + .local/share mounts
       - ${STACK_ROOT}/code-server/config:/config:rw
+      # ce-stacks repo — read/write access inside the browser IDE and any
+      # connected desktop editor (VS Code code-server extension, Cursor via SSH).
+      # Open via: File > Open Folder > /config/workspace/ce-stacks
+      # glibc issues on the Synology host OS are bypassed entirely — this container
+      # provides an isolated Ubuntu environment with up-to-date system libraries.
+      - /volume2/docker/ce-stacks:/config/workspace/ce-stacks:rw
       # Removed bash guard syntax to allow Dockhand to inject these bindings
       - ${CODE_SERVER_HOST_DOCKER_BIND}:/config/workspace/docker:rw
       - ${CODE_SERVER_HOST_HOME_BIND}:/config/workspace/home:rw
@@ -45,6 +51,8 @@ services:
       - PASSWORD=${CODE_SERVER_PASSWORD}
       - SUDO_PASSWORD=${SUDO_PASSWORD}
       - PROXY_DOMAIN=${PROXY_DOMAIN}
+      # Opens ce-stacks repo by default on first launch
+      - DEFAULT_WORKSPACE=${DEFAULT_WORKSPACE:-/config/workspace/ce-stacks}
     labels:
       - haproxy.enable=true
       - haproxy.host=code.olutechsys.com,code.olutech.systems,code.otsorundscore.olutechsys.com,code.otsorundscore.olutech.systems
@@ -52,6 +60,15 @@ services:
       - haproxy.backend=codeserver-be
     networks:
       - code-server-net
+      # AI service networks — direct container-to-container access from the
+      # IDE terminal and extensions (Continue, MCP, etc.) without touching
+      # the LAN IP or HAProxy:
+      #   Ollama API  →  http://ollama:11434
+      #   Flowise     →  http://flowise:3000
+      #   n8n         →  http://n8n:5678
+      - ollama-net
+      - flowise-net
+      - n8n-net
 
   db:
     image: mysql:8.3
@@ -176,3 +193,11 @@ networks:
       config:
         - subnet: 172.28.2.0/24
           gateway: 172.28.2.1
+  # External networks — created by their respective stacks.
+  # code-server joins them so the IDE can reach AI services directly.
+  ollama-net:
+    external: true
+  flowise-net:
+    external: true
+  n8n-net:
+    external: true

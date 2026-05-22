@@ -1,0 +1,102 @@
+# WireGuard VPN alert rules -- ce-stacks Synology DS723+
+# Loaded by Prometheus via rule_files in prom.yml.
+# Source: docs/wireguard-vpn.md § Alert thresholds
+#
+# Exporter: mindflavor/prometheus-wireguard-exporter:3.6.6
+#   Container: Prometheus-WireGuard-Exporter
+#   Port:      9586 (network_mode: host, bound to 127.0.0.1)
+#   Interface: wg0 (10.200.0.0/24)
+#
+# Threshold rationale:
+#   WireGuard rekeys every 180s on an active session.
+#   600s = 10 min allows mobile peers on aggressive NAT to miss two rekey
+#   cycles before alerting, reducing noise from cellular hand-offs without
+#   masking genuine outages.
+
+groups:
+  - name: wireguard.peers
+    interval: 60s
+    rules:
+
+      # -----------------------------------------------------------------
+      # WireGuardPeerStale
+      # Fires when a peer has connected before (last_handshake > 0) but
+      # has not rekeyed in the last 10 minutes.
+      # -----------------------------------------------------------------
+      - alert: WireGuardPeerStale
+        expr: >
+          (
+            time() - wireguard_latest_handshake_seconds{interface="wg0"}
+          ) > 600
+          and
+          wireguard_latest_handshake_seconds{interface="wg0"} > 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "WireGuard peer {{ $labels.public_key }} stale"
+          description: >-
+            Peer {{ $labels.public_key }} on interface {{ $labels.interface }}
+            last handshake was {{ $value | humanizeDuration }} ago.
+            Expected rekey every ~180s on active sessions.
+            Peer may be offline or behind aggressive NAT.
+
+      # -----------------------------------------------------------------
+      # WireGuardPeerNeverConnected
+      # Fires when a peer is configured in wg0.conf but has never completed
+      # a handshake. last_handshake == 0 means the peer key is registered
+      # but no traffic has arrived.
+      # -----------------------------------------------------------------
+      - alert: WireGuardPeerNeverConnected
+        expr: wireguard_latest_handshake_seconds{interface="wg0"} == 0
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "WireGuard peer {{ $labels.public_key }} never connected"
+          description: >-
+            Peer {{ $labels.public_key }} is configured in wg0.conf but has
+            never completed a handshake. Check that the client has the correct
+            server endpoint ({{ $labels.interface }}) and pre-shared key.
+
+  - name: wireguard.exporter
+    interval: 30s
+    rules:
+
+      # -----------------------------------------------------------------
+      # WireGuardTunnelDown
+      # Fires when the WireGuard exporter itself is unreachable — either
+      # the container crashed or the wg0 interface is down.
+      # -----------------------------------------------------------------
+      - alert: WireGuardTunnelDown
+        expr: up{job="wireguard"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "WireGuard exporter unreachable — tunnel may be down"
+          description: >-
+            Prometheus cannot scrape the WireGuard exporter on 127.0.0.1:9586.
+            The Prometheus-WireGuard-Exporter container may have crashed, or
+            the wg0 interface may be down.
+            Run: `docker logs Prometheus-WireGuard-Exporter --tail 20`
+            Run: `wg show`
+
+      # -----------------------------------------------------------------
+      # WireGuardNoPeersConfigured
+      # Fires when the exporter is up but reports zero peer metrics.
+      # Indicates wg0.conf has no [Peer] sections, or wg0 was reloaded
+      # and lost its peer configuration.
+      # -----------------------------------------------------------------
+      - alert: WireGuardNoPeersConfigured
+        expr: count(wireguard_latest_handshake_seconds{interface="wg0"}) == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "WireGuard interface wg0 has no configured peers"
+          description: >-
+            The WireGuard exporter is running but reports zero peers on
+            interface wg0. The wg0.conf may have lost its [Peer] sections
+            after a service restart.
+            Run: `wg show` and confirm peers are present.

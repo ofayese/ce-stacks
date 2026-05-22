@@ -109,7 +109,7 @@ services:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
       - TZ=${TZ:-America/New_York}
-      - ZBX_HOSTNAME=${ZBX_HOSTNAME:-zabbix-agent}
+      - ZBX_HOSTNAME=${ZBX_HOSTNAME:-zabbixagt2}
       # Bridge mode: reach server by container name
       - ZBX_SERVER_HOST=zabbix-server
       - ZBX_SERVER_PORT=${ZABBIX_SERVER_PORT:-10051}
