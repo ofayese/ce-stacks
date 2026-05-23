@@ -171,3 +171,42 @@ needed. Removed the entry and retired the subnet allocation.
 DNS export (loopback zone, `_msdcs` PTR records, integer serial). It is NOT
 part of the current DNS architecture. Do not apply it. See
 `docs/otsorundscore_zonefile/WARNING_LEGACY_DO_NOT_APPLY.md`.
+
+[2026-05-22] Synology MariaDB 10 DSM package: the system config at
+`/usr/local/mariadb10/etc/mysql/my.cnf` is read-only ("DO NOT EDIT"). Custom
+overrides go in `/var/packages/MariaDB10/etc/my.cnf` (create if absent; included
+via `!include` at the bottom of the system file). Restart with
+`sudo synopkg stop MariaDB10 && sudo synopkg start MariaDB10`. Verified
+`max_allowed_packet=128M` and `innodb_log_file_size=256M` survive restarts.
+
+[2026-05-22] Zabbix 7.4.x seed data contains large image/icon INSERTs that
+exceed the default 1 MB `max_allowed_packet`. The entrypoint sentinel checks for
+the `dbversion` table — if it exists (even partially), schema import is skipped
+entirely and Zabbix crashes on empty `users`. Always: (1) stop the container,
+(2) drop + recreate the DB, (3) verify 0 tables before starting. Use
+`--max_allowed_packet=128M` on the mysql client for the data INSERT pass.
+Root cause fix: permanent server-side `max_allowed_packet=128M` in
+`/var/packages/MariaDB10/etc/my.cnf` covers all stacks (zabbix, flowise, n8n,
+grafana-prom) without per-command flags.
+
+[2026-05-22] NAS hardware facts for stack planning: DS723+ is **aarch64**
+(AMD Ryzen R1600 64-bit ARM-compatible). Official PyTorch Docker images are
+x86_64 only. For PyTorch on this NAS, use `arm64v8/python:3.11-slim` base +
+`pip install torch --index-url https://download.pytorch.org/whl/cpu`.
+Ruby 3.0.2 (aarch64) and Redis are native DSM packages — both can be used
+without Docker containers.
+
+[2026-05-22] `172.16.0.0/12` covers `172.16.0.0–172.31.255.255`. Any new Docker
+bridge subnet at `172.32.x.x` or above falls OUTSIDE this range and will be
+silently blocked from the internal DNS. Allocate new subnets within
+`172.16–172.31.x.x` only, or expand the ACL to `/11` (covers up to 172.47.x.x).
+
+### Native DSM Packages (no Docker containers needed)
+
+[2026-05-22] Confirmed native on the NAS — do not create Docker sidecars for:
+  - MariaDB 10.11 (package: `MariaDB10-10.11.11-1551`)
+  - phpMyAdmin 5.2.2
+  - Ruby 3.0.2 (aarch64)
+  - Redis (installed, version TBC)
+  Use TCP `127.0.0.1:3306` for MariaDB from containers; Unix socket
+  `/run/mysqld/mysqld10.sock` works only for containers that mount it.
