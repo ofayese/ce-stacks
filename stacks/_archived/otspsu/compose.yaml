@@ -31,7 +31,7 @@ services:
       # Paths inside container for NAS scripts + compose bind roots
       - NAS_REPO_ROOT=${NAS_REPO_ROOT:-/nas-repo}
       - PSU_STACK_ROOT=${PSU_STACK_ROOT:-/nas-repo/stacks}
-      - STACK_MANAGER_URL=${STACK_MANAGER_URL:-http://10.0.1.15:3866}
+      - STACK_MANAGER_URL=${STACK_MANAGER_URL:-http://10.0.1.15:3000}
       - STACK_MANAGER_USERNAME=${STACK_MANAGER_USERNAME:-}
       - STACK_MANAGER_PASSWORD=${STACK_MANAGER_PASSWORD:-}
       - NAS_PULL_APP_TOKEN=${NAS_PULL_APP_TOKEN:-}

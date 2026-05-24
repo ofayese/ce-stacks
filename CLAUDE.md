@@ -210,3 +210,18 @@ silently blocked from the internal DNS. Allocate new subnets within
   - Redis (installed, version TBC)
   Use TCP `127.0.0.1:3306` for MariaDB from containers; Unix socket
   `/run/mysqld/mysqld10.sock` works only for containers that mount it.
+
+[2026-05-23] Native DSM Redis config path: `/var/packages/redis/var/redis.conf`.
+Reference config is in `stacks/_redis/redis.conf`. Two critical non-default settings:
+  1. `protected-mode no` — `bind 0.0.0.0` + `nopass` default user + `protected-mode yes`
+     (the Redis default) silently blocks ALL non-loopback clients including every Docker
+     bridge container at `172.x.x.x`. Must be set to `no` on a private LAN.
+  2. `maxmemory 512mb` + `maxmemory-policy allkeys-lru` — prevents unbounded growth
+     on 32 GB NAS where Redis is used as a cache.
+  Restart: `sudo synopkg stop redis && sudo synopkg start redis`
+
+[2026-05-23] Prometheus cannot scrape Redis directly on port 6379 — it speaks HTTP
+and Redis speaks its own wire protocol. Always use `redis_exporter` (oliver006/redis_exporter,
+port 9121) as a sidecar in the grafana-prom stack. Pointing prom.yml at :6379 directly
+logs connection errors and produces no metrics. The `searxng` stack runs its own Valkey
+sidecar and does NOT use the native DSM Redis.

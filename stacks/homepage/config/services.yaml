@@ -21,6 +21,16 @@
         href: https://sso.olutechsys.com/
         description: Single Sign-On Portal
         siteMonitor: https://10.0.1.15:8843/
+    - MinIO:
+        icon: minio.png
+        href: https://minio.olutechsys.com/
+        description: S3-compatible object storage console
+        siteMonitor: http://10.0.1.15:9001/minio/health/live
+    - SaltGUI:
+        icon: salt.png
+        href: https://saltgui.olutechsys.com/
+        description: Salt-master web UI
+        siteMonitor: http://10.0.1.15:8282/
 
 - Automation & NOC:
     - n8n:
@@ -37,13 +47,11 @@
         server: my-docker
         container: flowise
         siteMonitor: http://10.0.1.15:8459/
-    - PowerShell Universal:
-        icon: powershell.png
-        href: https://psu.olutechsys.com/
-        description: Automation Platform
-        server: my-docker
-        container: psu
-        siteMonitor: http://10.0.1.15:5570/
+    - Gotify:
+        icon: gotify.png
+        href: https://gotify.olutechsys.com/
+        description: Self-hosted push notification server
+        siteMonitor: http://10.0.1.15:8035/health
 
 - Monitoring & Observability:
     - Grafana:
@@ -65,6 +73,16 @@
         server: my-docker
         container: Zabbix-Web
         siteMonitor: http://10.0.1.15:8532/ping
+    - Uptime Kuma:
+        icon: uptime-kuma.png
+        href: https://uptime.olutechsys.com/
+        description: Self-hosted uptime monitoring
+        siteMonitor: http://10.0.1.15:3001/
+    - ntopng:
+        icon: ntopng.png
+        href: https://ntopng.olutechsys.com/
+        description: Network traffic analysis
+        siteMonitor: http://10.0.1.15:3000/
     - Dozzle:
         icon: dozzle.png
         href: https://dozzle.olutechsys.com/
@@ -99,9 +117,10 @@
         description: Collection of handy tools
         server: my-docker
         container: ittools
-    - Adminer:
-        icon: database.png
-        href: https://adminer.olutechsys.com/
-        description: Database management
+    - phpMyAdmin:
+        icon: phpmyadmin.png
+        href: https://pma.olutechsys.com/
+        description: MariaDB web UI (native DSM package)
         server: my-docker
-        container: adminer
+        container: phpmyadmin
+        siteMonitor: http://10.0.1.15:8379/

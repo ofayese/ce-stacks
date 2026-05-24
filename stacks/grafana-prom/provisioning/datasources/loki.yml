@@ -1,0 +1,15 @@
+# Grafana datasource provisioning — Loki
+# Requires loki-alloy stack to be running (stacks/loki-alloy/compose.yaml)
+# Loki container joins ce-internal, so prometheus-server can reach it by hostname.
+apiVersion: 1
+
+datasources:
+  - name: Loki
+    type: loki
+    uid: loki-ce
+    url: http://loki:3100
+    access: proxy
+    isDefault: false
+    editable: false
+    jsonData:
+      maxLines: 1000

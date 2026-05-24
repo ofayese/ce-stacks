@@ -1,0 +1,67 @@
+name: pytorch
+
+# Architecture note: DS723+ is aarch64 (AMD Ryzen R1600).
+# Official pytorch/pytorch images are x86_64 only.
+# This stack uses arm64v8/python:3.11-slim + pip install for aarch64 compatibility.
+# Check ghcr.io/pytorch/pytorch for native ARM builds at deploy time as an alternative.
+
+services:
+  jupyter:
+    image: arm64v8/python:3.11-slim
+    container_name: PyTorch-Jupyter
+    hostname: pytorch-jupyter
+    restart: unless-stopped
+    mem_limit: 4g
+    cpu_shares: 1024
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - pytorch-net
+    ports:
+      - "${NAS_IP:-10.0.1.15}:8897:8888"
+    volumes:
+      - ${STACK_ROOT}/pytorch/notebooks:/notebooks:rw
+      - ${STACK_ROOT}/pytorch/cache:/root/.cache:rw
+    environment:
+      - JUPYTER_TOKEN=${JUPYTER_TOKEN}
+    # pip install on first start may take several minutes on aarch64.
+    # Cached to /root/.cache so subsequent restarts skip the download.
+    command: >
+      bash -c "
+        pip install --quiet --no-cache-dir
+          torch torchvision torchaudio
+          --index-url https://download.pytorch.org/whl/cpu &&
+        pip install --quiet --no-cache-dir jupyterlab &&
+        jupyter lab
+          --ip=0.0.0.0
+          --port=8888
+          --no-browser
+          --notebook-dir=/notebooks
+          --ServerApp.token=$${JUPYTER_TOKEN}
+      "
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8888/api || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 300s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    labels:
+      - com.centurylinklabs.watchtower.enable=false
+      - haproxy.enable=true
+      - haproxy.host=jupyter.olutechsys.com
+      - haproxy.port=8897
+      - haproxy.backend=jupyter-be
+
+networks:
+  pytorch-net:
+    name: pytorch-net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.1.0/24
+          gateway: 172.28.1.1

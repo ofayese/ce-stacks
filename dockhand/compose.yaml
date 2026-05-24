@@ -3,42 +3,52 @@
 # `dockhand/scripts/dockhand-start.sh` (installed at /usr/local/etc/rc.d/dockhand.sh).
 # Keep this file in sync with the RC script's `docker run` arguments.
 
+name: dockhand
+
 services:
   dockhand:
     container_name: Dockhand
-    image: fnsys/dockhand:latest
-    restart: unless-stopped
+    # PINNED: fnsys only publishes 'latest'. Pin by semver to prevent surprise
+    # upgrades. Update manually after verifying the new version is stable:
+    #   docker pull fnsys/dockhand:latest && docker compose up -d
+    image: fnsys/dockhand:v1.0.29
+    mem_limit: 256m
+    cpu_shares: 256
     security_opt:
       - no-new-privileges:true
+    restart: unless-stopped
+    user: "0:0"
     logging:
       driver: json-file
       options:
-        max-size: "10m"
+        max-size: 10m
         max-file: "3"
-    mem_limit: 1g
-    cpu_shares: 512
     ports:
-      - 10.0.1.15:3866:3000
+      - "10.0.1.15:3866:3000"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock:ro
       - ${DOCKHAND_DATA:-/volume2/docker/dockhand}:/app/data:rw
-      - ${STACK_ROOT:-/volume2/docker/ce-stacks/stacks}:/app/stacks:rw
+      - ${STACK_ROOT:-/volume2/docker/ce-stacks/stacks}:/app/stacks:ro
     environment:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
+      - TZ=${TZ:-America/New_York}
+      - DATA_DIR=/app/data
       - SKIP_DF_COLLECTION=true
-      - TZ=America/New_York
+      - DOCKER_API_VERSION=${DOCKER_API_VERSION:-1.43}
     healthcheck:
-      test: ["CMD-SHELL", "grep -q ':0BB8' /proc/net/tcp /proc/net/tcp6 2>/dev/null"]
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:3000/ || exit 1"]
       interval: 30s
       timeout: 5s
-      retries: 5
-      start_period: 120s
+      retries: 3
+      start_period: 20s
     labels:
-      # fnsys/dockhand only publishes 'latest' - disable Watchtower to prevent silent
-      # surprise upgrades. Update manually: docker pull fnsys/dockhand:latest && docker compose up -d
-      # TODO: pin by digest once operator has verified the running image is stable.
       - com.centurylinklabs.watchtower.enable=false
+      - dockhand.url=http://10.0.1.15:3866
+      - haproxy.enable=true
+      - haproxy.host=dockhand.olutechsys.com,dockhand.olutech.systems
+      - haproxy.port=3866
+      - haproxy.backend=dockhand-be
     networks:
       - ce-internal
 

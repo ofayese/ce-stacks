@@ -1,0 +1,47 @@
+name: pyroscope
+
+services:
+  pyroscope:
+    image: grafana/pyroscope:1.13.0
+    container_name: Pyroscope
+    hostname: pyroscope
+    restart: unless-stopped
+    mem_limit: 512m
+    cpu_shares: 512
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - pyroscope-net
+      - ce-internal
+    ports:
+      - "${NAS_IP:-10.0.1.15}:4040:4040"
+    volumes:
+      - ${STACK_ROOT}/pyroscope/data:/data:rw
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:4040/ready || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    labels:
+      - com.centurylinklabs.watchtower.enable=false
+      - haproxy.enable=true
+      - haproxy.host=pyroscope.olutechsys.com
+      - haproxy.port=4040
+      - haproxy.backend=pyroscope-be
+
+networks:
+  pyroscope-net:
+    name: pyroscope-net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/24
+          gateway: 172.28.0.1
+  ce-internal:
+    external: true

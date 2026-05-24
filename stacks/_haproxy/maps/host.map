@@ -22,6 +22,14 @@ otspht.olutechsys.com	otspht-be
 otspht.olutech.systems	otspht-be
 otsvmm.olutechsys.com	otsvmm-be
 otsvmm.olutech.systems	otsvmm-be
+gotify.olutechsys.com	gotify-be
+gotify.olutech.systems	gotify-be
+uptime.olutechsys.com	uptime-kuma-be
+uptime.olutech.systems	uptime-kuma-be
+minio.olutechsys.com	minio-console-be
+minio.olutech.systems	minio-console-be
+s3.olutechsys.com	minio-api-be
+s3.olutech.systems	minio-api-be
 
 # Docker service entries (auto-generated)
 code.olutechsys.com	codeserver-be
@@ -62,8 +70,6 @@ pma.olutechsys.com	phpmyadmin-be
 pma.olutech.systems	phpmyadmin-be
 pma.otsorundscore.olutechsys.com	phpmyadmin-be
 pma.otsorundscore.olutech.systems	phpmyadmin-be
-psu.olutechsys.com	psu-be
-psu.olutech.systems	psu-be
 remotely.olutechsys.com	remotely-be
 remotely.olutech.systems	remotely-be
 search.olutechsys.com	searxng-be

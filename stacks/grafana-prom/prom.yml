@@ -54,24 +54,18 @@ scrape_configs:
       - targets: ["10.0.1.15:18787"]
 
   - job_name: "redis"
+    # Scrapes redis_exporter (port 9121), NOT Redis directly (port 6379).
+    # Prometheus speaks HTTP; pointing it at the Redis wire protocol would fail.
     scrape_interval: 30s
     static_configs:
-      - targets: ["10.0.1.15:6379"]
+      - targets: ["prometheus-redis:9121"]
 
   - job_name: "memcached"
+    # Scrapes memcached_exporter (port 9150), NOT Memcached directly (port 11211).
+    # Prometheus speaks HTTP; pointing it at the Memcached binary protocol would fail.
     scrape_interval: 30s
     static_configs:
-      - targets: ["10.0.1.15:11211"]
-
-  - job_name: "zabbix-agent"
-    scrape_interval: 30s
-    static_configs:
-      - targets: ["10.0.1.15:10050"]
-
-  - job_name: "zabbix-server-tcp"
-    scrape_interval: 30s
-    static_configs:
-      - targets: ["10.0.1.15:10051"]
+      - targets: ["prometheus-memcached:9150"]
 
   - job_name: "wireguard"
     scrape_interval: 30s

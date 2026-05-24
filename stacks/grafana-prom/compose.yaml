@@ -38,18 +38,17 @@ services:
     volumes:
       - ${STACK_ROOT}/grafana-prom/data/grafana:/var/lib/grafana:rw
       - ${STACK_ROOT}/grafana-prom/provisioning:/etc/grafana/provisioning:ro
-      # MariaDB Unix socket — avoids TCP/firewall issues entirely
-      - /run/mysqld/mysqld10.sock:/run/mysqld/mysqld.sock:ro
       - ${STACK_ROOT}/grafana-prom/secrets/influxdb_grafana_password.txt:/run/secrets/influxdb_grafana_password:ro
     environment:
       - PUID=${PUID:-0}
       - PGID=${PGID:-0}
       - TZ=${TIMEZONE:-America/New_York}
-      # MariaDB via Unix socket (Synology MariaDB 10 package)
+      # MariaDB via TCP — socket auth fails on Synology DSM (see CLAUDE.md).
+      # MariaDB binds to 10.0.1.15:3306; otsadmin has privileges on otsgrafanadb.
       - GF_DATABASE_TYPE=mysql
-      - GF_DATABASE_HOST=${MYSQL_HOST:-/run/mysqld/mysqld.sock}
-      - GF_DATABASE_NAME=${GRAFANA_DB_NAME}
-      - GF_DATABASE_USER=${GRAFANA_DB_USER}
+      - GF_DATABASE_HOST=${MYSQL_HOST:-10.0.1.15:3306}
+      - GF_DATABASE_NAME=${GRAFANA_DB_NAME:-otsgrafanadb}
+      - GF_DATABASE_USER=${GRAFANA_DB_USER:-otsadmin}
       - GF_DATABASE_PASSWORD=${GRAFANA_DB_PASSWORD}
       - GF_DATABASE_SSL_MODE=disable
     restart: unless-stopped
@@ -118,6 +117,10 @@ services:
       cadvisor:
         condition: service_healthy
       alertmanager:
+        condition: service_healthy
+      redis-exporter:
+        condition: service_healthy
+      memcached-exporter:
         condition: service_healthy
 
   snmp-exporter:
@@ -252,6 +255,78 @@ services:
       - grafana-net
       - prometheus-net
     restart: unless-stopped
+    labels:
+      - com.centurylinklabs.watchtower.enable=false
+
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.67.0
+    container_name: Prometheus-Redis-Exporter
+    hostname: prometheus-redis
+    networks:
+      - prometheus-net
+    mem_limit: 64m
+    mem_reservation: 16m
+    cpu_shares: 128
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      - REDIS_ADDR=redis://10.0.1.15:6379
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:9121/metrics"
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    labels:
+      - com.centurylinklabs.watchtower.enable=false
+
+  memcached-exporter:
+    image: prom/memcached-exporter:v0.15.0
+    container_name: Prometheus-Memcached-Exporter
+    hostname: prometheus-memcached
+    networks:
+      - prometheus-net
+    mem_limit: 32m
+    mem_reservation: 8m
+    cpu_shares: 128
+    security_opt:
+      - no-new-privileges:true
+    command:
+      - "--memcached.address=10.0.1.15:11211"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:9150/metrics"
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     labels:
       - com.centurylinklabs.watchtower.enable=false
 

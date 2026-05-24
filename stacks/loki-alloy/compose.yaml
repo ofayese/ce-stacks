@@ -1,0 +1,79 @@
+name: loki-alloy
+
+services:
+  loki:
+    image: grafana/loki:3.7.0
+    container_name: Loki
+    hostname: loki
+    restart: unless-stopped
+    mem_limit: 512m
+    cpu_shares: 512
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - loki-net
+      - ce-internal
+    ports:
+      - "${NAS_IP:-10.0.1.15}:3100:3100"
+    volumes:
+      - ${STACK_ROOT}/loki-alloy/config/loki:/mnt/config:ro
+      - ${STACK_ROOT}/loki-alloy/data/loki:/loki:rw
+    command: -config.file=/mnt/config/loki-config.yaml
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:3100/ready || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    labels:
+      - com.centurylinklabs.watchtower.enable=false
+      - haproxy.enable=false
+
+  alloy:
+    image: grafana/alloy:v1.8.3
+    container_name: Alloy
+    hostname: alloy
+    restart: unless-stopped
+    mem_limit: 256m
+    cpu_shares: 256
+    security_opt:
+      - no-new-privileges:true
+    user: "0:0"
+    networks:
+      - loki-net
+    ports:
+      - "${NAS_IP:-10.0.1.15}:12345:12345"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${STACK_ROOT}/loki-alloy/config/alloy:/etc/alloy:ro
+    command:
+      - run
+      - /etc/alloy/config.alloy
+      - --server.http.listen-addr=0.0.0.0:12345
+    depends_on:
+      loki:
+        condition: service_healthy
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    labels:
+      - com.centurylinklabs.watchtower.enable=false
+
+networks:
+  loki-net:
+    name: loki-net
+    driver: bridge
+    ipam:
+      config:
+        # 172.31.0=dozzle, .1=watchtower, .2=it-tools, .3=openresume, .4=searxng, .5=remotely, .6=codex-docs, .10=otspsu
+        - subnet: 172.31.7.0/24
+          gateway: 172.31.7.1
+  ce-internal:
+    external: true
