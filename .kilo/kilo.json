@@ -18,5 +18,27 @@
         "mcp": "deny"
       }
     }
+  },
+  "mcp": {
+    "filesystem": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/volumes/docker"
+      ]
+    },
+    "github": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "environment": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "11AOMYFZY0QSXzcwdcKU9R_GsZAnq5EIXGFkfHTSiB7JLeCKnqR5Nq8Rl4bGGb2J3aN7NJ3A37DkH0723m"
+      }
+    }
   }
 }

@@ -3,7 +3,7 @@
 # Resets ownership and permissions for all stack data directories.
 # Idempotent - safe to run multiple times.
 # Usage: sudo bash scripts/fix-permissions.sh [stacks-root]
-# With no argument: reads STACK_ROOT from repo-root .env if present, else /volume2/docker/ce-stacks.
+# With no argument: reads STACK_ROOT from repo-root .env if present, else /volume2/docker.
 # Called automatically by init-nas.sh.
 
 set -euo pipefail
@@ -25,7 +25,7 @@ else
 	if [[ -f "${REPO_ENV}" ]] && grep -q '^STACK_ROOT=' "${REPO_ENV}" 2>/dev/null; then
 		STACKS_ROOT="$(grep '^STACK_ROOT=' "${REPO_ENV}" | tail -n1 | cut -d= -f2-)"
 	else
-		STACKS_ROOT="/volume2/docker/ce-stacks/stacks"
+		STACKS_ROOT="/volume2/docker/stacks"
 	fi
 fi
 

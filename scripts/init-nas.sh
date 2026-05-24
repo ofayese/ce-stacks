@@ -50,7 +50,7 @@ STACKS_IN_REPO="${REPO_ROOT}/stacks"
 DOCKER="${DOCKER:-$(command -v docker 2>/dev/null || echo /usr/local/bin/docker)}"
 
 # Prefer stacks inside this repo (this layout). Else sibling ../stacks next to the
-# clone parent. Else STACK_ROOT_OVERRIDE or /volume2/docker/ce-stacks/stacks.
+# clone parent. Else STACK_ROOT_OVERRIDE or /volume2/docker/stacks.
 # IMPORTANT: STACK_ROOT points to the stacks/ subdirectory, NOT the repo root.
 # All compose volume paths use ${STACK_ROOT}/<stack-name>/... notation.
 if [[ -d "${STACKS_IN_REPO}" ]]; then
@@ -63,7 +63,7 @@ else
 		[[ "${LIST_ONLY}" -eq 0 ]] && echo "Auto-detected STACK_ROOT (sibling stacks/): ${STACK_ROOT}"
 	else
 		# Default includes /stacks suffix - STACK_ROOT is the stacks/ dir, not repo root.
-		STACK_ROOT="${STACK_ROOT_OVERRIDE:-/volume2/docker/ce-stacks/stacks}"
+		STACK_ROOT="${STACK_ROOT_OVERRIDE:-/volume2/docker/stacks}"
 		if [[ "${LIST_ONLY}" -eq 0 ]]; then
 			echo "Using default STACK_ROOT: ${STACK_ROOT}"
 			echo "(Override with: STACK_ROOT_OVERRIDE=/your/path sudo bash scripts/init-nas.sh)"
@@ -311,6 +311,8 @@ DOCKHAND_DST="/volume2/docker/dockhand"
 
 if [[ ! -d "${DOCKHAND_SRC}" ]]; then
 	echo "  WARN: ${DOCKHAND_SRC} not found - skipping dockhand sync" >&2
+elif [[ "$(cd "${DOCKHAND_SRC}" 2>/dev/null && pwd)" == "$(cd "${DOCKHAND_DST}" 2>/dev/null && pwd)" ]]; then
+	echo "  [OK] Dockhand is already at its runtime path -- skipping sync"
 else
 	mkdir -p "${DOCKHAND_DST}"
 

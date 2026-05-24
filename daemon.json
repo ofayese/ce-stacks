@@ -1,0 +1,10 @@
+{
+  "hosts": [
+    "unix:///var/run/docker.sock",
+    "tcp://10.0.1.15:2375"
+  ],
+  "tls": true,
+  "tlsverify": false,
+  "tlscert": "/volume2/certs/acme/wildcard/fullchain.pem",
+  "tlskey": "/volume2/certs/acme/wildcard/privkey.pem"
+}

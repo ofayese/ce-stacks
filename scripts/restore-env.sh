@@ -21,7 +21,7 @@
 set -e
 
 # -- Defaults ------------------------------------------------------------------
-NEW_REPO="/volume2/docker/ce-stacks"
+NEW_REPO="/volume2/docker"
 BACKUP_ROOT="/volume2/docker/archive"
 FIX_MODE=0
 DRY_RUN=0

@@ -1,7 +1,7 @@
 #!/bin/sh
 # =============================================================================
 # nas-reset.sh
-# Location: /volume2/docker/nas-reset.sh  (NOT inside the ce-stacks repo)
+# Location: /volume2/docker/nas-reset.sh
 # =============================================================================
 # Usage:
 #   sudo sh /volume2/docker/nas-reset.sh               # interactive
@@ -11,8 +11,8 @@
 #
 # What it does:
 #   1. Pre-flight checks (dirs, git, SSH key)
-#   2. Backs up /volume2/docker/ce-stacks -> /volume2/docker/archive/ce-stacks-backup-<ts>
-#   3. Clones fresh repo into /volume2/docker/ce-stacks
+#   2. Backs up /volume2/docker -> /volume2/docker/archive/ots-docker-backup-<ts>
+#   3. Clones fresh repo into /volume2/docker
 #   4. Calls scripts/restore-env.sh  - validates + restores .env files from backup
 #   5. Calls scripts/init-nas.sh     - creates STACK_ROOT directories
 #   6. Calls scripts/fix-permissions.sh - normalises stack data dir ownership
@@ -23,9 +23,9 @@
 set -eu
 
 # -- Config --------------------------------------------------------------------
-CE_STACKS_DIR="/volume2/docker/ce-stacks"
+CE_STACKS_DIR="/volume2/docker"
 BACKUP_ROOT="/volume2/docker/archive"
-REPO_URL="git@github.com:ofayese/ce-stacks.git"
+REPO_URL="git@github.com:ofayese/ots-docker.git"
 # Use the operator's SSH key even when running as root
 export GIT_SSH_COMMAND='ssh -i /var/services/homes/laolufayese/.ssh/id_ed25519 -o StrictHostKeyChecking=no'
 OWNER="laolufayese"
@@ -112,7 +112,7 @@ fi
 
 # -- Timestamp -----------------------------------------------------------------
 TS=$(date +"%Y%m%d-%H%M%S")
-BACKUP_DIR="${BACKUP_ROOT}/ce-stacks-backup-${TS}"
+BACKUP_DIR="${BACKUP_ROOT}/ots-docker-backup-${TS}"
 
 # -- Create archive root -------------------------------------------------------
 if [ ! -d "${BACKUP_ROOT}" ]; then
@@ -215,7 +215,7 @@ echo " Backup:  ${BACKUP_DIR}"
 echo " Repo:    ${CE_STACKS_DIR}"
 echo ""
 echo " Next steps:"
-echo "   1. sudo cp /volume2/docker/ce-stacks/dockhand/scripts/dockhand-start.sh \\"
+echo "   1. sudo cp /volume2/docker/dockhand/scripts/dockhand-start.sh \\"
 echo "         /usr/local/etc/rc.d/dockhand.sh"
 echo "   2. sudo chmod +x /usr/local/etc/rc.d/dockhand.sh"
 echo "   3. sudo sh /usr/local/etc/rc.d/dockhand.sh"

@@ -1,0 +1,51 @@
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+{
+  "manifestVersion": "2.0.0",
+  "signatureType": "commercial",
+  "signedByOrg": "redis",
+  "signedByOrgName": "RedisGrafana",
+  "rootUrls": [],
+  "plugin": "redis-explorer-app",
+  "version": "2.1.1",
+  "time": 1642567402646,
+  "keyId": "7e4d0c6a708866e7",
+  "files": {
+    "img/enable.png": "f5e71a627fe97d3696b1a379f16932345794872bf96d0cb98e3300b445c4b507",
+    "img/datasource.png": "ae249873668ccb7c9e767818d655b89d798cb726e8d8d8b9a971905e9340d245",
+    "img/logo.svg": "79968b05d84b0d4c18979371e92491e2229debad0a4f40e321f9c21e6ea2d143",
+    "img/grafana-marketplace.png": "4ffd3b84b15df809ee0afa389e7e88051e8ce622c7b3ff0bd56520c04c652712",
+    "img/overview.png": "a6d89334870316dc0ffd6f9f6ef71f7785577e9a1783ae10823848d535275b60",
+    "module.js.map": "1350542d30871c77087ed5ea610eb36400ea00b8af46dc3a24f33a950ea6ab4e",
+    "CHANGELOG.md": "b8dd590cce7fae87d1f8411e0a88b8138c65189db8d025e3c73aa8e48d74d4fa",
+    "plugin.json": "1b9f4a30eb0359f6b9094be51b4df1afcca7268041f631bba4498bdec5bdcf34",
+    "README.md": "b19f1c083bb065dee264aa6294ddb5bf6f22f8e444cb6a8581b3645811eac321",
+    "module.js.LICENSE.txt": "0d8f66cd4afb566cb5b7e1540c68f43b939d3eba12ace290f18abc4f4cb53ed0",
+    "dashboards/cluster-dbs.json": "668208a01ce023d307254242632133a57e6cd861fd8a4553a983681485169834",
+    "dashboards/cluster-overview.json": "2b633753898bae87589eee9d4b4bcc9571050e2be2aac6a5949ff649ce2ff372",
+    "dashboards/cluster-nodes.json": "1c3a3823517fd993df6cafb3036462e0fbb4b9d291f962c2513f373caf4eb450",
+    "dashboards/redis-explorer.json": "a108201e3aa03a482316561143441098086b163ca40e9f07f417f4aef6f070b4",
+    "dashboards/cluster-alerts.json": "d24ab40d2241556559d416401d0a4b2e89913b5249d5b44e9077aa2134200b33",
+    "redis-enterprise-software-datasource/api/models/module.js.map": "be821188d756c39250be4ff00f5cc48b926042cb0e9eb0280cba56940018a97b",
+    "redis-enterprise-software-datasource/api/models/module.js": "8d03dae89e1fe7326339c545e4ae629d3f690cf255434c1beebfc17239eb78ed",
+    "redis-enterprise-software-datasource/img/logo.svg": "e9150b7d0448f57a509b24a285e764d9a8c7558edbc2882b3e11a28481f840a5",
+    "redis-enterprise-software-datasource/module.js.map": "605edebd0856a0f61761cf0ba5da506ecabf10ec23ef19f0e80d3517dba8a1a1",
+    "redis-enterprise-software-datasource/plugin.json": "59a19ab2a4c7ca02c681ce4fd2710afe7c263d25f3fc094447da5294caae8642",
+    "redis-enterprise-software-datasource/module.js.LICENSE.txt": "0d8f66cd4afb566cb5b7e1540c68f43b939d3eba12ace290f18abc4f4cb53ed0",
+    "redis-enterprise-software-datasource/module.js": "a565a94f42c060557c540c5cecbc989621e22c709b6f8746cec8dd7f645c945c",
+    "LICENSE": "377c8b86e8476fc7a309040475e138d2be464aff5d0a41579fb956b21dc652e3",
+    "module.js": "3f0c04cbe94a3fcda6df59c969cbc3edb74c47013585994e3037bd4a7fa0a6e7"
+  }
+}
+-----BEGIN PGP SIGNATURE-----
+Version: OpenPGP.js v4.10.1
+Comment: https://openpgpjs.org
+
+wqAEARMKAAYFAmHnluoACgkQfk0ManCIZucJDQIIpd4B4s3gt1HCJb4eOIto
+F+zQzFUyQjdAquTkFdTuOyRdidtycdFAsjLZhgZt90RqPactSf8M7fTzr+7Z
+REq3iPUCB2MF5l34g5wlIF38gXEoUc7jyBGM0h98rUXm3IYEOmAGP4BV4F2+
+4Kyg/jIH50Ea6Z77INsPV1q6TfcwM0O5OppO
+=9mHq
+-----END PGP SIGNATURE-----

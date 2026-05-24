@@ -1,0 +1,18 @@
+{
+	"ulid": "01KSAWF5BGFMJ0Z5DDBV64BVNC",
+	"minTime": 1779544801773,
+	"maxTime": 1779552000000,
+	"stats": {
+		"numSamples": 2682394,
+		"numFloatSamples": 2682394,
+		"numSeries": 16032,
+		"numChunks": 32134
+	},
+	"compaction": {
+		"level": 1,
+		"sources": [
+			"01KSAWF5BGFMJ0Z5DDBV64BVNC"
+		]
+	},
+	"version": 1
+}

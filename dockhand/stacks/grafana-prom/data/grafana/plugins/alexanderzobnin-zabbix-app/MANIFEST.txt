@@ -1,0 +1,54 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+{
+  "manifestVersion": "2.0.0",
+  "signatureType": "grafana",
+  "signedByOrg": "grafana",
+  "signedByOrgName": "Grafana Labs",
+  "plugin": "alexanderzobnin-zabbix-app",
+  "version": "6.3.2",
+  "time": 1778088206051,
+  "keyId": "7e4d0c6a708866e7",
+  "files": {
+    "CHANGELOG.md": "4a62c5dc7186a4a388100f234e63ed75243d0be215894740cba3cb411404d8ee",
+    "README.md": "40de3d46cfe9dda64b360a20c550665532470f528d0e70ff6b2db5fdea3ddb5e",
+    "plugin.json": "45ebdecc9e3d76fa958d37836ff6ad49a87c1ce02b453368478596662439f75a",
+    "LICENSE": "3726ae034c948e6ecbb2501c6c2d3fe528653767c7d45950f220766f102ead09",
+    "module.js": "64fe043e23e6b45217531fc2b8132bb722ddc9f7e3dc70ba9df8b693ee1ddd6c",
+    "datasource/dashboards/zabbix_system_status.json": "fc731a981c06c3f916138f709c9ef6802ceace4e5f2ef942b7450c97e83261f2",
+    "datasource/dashboards/zabbix_server_dashboard.json": "7b22547eb3e3b0c41c507019d7edbdca9014c6146db76b0d3a8a3d8c22695190",
+    "datasource/dashboards/template_linux_server.json": "8abde4d79110835d1d8bd9b51192ce5d6923a0303f779713b213355f48930c99",
+    "datasource/plugin.json": "7fc599290a81c684a31cf0359d860c55a621a08bbdf6c2cc5b5c8a81bf0eccc4",
+    "datasource/module.js": "711b6861b1d9e1fce5503dc8d56683c1be137dccda181fe68fce102cc152def1",
+    "datasource/img/icn-zabbix-datasource.svg": "406bfc69249278c8d0f97462fea735639b05328229d887c2e6b10bf97592fbad",
+    "datasource/gpx_zabbix-datasource_linux_amd64": "501a96131859612de70d724851018b97071c9227d4f56aaaa8738db595aeb68c",
+    "datasource/query_help.md": "ce3686ec3090aa95809acc7957f952886bc5d57fad2bc120b56a6cd408a97634",
+    "datasource/module.js.map": "830ef5540178c79ac8ec63debf145d7ee9186af587365805441bc7e6c0ec0e1b",
+    "img/screenshot-showcase.png": "5be71aacb80a513e7838b99bdeeed246b8d518cb6a846905541806e52dc291f8",
+    "img/screenshot-annotations.png": "b698176703e2af787f58c5856574f55918c468ae69635b3b9e76b3fe2611a0d6",
+    "img/icn-zabbix-app.svg": "406bfc69249278c8d0f97462fea735639b05328229d887c2e6b10bf97592fbad",
+    "img/screenshot-dashboard01.png": "bb465a73a27ab39e02846cfcd1d551da34e2d2367370ba65bc0dd035d879bd81",
+    "img/screenshot-metric_editor.png": "c99dce5cbcc4858bcb4a432e73c051963178e948014b1fb5689dce17a5624f73",
+    "img/screenshot-triggers.png": "95bba466dbd9e8eefbe488e83a486e2af5621ec2bbf6bc22f49b4d04a5ea300b",
+    "go_plugin_build_manifest": "678553f9cbb0145662407046b8612bd21c27dce1a0dc1b7f35e7f50adae19b48",
+    "module.js.map": "d28624d40e20f25bef794bbefe7a58ba2482deaac358e8bbad73f00281485484",
+    "styles/light.css": "ba0aeb7bfe477a20a1ab4712156c9044ea0357b172c5eb256da8270595351c89",
+    "styles/dark.css": "d361056d2bf78a2ba3076bec506c148820f6336e54aeb9ef62acda2121072735",
+    "panel-triggers/plugin.json": "9f255d330f893f2d11208b5b439d61d7b9533db69c7be2e656eae52354823716",
+    "panel-triggers/module.js": "efb9c5bf6021e9fdb7b0bb10f030f74e9f835f47e2cd2ba318208d11ff27a525",
+    "panel-triggers/img/icn-zabbix-problems-panel.svg": "e9afa313c485976d9ea4f6735bdc71af271fde5d72963e3c461d9a10144bd229",
+    "panel-triggers/module.js.map": "7ce03708af56c1e3f94d5f46dd3c842bf97dbed6bc3d7ed01421f0a7ba16cda5",
+    "panel-triggers/module.js.LICENSE.txt": "ed9db5bb821a266fcbdebead228ad505223e3bdb1f4d6faf694793a42e4532df"
+  }
+}
+-----BEGIN PGP SIGNATURE-----
+
+wsA+BAETCgBtBYJp+3kOCRB+TQxqcIhm50UUAAAAAAAcACBzYWx0QG5vdGF0
+aW9ucy5vcGVucGdwanMub3JnkrG2xtN8J/Umb2W8wm2gfISARVo9tZEwdane
+kAN4HoEWIQTzOyW2kQdOhGNlcPN+TQxqcIhm5wAA/AoCCQHt68fseDsbhIcW
+1r1BPUnVeR4l+j4aIoRUOb8/agOLZMCw+eFSyy9k72+inU7WYA/NRFpHUPi+
+5gF2cULr0HLxPgIIzoKpSzmxGQYVRukpqtY4NBkX0VHRLnXOGsUHJbgn0NB6
+MI5X1g3pR6BBidhYJ5WUtTRKtPv0zXSV9oh8g/2MJqg=
+=8yJC
+-----END PGP SIGNATURE-----

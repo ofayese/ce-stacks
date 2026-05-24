@@ -1,0 +1,18 @@
+{
+	"ulid": "01KSANKE3HGBHG0Y741J23RAE0",
+	"minTime": 1779537601773,
+	"maxTime": 1779544800000,
+	"stats": {
+		"numSamples": 2680866,
+		"numFloatSamples": 2680866,
+		"numSeries": 15143,
+		"numChunks": 31240
+	},
+	"compaction": {
+		"level": 1,
+		"sources": [
+			"01KSANKE3HGBHG0Y741J23RAE0"
+		]
+	},
+	"version": 1
+}

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Syntax-check stacks/_haproxy/haproxy.cfg using a temp tree (dummy TLS + map copy).
-# Resolves /volume2/docker/ce-stacks/_haproxy to a writable temp path so haproxy -c works off-NAS.
+# Resolves /volume2/docker/_haproxy to a writable temp path so haproxy -c works off-NAS.
 set -euo pipefail
 _script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="${_script_dir}"
@@ -56,7 +56,7 @@ openssl req -x509 -nodes -newkey rsa:2048 -keyout "${TMP}/k.pem" -out "${TMP}/c.
 	-subj "/CN=haproxy-syntax-check" >/dev/null 2>&1
 cat "${TMP}/c.pem" "${TMP}/k.pem" >"${TMP}/certs/_syntax-check.pem"
 # DSM-merge globals use user sc-haproxy + ring httplog paths that do not exist off-NAS; strip for syntax-only -c.
-sed "s|/volume2/docker/ce-stacks/_haproxy|${TMP}|g" "${cfg}" |
+sed "s|/volume2/docker/_haproxy|${TMP}|g" "${cfg}" |
 	sed -e '/^[[:space:]]*user sc-haproxy[[:space:]]*$/d' -e '/^[[:space:]]*daemon[[:space:]]*$/d' \
 		-e 's|^[[:space:]]*log ring@httplog local0 info|    log stdout format raw local0|' |
 	perl -0777 -pe 's/\nring httplog\n(?:[ \t].*\n)+/\n/gs' >"${TMP}/haproxy.cfg"

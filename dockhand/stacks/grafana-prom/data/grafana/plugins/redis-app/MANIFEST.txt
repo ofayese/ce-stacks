@@ -1,0 +1,62 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+{
+  "manifestVersion": "2.0.0",
+  "signatureType": "commercial",
+  "signedByOrg": "redis",
+  "signedByOrgName": "Redis",
+  "plugin": "redis-app",
+  "version": "2.3.2",
+  "time": 1776780929011,
+  "keyId": "7e4d0c6a708866e7",
+  "files": {
+    "README.md": "05693f386ddeccaf02b815a01f818cb377cee91433858d2fd0aae8194a0bbfaa",
+    "redis-gears-panel/img/logo.svg": "aa52134199d659f78df6fa8706b04472bd20f13c28ac1bbb734ffe44e4080adc",
+    "redis-gears-panel/module.js": "d6e94f732979ce219b7a4fe02c501a2d53efb1d5f228a90a2cdccc1b61babb73",
+    "redis-gears-panel/module.js.map": "517d60eb79c27d21819aee460a0fbe4d7fdfcbfdde40401c8b619db70d16215e",
+    "redis-gears-panel/plugin.json": "0a8538ef433503b536a628735691a3e8329996c156e1916e2b1936ca58ce2d97",
+    "dashboards/redis-cli.json": "f2321defaa72f2a12daa18e83926be6f5a598e0bdd43495845c2ad67ad33570d",
+    "dashboards/redis-overview.json": "2251587fd5cfeb16439426da4990d1a1c99470549020781c3e7d8f929e7e056c",
+    "dashboards/redis-gears.json": "363ba9127bf000f9fa77b01ed973958ab46a401ec63ab3f181ce910d95bb3822",
+    "LICENSE": "377c8b86e8476fc7a309040475e138d2be464aff5d0a41579fb956b21dc652e3",
+    "img/redis-keys-panel.png": "4bd8de03b389a16350f246bee885b4d6a10fe61ee2c2e4d08f4d81835a10de06",
+    "img/redis-app.png": "7fd37dc209fb0153dfc178379c89e02a07d4e41645ad2841cd5b12f30d9a0f01",
+    "img/redis-latency-panel-graph.png": "fece38c36c259d8876ccfc8c23e3dd863911228fad8aae5542ad0410fe4ad3ce",
+    "img/redis-gears-dashboard.png": "994a613ee62a37edeb857074918e289276e4b545650af0577cd6eceb5f12f9d9",
+    "img/logo.svg": "b6246ff41fa61e93374e21c6adda180a5a42f54b5fb090979163a24d94b31687",
+    "img/redis-cli-panel.png": "baf84c10a10a1e5ccb780a3cdb7a93503c2679768c9b385685f6c7b491e3b513",
+    "img/redis-cpu-usage-graph.png": "25ef30eb4b5dcfef76ea9c7a631d5c3a3a598f9f0a95dbb2abbfde921e1509a4",
+    "img/redis-cli-dashboard.png": "b9be35cab3bad3ee7c1a102111f0f73f46d540a980312ab4a106669706f7726e",
+    "module.js": "92006eeef20f4429566b352520e48ed3beef30e4e4af4f71ba61d965a6a14702",
+    "redis-keys-panel/img/logo.svg": "d0d75891dc98d451c02f71dc467b0a59169fb93067294e82aa188220aa04a75a",
+    "redis-keys-panel/module.js": "0e9c0df7fba7bd76ecf7cc10ca0e73c2bfed0d5cdc8e913c2ed113ca92bc2489",
+    "redis-keys-panel/module.js.map": "a15218cda81cd6cd37172892b6fde882777a7a9c89d4c01eb84ae3be7d4b9cd9",
+    "redis-keys-panel/plugin.json": "f17416f6be837e531659e3b5e7292624187cdd79feaa9552bac60b6dd6266405",
+    "redis-cpu-panel/img/logo.svg": "45272de906cd38d86ebe79f5f58d5b632e94b2c86fddd8b98796643ce54b194a",
+    "redis-cpu-panel/module.js": "ca861b490bfe4369fd009b13193f13e0f32fa78610eb1f5a86cbab2ff0b02e68",
+    "redis-cpu-panel/module.js.map": "ee3c0c92b7c6ec112710774a7fca559cd8b96afe705dc47bd15e0d6e7e384db6",
+    "redis-cpu-panel/plugin.json": "bcc120412ae1429a175487c11220520fc3b42a0139831016ca3d6700971df749",
+    "module.js.map": "6efc298b0bdf65870f237ada9c972275010e0c0e2fa84a73979ef8bef788a046",
+    "plugin.json": "787aede2074a52f8c1baeba0272f1d5bcc1289ca63572eb206dcb0dc6b79536c",
+    "CHANGELOG.md": "ede1c12e8edaf962da5530b93785b37d9977673a706f94ce27d671f2c9b341af",
+    "redis-cli-panel/img/logo.svg": "84272594125ac93b33e037386e5a57fa732b8421cda7b23ebd6c1d9a9e0c1df6",
+    "redis-cli-panel/module.js": "d74e2bb3e67aa8ad092295fe99a213a590e1184ffe1fde6ce46a9477c8eb8f4e",
+    "redis-cli-panel/module.js.map": "784d6741d366c547967d2e97749cd61a577bd8bbe548e2b6ca07dd1917294d53",
+    "redis-cli-panel/plugin.json": "93bca0d89e952a1ebd87cedb5bda13b6b877a2baa11c315b3c47fa38d9978587",
+    "redis-latency-panel/img/logo.svg": "be3bc261e77b52c7123175a7b3b39d8dc85dab6d80a63615468caf7b1865130f",
+    "redis-latency-panel/module.js": "f83c58b01354912d35b6a4c6c7f9f57de6db0b0bbe33cf45d1da78828cbfd6a4",
+    "redis-latency-panel/module.js.map": "32c5053f68c16d7d06f86629dba5fac6fa592d75dddfdf162cd5095d59f1a876",
+    "redis-latency-panel/plugin.json": "d2be516f550c3e891eeca43da402b917a00b67acbc16ff37a649b6227eedab1d"
+  }
+}
+-----BEGIN PGP SIGNATURE-----
+
+wsA9BAETCgBtBYJp54aBCRB+TQxqcIhm50UUAAAAAAAcACBzYWx0QG5vdGF0
+aW9ucy5vcGVucGdwanMub3Jny4Ki09cQSUUzF017FNXAraGvxpwWRj/iTT+e
+Y74cY2EWIQTzOyW2kQdOhGNlcPN+TQxqcIhm5wAAJ5QCCL4vPF1hXcJGqB7s
+9ICUJQPLyRk7x2jmdWVeb3S9JAegmk6yS3OROJn0JktPKvWBhgtRf9Zfk1jS
+mfBWO0uk5AvhAgdBqYV+BIzTIpF2px1sAOD9OOAC//RpsU3Gvl8iB+/4Ucbc
+pPQqGhKfrYatUNo2jKyNtOzbZe3lxzyeR8o3xR9Icg==
+=iXEl
+-----END PGP SIGNATURE-----

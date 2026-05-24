@@ -1,0 +1,13 @@
+{
+  "id": "session-1779608990097",
+  "startedAt": "2026-05-24T07:49:50.097Z",
+  "platform": "darwin",
+  "cwd": "/Volumes/docker",
+  "context": {},
+  "metrics": {
+    "edits": 0,
+    "commands": 0,
+    "tasks": 0,
+    "errors": 0
+  }
+}

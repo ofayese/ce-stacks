@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # =============================================================================
-# dockhand-sync.sh -- re-sync ce-stacks/dockhand/ -> /volume2/docker/dockhand/
+# dockhand-sync.sh -- re-sync dockhand/ -> /volume2/docker/dockhand/
 # =============================================================================
 # Wrapper around the same rsync/cp logic used by scripts/init-nas.sh, scoped
-# to only the dockhand/ subtree. Use this when you've pulled new commits in
-# ce-stacks and want to update the runtime Dockhand install without
-# re-running the full bootstrap.
+# to only the dockhand/ subtree. Use this when you've pulled new commits and
+# want to update the runtime Dockhand install without re-running the full
+# bootstrap.
 #
 # Safety:
 #   * Refuses to run unless dockhand/scripts/dockhand-start.sh exists in the
@@ -24,8 +24,8 @@
 #   * Idempotent -- safe to re-run.
 #
 # Usage:
-#   bash /volume2/docker/ce-stacks/scripts/dockhand-sync.sh
-#   bash /volume2/docker/ce-stacks/scripts/dockhand-sync.sh --dry-run
+#   bash /volume2/docker/scripts/dockhand-sync.sh
+#   bash /volume2/docker/scripts/dockhand-sync.sh --dry-run
 #
 # After sync, re-install the RC script if dockhand-start.sh changed:
 #   sudo cp /volume2/docker/dockhand/scripts/dockhand-start.sh \
@@ -59,7 +59,7 @@ done
 # ---- Preflight ---------------------------------------------------------------
 if [ ! -d "${SRC}" ]; then
     echo "dockhand-sync: ERROR: source not found: ${SRC}" >&2
-    echo "dockhand-sync: are you running from the correct ce-stacks clone?" >&2
+    echo "dockhand-sync: are you running from the correct repo clone?" >&2
     exit 1
 fi
 

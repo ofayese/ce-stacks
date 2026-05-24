@@ -9,14 +9,14 @@
 #   echo "set map <path>" | socat stdio <socket>
 #
 # Usage:
-#   bash /volume2/docker/ce-stacks/scripts/haproxy-reload-map.sh
-#   bash /volume2/docker/ce-stacks/scripts/haproxy-reload-map.sh --dry-run
+#   bash /volume2/docker/scripts/haproxy-reload-map.sh
+#   bash /volume2/docker/scripts/haproxy-reload-map.sh --dry-run
 #
 # Wire this into git post-merge or Dockhand webhooks to auto-apply map changes:
 #   # .git/hooks/post-merge
 #   #!/bin/sh
 #   if git diff-tree -r --name-only --no-commit-id ORIG_HEAD HEAD | grep -q '_haproxy/maps/'; then
-#       bash /volume2/docker/ce-stacks/scripts/haproxy-reload-map.sh
+#       bash /volume2/docker/scripts/haproxy-reload-map.sh
 #   fi
 #
 # Note: This reloads map entries only. Adding a new *backend* block still
@@ -26,7 +26,7 @@
 set -euo pipefail
 
 SOCKET="/var/packages/haproxy/var/haproxy-api.sock"
-MAP="/volume2/docker/ce-stacks/stacks/_haproxy/maps/host.map"
+MAP="/volume2/docker/stacks/_haproxy/maps/host.map"
 DRY_RUN=0
 
 for arg in "$@"; do
