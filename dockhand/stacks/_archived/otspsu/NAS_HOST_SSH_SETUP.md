@@ -33,7 +33,7 @@ ssh -i psu_remediation_key -p 28 username@nasip '/usr/local/bin/docker info >/de
 
 ### Option A - File mount (repo template)
 
-1. Copy the private key onto the NAS (not into Git), e.g.  
+1. Copy the private key onto the NAS (not into Git), e.g.
    `/volume2/docker/ce-stacks/stacks/otspsu/keys/psu_remediation_key`
 2. Restrict permissions:
 

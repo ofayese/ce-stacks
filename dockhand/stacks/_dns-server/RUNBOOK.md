@@ -1,6 +1,6 @@
 # DNS Server Runbook — Synology DS723+ (10.0.1.15)
 
-UI: <http://10.0.1.15:5010>  
+UI: <http://10.0.1.15:5010>
 Package: Synology DNS Server (BIND-backed)
 
 ---
@@ -78,7 +78,7 @@ Save → Apply.
 
 ### Step 2 — Zone: `lan`
 
-> **Why `lan` and not `local`?**  
+> **Why `lan` and not `local`?**
 > RFC 6762 strictly reserves `.local` for mDNS (Bonjour/Avahi). Synology
 > DSM uses Avahi natively. Creating a unicast DNS zone named `local` will
 > conflict with Apple device discovery and Avahi on the NAS itself. Use
@@ -147,7 +147,7 @@ Save. Add PTRs as VPN peers are assigned fixed IPs in `172.16.0.x`:
 |---|---|---|---|---|
 | — | PTR | `2` | `peer2.olutechsys.com` | 7200 |
 
-> Host field is the last octet only:  
+> Host field is the last octet only:
 > `172.16.0.2` → host `2` | `172.16.0.15` → host `15`
 >
 > If peers are assigned addresses beyond `172.16.0.x`, add additional

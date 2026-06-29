@@ -961,7 +961,7 @@ zabbix_export:
                 Synology disk status: each meanings of status represented describe below:
                 [1] Normal: the hard disk functions normally.
                 [2] Initialized: the hard disk has system partition but no data.
-                [3] NotInitialized: the hard disk does not have system in system partition.	
+                [3] NotInitialized: the hard disk does not have system in system partition.
                 [4] SystemPartitionFailed: the system partitions on the hard disks are damaged.
                 [5] Crashed: the hard disk has damaged.
               valuemap:
@@ -1288,11 +1288,11 @@ zabbix_export:
                 [1] Normal: the raid functions normally.
                 [11] Degrade: degrade happens when a tolerable failure of disk(s) occurs.
                 [12] Crashed: raid has crashed and just uses for read-only operation.
-                
+
                 Note: other status will be showed when creating or deleting raids, including below status:
                 [2] Repairing,
                 [3] Migrating,
-                [4] Expanding, 
+                [4] Expanding,
                 [5] Deleting,
                 [6] Creating(6),
                 [7] RaidSyncing,

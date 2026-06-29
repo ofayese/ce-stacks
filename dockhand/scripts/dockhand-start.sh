@@ -131,7 +131,7 @@ ensure_ce_internal() {
 
 create_container() {
     mkdir -p "${DOCKHAND_DATA}"
-    
+
     # Ensure subdirectories exist (Dockhand entrypoint creates these on startup)
     mkdir -p "${DOCKHAND_DATA}/db"
     mkdir -p "${DOCKHAND_DATA}/stacks"
@@ -140,7 +140,7 @@ create_container() {
     mkdir -p "${DOCKHAND_DATA}/icons"
     mkdir -p "${DOCKHAND_DATA}/snapshots"
     mkdir -p "${DOCKHAND_DATA}/scanner-cache"
-    
+
     $DOCKER run -d \
         --name="$NAME" \
         --network=ce-internal \

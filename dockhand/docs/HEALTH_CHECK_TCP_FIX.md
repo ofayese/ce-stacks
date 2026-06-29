@@ -21,7 +21,7 @@ To:
 --health-cmd='/bin/sh -c "exec 3<>/dev/tcp/127.0.0.1/3000 && exec 3>&-"'
 ```
 
-**How it works**: 
+**How it works**:
 - Opens a TCP socket to localhost:3000
 - If successful (port is listening), closes socket and exits 0 (healthy)
 - If fails (port not listening), exits 1 (unhealthy)
@@ -92,7 +92,7 @@ docker ps | grep dockhand
 # Expected: Up X minutes (healthy)
 
 docker inspect dockhand | jq '.State.Health'
-# Expected: 
+# Expected:
 # {
 #   "Status": "healthy",
 #   "FailingStreak": 0,
@@ -133,4 +133,3 @@ exec 3<>/dev/tcp/10.0.1.15/3866 && echo "[OK] Port accessible" && exec 3>&-
 # Test from inside container
 docker exec dockhand /bin/sh -c 'exec 3<>/dev/tcp/127.0.0.1/3000 && exec 3>&-' && echo "[OK] Health check passes"
 ```
-
