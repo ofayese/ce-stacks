@@ -21,7 +21,7 @@ spaceIO MODULE-IDENTITY
         "Second draft."
     ::= { synology 102 }
 
-synology	OBJECT IDENTIFIER 
+synology	OBJECT IDENTIFIER
 	::= { enterprises 6574 }
 
 spaceIOTable OBJECT-TYPE

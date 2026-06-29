@@ -15,7 +15,7 @@ SHA authpass and AES privpass are hardcoded
 
 **Setup Synology DSM**
 
-Check the official Synology documentation for your version of DSM:  
+Check the official Synology documentation for your version of DSM:
 <https://kb.synology.com/en-us/DSM/help/DSM/AdminCenter/system_snmp>
 
 Go to SNMP settings (`Control Panel > Terminal & SNMP > SNMP`) and tick (enable)
@@ -36,7 +36,7 @@ Record the values you set here because you have to replicate them later in Zabbi
     - "Context name": can be left empty
     - "Security name": is the username in DSM
     - "Security level": is "authPriv"
-    - "Authentication protocol": same as you set in DSM.   
+    - "Authentication protocol": same as you set in DSM.
     - "Authentication passphrase":  Same as you set in DSM under "SNMPv3 service", "Password" field
     - "Privacy protocol": Same as you set in DSM under "Enable SNMP privacy", "Protocol".
     - "Privacy passphrase": Same as you set in DSM under "Enable SNMP privacy", "Password" field

@@ -4,15 +4,15 @@ description: Configure tunnel ingress rules, origins, and protocol settings.
 image: https://developers.cloudflare.com/core-services-preview.png
 ---
 
-> Documentation Index  
-> Fetch the complete documentation index at: https://developers.cloudflare.com/tunnel/llms.txt  
+> Documentation Index
+> Fetch the complete documentation index at: https://developers.cloudflare.com/tunnel/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-[Skip to content](#%5Ftop) 
+[Skip to content](#%5Ftop)
 
 ### Tags
 
-[ Post-quantum ](https://developers.cloudflare.com/search/?tags=Post-quantum)[ QUIC ](https://developers.cloudflare.com/search/?tags=QUIC) 
+[ Post-quantum ](https://developers.cloudflare.com/search/?tags=Post-quantum)[ QUIC ](https://developers.cloudflare.com/search/?tags=QUIC)
 
 # Configuration
 
@@ -49,7 +49,7 @@ graph LR
 
 To deploy a replica for a remotely-managed tunnel:
 
-1. In the [Cloudflare dashboard ↗](https://dash.cloudflare.com/), go to **Networking** \> **Tunnels**.  
+1. In the [Cloudflare dashboard ↗](https://dash.cloudflare.com/), go to **Networking** \> **Tunnels**.
 [ Go to **Tunnels** ](https://dash.cloudflare.com/?to=/:account/tunnels)
 2. Select your tunnel.
 3. Select **Add a replica**.

@@ -37,13 +37,13 @@ echo "-- Security Check: NET_ADMIN + read_only --"
 while IFS= read -r f; do
     [[ -n "${f}" ]] || continue
     rel="${f#"${ROOT}/"}"
-    
+
     # Extract service names and check for problematic combinations
     in_service=0
     service_name=""
     has_net_admin=0
     has_read_only=0
-    
+
     while IFS= read -r line; do
         if [[ "$line" =~ ^[[:space:]]*[a-z_-]+:[[:space:]]*$ ]] && [[ ! "$line" =~ ^[[:space:]]{6,} ]]; then
             # New service definition at level 2
@@ -61,7 +61,7 @@ while IFS= read -r f; do
             has_read_only=1
         fi
     done < "$f"
-    
+
     # Check final service
     if [[ $in_service -eq 1 && $has_net_admin -eq 1 && $has_read_only -eq 1 ]]; then
         printf '  WARN  %-50s service:%s (NET_ADMIN + read_only)\n' "${rel}" "${service_name}" >&2
@@ -77,7 +77,7 @@ unquoted_count=0
 while IFS= read -r f; do
     [[ -n "${f}" ]] || continue
     rel="${f#"${ROOT}/"}"
-    
+
     # Find unquoted ports that mix IP:host:container (likely YAML parsing ambiguity)
     if grep -qE 'ports:[[:space:]]*$' "$f"; then
         while IFS= read -r port_line; do
@@ -100,7 +100,7 @@ missing_net=0
 while IFS= read -r f; do
     [[ -n "${f}" ]] || continue
     rel="${f#"${ROOT}/"}"
-    
+
     # If services reference networks: but no networks: block exists at root
     if grep -q 'networks:' "$f"; then
         if ! grep -q '^networks:' "$f"; then
@@ -119,7 +119,7 @@ bad_defaults=0
 while IFS= read -r f; do
     [[ -n "${f}" ]] || continue
     rel="${f#"${ROOT}/"}"
-    
+
     # Warn if PUID/PGID defaults are not 0
     if grep -qE 'PUID=\$\{PUID:-[^0]' "$f"; then
         printf '  WARN  %-50s (PUID default not 0; Synology may fail bind-mount ownership)\n' "${rel}" >&2

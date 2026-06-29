@@ -19,9 +19,9 @@ storageIO MODULE-IDENTITY
     REVISION     "201309110000Z"
     DESCRIPTION
         "Second draft."
-    ::= { synology 101 }		
-    
-synology	 OBJECT IDENTIFIER 
+    ::= { synology 101 }
+
+synology	 OBJECT IDENTIFIER
 	::= { enterprises 6574 }
 
 storageIOTable OBJECT-TYPE

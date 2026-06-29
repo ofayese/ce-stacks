@@ -4,11 +4,11 @@ description: System requirements for running cloudflared.
 image: https://developers.cloudflare.com/core-services-preview.png
 ---
 
-> Documentation Index  
-> Fetch the complete documentation index at: https://developers.cloudflare.com/tunnel/llms.txt  
+> Documentation Index
+> Fetch the complete documentation index at: https://developers.cloudflare.com/tunnel/llms.txt
 > Use this file to discover all available pages before exploring further.
 
-[Skip to content](#%5Ftop) 
+[Skip to content](#%5Ftop)
 
 # System requirements
 
@@ -107,33 +107,33 @@ To estimate tunnel capacity requirements for your deployment:
 3. Compute the average **Non-DNS UDP requests per second** by dividing `cloudflared_udp_total_sessions` by total time.
 4. Input **TCP requests per second** and **Non-DNS UDP requests per second** into the calculator below. (You can leave **Private DNS requests per second** as `0` unless you are using the tunnel for [private network access](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/configure-tunnels/tunnel-availability/system-requirements/).)
 
-System configuration 
+System configuration
 
-Available ports per host   
+Available ports per host
 
-Number of cloudflared replicas   
+Number of cloudflared replicas
 
-DNS UDP session timeout (in seconds)   
+DNS UDP session timeout (in seconds)
 
-Average non-DNS UDP session timeout (seconds)   
+Average non-DNS UDP session timeout (seconds)
 
-Metrics 
+Metrics
 
-TCP requests per second   
+TCP requests per second
 
-Non-DNS UDP requests per second   
+Non-DNS UDP requests per second
 
-Private DNS requests per second   
+Private DNS requests per second
 
-Result 
+Result
 
-Percent capacity per replica   
+Percent capacity per replica
 
-Percent capacity across all replicas   
+Percent capacity across all replicas
 
-Maximum DNS requests per minute across all replicas   
+Maximum DNS requests per minute across all replicas
 
-This calculator is for informational purposes only and all results are estimates. 
+This calculator is for informational purposes only and all results are estimates.
 
 To increase tunnel capacity, add identical hosts running `cloudflared` replicas.
 

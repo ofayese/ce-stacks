@@ -1,9 +1,9 @@
 # Stack Bring-Up Runbook -- otsorundscore NAS
 
-**Date:** 2026-05-16  
+**Date:** 2026-05-16
 **Already running:** grafana-prom . acme-sh . influxdb . watchtower . dockhand
 
-All commands run as your NAS user from `/volume2/docker/ce-stacks` unless noted.  
+All commands run as your NAS user from `/volume2/docker/ce-stacks` unless noted.
 Deploy each stack via **Dockhand UI** after completing its setup steps below.
 
 ---
@@ -91,7 +91,7 @@ nano stacks/homepage/.env   # set GRAFANA_USERNAME and GRAFANA_PASSWORD if using
 mkdir -p stacks/homepage/data
 ```
 
-Config files (`services.yaml`, `bookmarks.yaml`, etc.) are already in `stacks/homepage/config/` in git.  
+Config files (`services.yaml`, `bookmarks.yaml`, etc.) are already in `stacks/homepage/config/` in git.
 Deploy -> `http://10.0.1.15:7575`
 
 > **Note:** `code-server/CodeServerPMA` (phpMyAdmin for the dev MySQL sidecar) runs on port **8379**. `db-tools/PhpMyAdmin` (native MariaDB) runs on **8378**. Deploy code-server before db-tools to avoid the earlier port conflict.
@@ -133,7 +133,7 @@ nano stacks/zabbix/.env   # set POSTGRES_PASSWORD to output of: openssl rand -he
 mkdir -p stacks/zabbix/db stacks/zabbix/data
 ```
 
-Deploy. Zabbix initialises its database schema on first start -- takes ~60 seconds.  
+Deploy. Zabbix initialises its database schema on first start -- takes ~60 seconds.
 Web UI -> `http://10.0.1.15:8532` . default login: `Admin` / `zabbix` (change immediately).
 
 ---
@@ -166,7 +166,7 @@ Open-WebUI -> `http://10.0.1.15:8893` -- create your admin account on first visi
 
 ### otspsu (PowerShell Universal -- NOC dashboard)
 
-Most complex stack. Read `stacks/otspsu/README.md` fully before deploying.  
+Most complex stack. Read `stacks/otspsu/README.md` fully before deploying.
 Start with all dangerous operations **off** (defaults in `.env.example` are safe).
 
 ```bash
@@ -191,12 +191,12 @@ nano stacks/otspsu/.env
 mkdir -p stacks/otspsu/data
 ```
 
-Deploy -> PSU web UI at `http://10.0.1.15:5570`  
+Deploy -> PSU web UI at `http://10.0.1.15:5570`
 Default login: set on first visit (PSU prompts for admin credentials on fresh install).
 
 **After first login:** go to Admin -> Security -> App Tokens, create a token, and set `NAS_PULL_APP_TOKEN` in `.env`, then redeploy.
 
-**SSH remediation** (optional, enables `docker compose` over SSH from inside the container):  
+**SSH remediation** (optional, enables `docker compose` over SSH from inside the container):
 See `stacks/otspsu/NAS_HOST_SSH_SETUP.md` -- generates a dedicated key pair and adds it to `~/.ssh/authorized_keys`.
 
 ---

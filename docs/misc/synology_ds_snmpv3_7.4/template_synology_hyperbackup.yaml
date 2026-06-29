@@ -10,10 +10,10 @@ zabbix_export:
       name: 'Synology Hyper Backup'
       description: |
         Check Synology Hyper Backup jobs via DSM Web Api
-        
+
         ## Author
         Copyright (C) 2024 lestoilfante (https://github.com/lestoilfante)
-        
+
         ## License
         GNU General Public License version 3 (GPLv3)
       groups:
@@ -40,7 +40,7 @@ zabbix_export:
             		Sid=respL.data.sid;
             	}
             	else throw "1";
-            
+
             	urlBackupList="https://"+p.host+":"+p.port+"/webapi/entry.cgi?api="+p.apiBackup+"&method=list&version=1&_sid="+Sid;
             	reqBL=new HttpRequest();
             	respBL=reqBL.get(urlBackupList,null);
@@ -48,11 +48,11 @@ zabbix_export:
             		respBL=JSON.parse(respBL);
             	}
             	else throw "2";
-            
+
             	tasks=respBL.data.task_list;
             	var reqD, respD;
             	tasks.forEach(checkDetail);
-            
+
             	function checkDetail(t){
             		urlDetail='https://'+p.host+':'+p.port+'/webapi/entry.cgi?api='+p.apiBackup+'&method=status&version=1&blOnline=false&additional=["last_bkp_time","next_bkp_time","last_bkp_result","is_modified","last_bkp_progress"]&task_id='+t.task_id+'&_sid='+Sid;
             		reqD ? reqD.clearHeader() : reqD = new HttpRequest();
@@ -62,9 +62,9 @@ zabbix_export:
             			respD=JSON.parse(respD);
             		}
             		else throw "3";
-            		
+
             		BkpObject = {"Name":t.name,"Id":t.task_id, "State":respD.data.state, "Status":respD.data.status,"Last_Result":respD.data.last_bkp_result, "Last_Date":respD.data.last_bkp_end_time, "Next_Date":respD.data.next_bkp_time};
-            		
+
             		bkpList.push(BkpObject);
             	}
             	function logout(){
@@ -75,9 +75,9 @@ zabbix_export:
             			throw "4";
             		}
             	}
-            	
+
             	logout();
-            
+
             }
             catch(e){
             	switch (e) {
@@ -95,7 +95,7 @@ zabbix_export:
             return JSON.stringify(bkpList);
           description: |
             Returns JSON array of all Task objects:
-            
+
             [{
             	"Name":"",
             	"Id":"",
@@ -105,7 +105,7 @@ zabbix_export:
             	"Last_Date":"",
             	"Next_Date":""
             }]
-            
+
             In case of error script returns [0-9] converted to generic "error"
           preprocessing:
             - type: NOT_MATCHES_REGEX
@@ -157,7 +157,7 @@ zabbix_export:
             		Sid=respL.data.sid;
             	}
             	else throw "1";
-            
+
             	urlBackupList="https://"+p.host+":"+p.port+"/webapi/entry.cgi?api="+p.apiBackup+"&method=list&version=1&_sid="+Sid;
             	reqBL=new HttpRequest();
             	respBL=reqBL.get(urlBackupList,null);
@@ -165,10 +165,10 @@ zabbix_export:
             		respBL=JSON.parse(respBL);
             	}
             	else throw "2";
-            
+
             	tasks=respBL.data.task_list;
             	tasks.forEach(buildLLD);
-            
+
             	function buildLLD(t){
             		BkpObject = {'{#TASK_NAME}':t.name, '{#TASK_ID}':t.task_id};
             		bkpList.push(BkpObject);
@@ -181,12 +181,12 @@ zabbix_export:
             			throw "3";
             		}
             	}
-            	
+
             	logout();
-            
+
             }
             catch(e){
-            
+
             }
             return JSON.stringify(bkpList);
           description: |
@@ -204,7 +204,7 @@ zabbix_export:
               value_type: CHAR
               description: |
                 Task last run result.
-                
+
                 Known values:
                  done => Normal status
                  none => Never run before
@@ -314,7 +314,7 @@ zabbix_export:
               value_type: CHAR
               description: |
                 Task state.
-                
+
                 Known values:
                  exportable
                  importable

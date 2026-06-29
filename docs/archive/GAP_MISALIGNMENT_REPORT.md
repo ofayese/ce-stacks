@@ -1,7 +1,7 @@
 # Ce-Stacks: Gap & Misalignment Report
 
-**Date**: 2026-05-22  
-**Audited by**: Claude (Cowork agent)  
+**Date**: 2026-05-22
+**Audited by**: Claude (Cowork agent)
 **Scope**: Full repo tree, docs/ folder, project links, stacks, DNS config, dockhand subdir
 
 ---
